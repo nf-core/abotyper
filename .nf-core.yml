@@ -1,0 +1,17 @@
+bump_version: null
+lint: {}
+nf_core_version: 3.0.2
+org_path: null
+repository_type: pipeline
+template:
+  author: '@fmobegi'
+  description: A pipeline for characterising the Human Blood Group and Red Cell Antigens
+    using Oxford Nanopore third-generation sequencing data.
+  force: true
+  is_nfcore: true
+  name: abotyper
+  org: nf-core
+  outdir: .
+  skip_features: null
+  version: 1.0.0dev
+update: null
