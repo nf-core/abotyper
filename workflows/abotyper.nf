@@ -12,6 +12,19 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_abot
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT LOCAL MODULES/SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { ANALYZE_ABO                 } from '../modules/local/analyze_abo/main'
+include { AGGREGATE_REPORTS           } from '../modules/local/aggregate_reports/main'
+
+/*
+
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -33,6 +46,32 @@ workflow ABOTYPER {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
+    //
+    // MODULE: Run FastQC
+    //
+    FASTQC (
+        ch_reads
+    )
+    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    //
+    // MODULE: Run ABO analysis
+    //
+    ANALYZE_ABO (
+        ch_reads,
+        file(params.reference_exon6),
+        file(params.reference_exon7),
+        file(params.alleles)
+    )
+    ch_versions = ch_versions.mix(ANALYZE_ABO.out.versions.first())
+
+    //
+    // MODULE: Aggregate reports
+    //
+    AGGREGATE_REPORTS (
+        ANALYZE_ABO.out.phenotype.collect()
+    )
+    
     //
     // Collate and save software versions
     //
