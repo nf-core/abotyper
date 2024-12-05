@@ -1,0 +1,23 @@
+name: abo-analysis-env
+
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - bioconda::fastqc=0.11.9
+  - bioconda::bwa=0.7.17 
+  - bioconda::samtools=1.16.1
+  - bioconda::multiqc=1.14
+  - conda-forge::biopython=1.81
+  - python=3.10
+  - pip:
+    - numpy==1.21.5
+    - Bio==1.5.9
+    - openpyxl==3.1.2
+    - pandas==1.5.3
+    - pysam==0.21.0
+    - matplotlib==3.7.1
+    - xlsxwriter==3.1.2
+    - multiqc==1.14
