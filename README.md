@@ -1,11 +1,13 @@
-# ABO blood typing using Oxford Nanopore MinION sequencing
+
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="docs/ nf-core-abotyper_logo_dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/nf-core-abotyper_logo_dark.png">
     <img alt="nf-core/abotyper" src="nf-core-abotyper_logo_light.png">
   </picture>
 </h1>
 
+
+# ABO blood typing using Oxford Nanopore MinION sequencing
 ABO sequences were aquired from the NCBI dbRBC database:
 
 [https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home](https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home)
