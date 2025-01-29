@@ -1,4 +1,10 @@
 # ABO blood typing using Oxford Nanopore MinION sequencing
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="docs/ nf-core-abotyper_logo_dark.png">
+    <img alt="nf-core/abotyper" src="nf-core-abotyper_logo_light.png">
+  </picture>
+</h1>
 
 ABO sequences were aquired from the NCBI dbRBC database:
 
