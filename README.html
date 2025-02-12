@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>readme</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="README_files/libs/clipboard/clipboard.min.js"></script>
+<script src="README_files/libs/quarto-html/quarto.js"></script>
+<script src="README_files/libs/quarto-html/popper.min.js"></script>
+<script src="README_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="README_files/libs/quarto-html/anchor.min.js"></script>
+<link href="README_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="README_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="README_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="README_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="README_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+<h1>
+<picture> <source media="(prefers-color-scheme: light)" srcset="docs/images/nf-core-abotyper_logo_dark.png"> <img alt="nf-core/abotyper" src="docs/images/nf-core-abotyper_logo_light.png"> </picture>
+</h1>
+<section id="abo-blood-typing-using-oxford-nanopore-minion-sequencing" class="level1">
+<h1>ABO blood typing using Oxford Nanopore MinION sequencing</h1>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="docs/images/nf-core-abotyper-metro-map.jpg" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">nf-core/rnaseq metro map</figcaption>
+</figure>
+</div>
+<p>ABO sequences were acquired from the NCBI dbRBC database:</p>
+<p><a href="https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home">https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home</a></p>
+<p>See <a href="https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/">https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/</a> for some literature.</p>
+</section>
+<section id="required-tools" class="level1">
+<h1>Required tools</h1>
+<p>The pipeline makes use of the following core dependencies:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> bioconda::fastqc=0.12.1</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> bioconda::bwa=0.7.17</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> conda-forge::ncurses</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> bioconda::samtools=1.19.2</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> bioconda::minimap2=2.26</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> conda-forge::biopython=1.83</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> python=3.10</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> pip</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">pip</span><span class="kw">:</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> numpy&gt;=1.26.0</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> Bio&gt;=1.6.0</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> biopython&gt;=1.8o</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> openpyxl&gt;=3.1.0</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> pandas&gt;=2.2.0</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> pysam&gt;=0.22.0</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> matplotlib&gt;=3.8.0</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> XlsxWriter&gt;=3.2.0</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> multiqc&gt;=1.18</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A complete list of dependencies is found in the assets folder <code>assets/conda.yml</code>.</p>
+</section>
+<section id="required-input-files-structure" class="level1">
+<h1>Required input files structure</h1>
+<p>Ensure that all input fastq files have a naming convention that matches this regular expression (<code>regex</code>)</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">## python regex for matching samples</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pattern <span class="op">=</span> <span class="vs">r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The regex does the following:</p>
+<ul>
+<li><code>^(IMM|INGS|NGS|[A-Z0-9]+)</code> allows for files strating with the prefixes IMM, INGS, NGS, or any combination of letters <code>A-to-Z</code> and digits <code>0-to-9</code>.</li>
+<li><code>(-[0-9]+-[0-9]+)?</code> handles optional segments of digits separated by a dash(-).</li>
+<li><code>_barcode\d+$</code> ensures the filename ends with_barcode followed by digits to denote barcode numbers.</li>
+</ul>
+<p>There is a filename handling logic in the code <code>filename.split("_")</code> assumes that the barcode is always the last part of the filename. The names are split into basename and barcode which are then used in later reporting. Please Adjust this if necessary based on actual filename structure in your assays.</p>
+<p>Here are a few examples of acceptable input file names:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode txt code-with-copy"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>NGSPOS_barcode13.fastq</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>NGSNEG_barcode12.fastq</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>INGSPOS_barcode01.fastq</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>INGSNEG_barcode96.fastq</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>IBTGSPOS_barcode19.fastq</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>2025705_barcode14.fastq</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>IMM-24-44988_barcode51.fastq</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>Sample1-2024-12345_barcode22.fastq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="testing-without-nextflow" class="level1">
+<h1>Testing without <code>nextflow</code></h1>
+<p>The pipeline can be tested of single input file by cloning this repo and installing all dependencies above, then running the following commands:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>python <span class="bu">bin</span><span class="op">/</span>AnalyzeAbo_Main.py  <span class="op">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>reference<span class="op">=</span><span class="st">"assets/A1_01_01_1_reference_Exon6.fasta"</span> \</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>alleles<span class="op">=</span><span class="st">"assets/ABO_Database.fasta"</span> \</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>output<span class="op">=</span><span class="st">"SampleName/exon6"</span> \</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>analysis<span class="op">-</span><span class="bu">type</span><span class="op">=</span><span class="st">"READS"</span> \</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>reads<span class="op">=</span><span class="st">"SampleName.fastq"</span> \</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a> python <span class="bu">bin</span><span class="op">/</span>AnalyzeAbo_Main.py  <span class="op">\</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>reference<span class="op">=</span><span class="st">"assets/reads_bc51/A1_01_01_1_reference_Exon7.fasta"</span> \</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>alleles<span class="op">=</span><span class="st">"assets/input/ABO_Database.fasta"</span> \</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>output<span class="op">=</span><span class="st">"SampleName/exon7"</span> \</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>analysis<span class="op">-</span><span class="bu">type</span><span class="op">=</span><span class="st">"READS"</span> \</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">--</span>reads<span class="op">=</span><span class="st">"SampleName.fastq"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Looping through a couple of samples with the above command will generate the following outputs:</p>
+<section id="output-data-structure-from-the-testing" class="level2">
+<h2 class="anchored" data-anchor-id="output-data-structure-from-the-testing">Output data structure from the testing</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">OutputDirectoryName/</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">├── Sample1</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon6</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── alignment</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; └── exon7</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp;     └── alignment</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">├── Sample2</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon6</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── alignment</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; └── exon7</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp;     └── alignment</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="at">├── Sample3</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon6</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── alignment</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; └── exon7</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp;     └── alignment</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With individual files named as follows:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="at">OutputDirectoryName/</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">├── Sample1</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon6</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOPhenotype.txt</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOReadPolymorphisms.txt</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam.bai</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.amb</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.ann</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.bwt</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.pac</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── AlignmentReference.fasta.sa</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── ReadAlignmentSpreadsheet.csv</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon7</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOPhenotype.txt</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOReadPolymorphisms.txt</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam.bai</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.amb</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.ann</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.bwt</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.pac</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── AlignmentReference.fasta.sa</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── ReadAlignmentSpreadsheet.csv</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── Sample1_exon6.log.txt</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; └── Sample1_exon7.log.txt</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>ABOPhenotype.txt</code> files from each sampe can then be collated using:</p>
+<p><code>python bin/Aggregate_ABO_reports.py OutputDirectoryName</code></p>
+</section>
+</section>
+<section id="the-nextflow-workflow" class="level1">
+<h1>The <code>nextflow</code> workflow</h1>
+<p>The steps above are simplified in a <code>NextFlow; https://www.nextflow.io/</code> pipeline that does all the above steps and streamlines installation of requisite software and tools with a single command.</p>
+<p>Besides reproducability, nextflow offers several advantages over conventional <code>for loops</code>, including scalability, portability, and debugging/resumption of failed tasks.</p>
+<p>Input files and output directory can be defined in the config files or provided directly in the commandline.</p>
+<p>To analyse files with config, run:</p>
+<ul>
+<li><code>nextflow run main.nf -resume</code> (user can override inputs and output using <code>--reads '*.fastq' --outdir 'ABO_results'</code> on the commandline).</li>
+</ul>
+<p>We have also added the ability for the pipeline to automatically set-up a conda or docker based environment with all required tools and libraries.</p>
+<p>Users may also opt for a workload manager such as <code>-profile slurm,docker|-profile slurm,conda</code>, is which case, all required modules docker/conda must be installed and loaded. The config slurm parameters must also be defined to ensure tasks are submitted to the correct resource queue/account.</p>
+<p>For <code>conda</code> environment, it is advisable to prepare the working computer using mamba for easy resolution of environments. Follow these steps to achieve better results.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> create <span class="at">-y</span> <span class="at">-n</span> abo-analysis-env</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate abo-analysis-env</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> env update <span class="at">--file</span> abo-analysis/assets/conda.yml <span class="at">--prune</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> deactivate</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># If conda cativate fails, run:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> {path_to_anaconda}/anaconda3/etc/profile.d/conda.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To run without the workload manager but with a specific containerization, use:</p>
+<ul>
+<li><code>nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -with-conda abo-analysis-env</code> or <code>nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -profile conda</code></li>
+<li><code>nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -with-docker fmobegi/abo-analysis</code> or <code>nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -profile docker</code></li>
+</ul>
+</section>
+<section id="renaming-samples" class="level1">
+<h1>Renaming samples</h1>
+<p>The code by default renames samples using a tab file with <code>sequencingID</code> and <code>sampleName</code> (see <code>nextflow.config</code> file under <code>$params.renaming_file</code>). This option is controlled by the parameter <code>$params.skip_renaming</code> and can be overridden via the commandline using option <code>--skip_renaming true</code> to skip the process.</p>
+</section>
+<section id="results-from-the-nextflow-pipeline-will-look-something-like-this" class="level1">
+<h1>Results from the <code>Nextflow</code> pipeline will look something like this</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">230128R_ABO_results/</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="at">├── ABO_result.txt</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="at">├── ABO_result.xlsx</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">├── execution_report.html</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">├── execution_timeline.html</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">├── execution_trace.txt</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">├── SampleName</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon6</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOPhenotype.txt</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOReadPolymorphisms.txt</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam.bai</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.amb</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.ann</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.bwt</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.pac</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── AlignmentReference.fasta.sa</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── ReadAlignmentSpreadsheet.csv</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── exon7</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOPhenotype.txt</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── ABOReadPolymorphisms.txt</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── alignment.bam.bai</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.amb</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.ann</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.bwt</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; ├── AlignmentReference.fasta.pac</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; │&nbsp;&nbsp; └── AlignmentReference.fasta.sa</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; │&nbsp;&nbsp; └── ReadAlignmentSpreadsheet.csv</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; ├── SampleName_exon6.log.txt</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="at">│&nbsp;&nbsp; └── SampleName_exon7.log.txt</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="at">├── software_versions.txt</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="at">└── workflow.oncomplete.txt</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Feel free to raise an issue or reach out if you need any support getting this tool running, or with suggestions for improvement.</p>
+<section id="credits" class="level2">
+<h2 class="anchored" data-anchor-id="credits">Credits</h2>
+<p>nf-core/abotyper was originally written by <span class="citation" data-cites="fmobegi">@fmobegi</span>.</p>
+<p>We thank the following people for their extensive assistance in the development of this pipeline:</p>
+<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+</section>
+<section id="contributions-and-support" class="level2">
+<h2 class="anchored" data-anchor-id="contributions-and-support">Contributions and Support</h2>
+<p>If you would like to contribute to this pipeline, please see the <a href=".github/CONTRIBUTING.md">contributing guidelines</a>.</p>
+<p>For further information or help, don’t hesitate to get in touch on the <a href="https://nfcore.slack.com/channels/abotyper">Slack <code>#abotyper</code> channel</a> (you can join with <a href="https://nf-co.re/join/slack">this invite</a>).</p>
+</section>
+<section id="citations" class="level2">
+<h2 class="anchored" data-anchor-id="citations">Citations</h2>
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+<!-- If you use nf-core/abotyper for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+<p>An extensive list of references for the tools used by the pipeline can be found in the <a href="CITATIONS.md"><code>CITATIONS.md</code></a> file.</p>
+<p>You can cite the <code>nf-core</code> publication as follows:</p>
+<blockquote class="blockquote">
+<p><strong>The nf-core framework for community-curated bioinformatics pipelines.</strong></p>
+<p>Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso &amp; Sven Nahnsen.</p>
+<p><em>Nat Biotechnol.</em> 2020 Feb 13. doi: <a href="https://dx.doi.org/10.1038/s41587-020-0439-x">10.1038/s41587-020-0439-x</a>.</p>
+</blockquote>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

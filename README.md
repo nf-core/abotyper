@@ -2,13 +2,15 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="docs/images/nf-core-abotyper_logo_dark.png">
-    <img alt="nf-core/abotyper" src="nf-core-abotyper_logo_light.png">
+    <img alt="nf-core/abotyper" src="docs/images/nf-core-abotyper_logo_light.png">
   </picture>
 </h1>
 
 
 # ABO blood typing using Oxford Nanopore MinION sequencing
-ABO sequences were aquired from the NCBI dbRBC database:
+![nf-core/abotyper metro map](docs/images/nf-core-abotyper-metro-map.jpg)
+
+ABO sequences were acquired from the NCBI dbRBC database:
 
 [https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home](https://www.ncbi.nlm.nih.gov/projects/gv/mhc/xslcgi.cgi?cmd=bgmut/home)
 
@@ -73,7 +75,7 @@ Sample1-2024-12345_barcode22.fastq
 
 # Testing without `nextflow`
 
-The pipeline can be tested of single input file by cloning this repo and installing all dependncies above, then running the following commands:
+The pipeline can be tested of single input file by cloning this repo and installing all dependencies above, then running the following commands:
 
 ```python
 python bin/AnalyzeAbo_Main.py  \
@@ -157,7 +159,7 @@ The `ABOPhenotype.txt` files from each sampe can then be collated using:
 
 The steps above are simplified in a `NextFlow; https://www.nextflow.io/` pipeline that does all the above steps and streamlines installation of requisite software and tools with a single command.
 
-Besides reproducability, nextflow offeres several advatages over conventional `for loops`, including scallability, portability, and debugging/resumption of failed tasks.
+Besides reproducability, nextflow offers several advantages over conventional `for loops`, including scalability, portability, and debugging/resumption of failed tasks.
 
 Input files and output directory can be defined in the config files or provided directly in the commandline.
 
@@ -240,7 +242,7 @@ Feel free to raise an issue or reach out if you need any support getting this to
 
 ## Credits
 
-nf-core/primerscout was originally written by @fmobegi.
+nf-core/abotyper was originally written by @fmobegi.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
@@ -250,12 +252,12 @@ We thank the following people for their extensive assistance in the development 
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the [Slack `#primerscout` channel](https://nfcore.slack.com/channels/primerscout) (you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the [Slack `#abotyper` channel](https://nfcore.slack.com/channels/abotyper) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use nf-core/primerscout for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use nf-core/abotyper for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
