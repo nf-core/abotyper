@@ -8,6 +8,8 @@
 
 
 # ABO blood typing using Oxford Nanopore MinION sequencing
+nf-core/abotyper is a bioinformatics pipeline that analyses data obtained from Third Generation Sequencing of the ABO gene to deduce the ABO blood type of the sample. It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related Single nucleotide variants.
+
 ![nf-core/abotyper metro map](docs/images/nf-core-abotyper-metro-map.jpg)
 
 ABO sequences were acquired from the NCBI dbRBC database:
