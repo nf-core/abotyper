@@ -16,8 +16,9 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ANALYZE_ABO                 } from '../modules/local/analyze_abo/main'
-include { AGGREGATE_REPORTS           } from '../modules/local/aggregate_reports/main'
+include { ANALYZE_ABO                 } from '../modules/local/analyzeabo/main'
+include { AGGREGATE_REPORTS           } from '../modules/local/aggregatereports/main'
+include { MINIMAP_ALIGN_EXONS         } from '../subworkflows/local/minimap_align_exons/main.nf'
 
 /*
 
@@ -33,44 +34,56 @@ workflow ABOTYPER {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    fai            // channel: fasta from params.fai (ABO database)
+    fasta          // channel: fasta from params.fasta (ABO database)
+    exon6fai       // channel: fasta from params.exon6fai
+    exon6fasta     // channel: fasta from params.exon6fasta
+    exon7fai       // channel: fasta from params.exon7fai
+    exon7fasta     // channel: fasta from params.exon7fasta
+    logo           // channel: png from params.logo (custom pathwest logo)
+    
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    //
-    // MODULE: Run FastQC
+    
+    // 
+    // MODULE: FastQC
     //
     FASTQC (
         ch_samplesheet
     )
+    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    // Collect fastqc reports for multiqc
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
-
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_reads
+    
+    MINIMAP2_ALIGN_READS (
+        ch_samplesheet,
+        exon6fai,
+        exon6fasta,
+        exon7fai,
+        exon7fasta
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(MINIMAP2_ALIGN_READS.out.versions.first())
+    
+    // //
+    // // MODULE: Run ABO analysis
+    // //
+    // ANALYZE_ABO (
+    //     ch_reads,
+    //     file(params.reference_exon6),
+    //     file(params.reference_exon7),
+    //     file(params.alleles)
+    // )
+    // ch_versions = ch_versions.mix(ANALYZE_ABO.out.versions.first())
 
-    //
-    // MODULE: Run ABO analysis
-    //
-    ANALYZE_ABO (
-        ch_reads,
-        file(params.reference_exon6),
-        file(params.reference_exon7),
-        file(params.alleles)
-    )
-    ch_versions = ch_versions.mix(ANALYZE_ABO.out.versions.first())
-
-    //
-    // MODULE: Aggregate reports
-    //
-    AGGREGATE_REPORTS (
-        ANALYZE_ABO.out.phenotype.collect()
-    )
+    // //
+    // // MODULE: Aggregate reports
+    // //
+    // AGGREGATE_REPORTS (
+    //     ANALYZE_ABO.out.phenotype.collect()
+    // )
     
     //
     // Collate and save software versions

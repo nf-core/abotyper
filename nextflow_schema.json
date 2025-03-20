@@ -235,5 +235,25 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "exon6fasta": {
+            "type": "string"
+        },
+        "exon7fasta": {
+            "type": "string"
+        },
+        "logo": {
+            "type": "string"
+        },
+        "fai": {
+            "type": "string"
+        },
+        "exon6fai": {
+            "type": "string"
+        },
+        "exon7fai": {
+            "type": "string"
+        }
+    }
 }
