@@ -16,9 +16,10 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ANALYZE_ABO                 } from '../modules/local/analyzeabo/main'
 include { AGGREGATE_REPORTS           } from '../modules/local/aggregatereports/main'
-include { MINIMAP_ALIGN_EXONS         } from '../subworkflows/local/minimap_align_exons/main.nf'
+include { MINIMAP2_ALIGN_READS        } from '../subworkflows/local/minimap_align_exons/main'
+include { PREDICTABOPHENOTYPE         } from '../subworkflows/local/predictabophenotype/main'
+include { VARIANTS_QUANTIFICATION     } from '../subworkflows/local/variant_calling_mpileup/main'
 
 /*
 
@@ -58,6 +59,8 @@ workflow ABOTYPER {
     // Collect fastqc reports for multiqc
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     
+    //
+    // SUBWORKFLOW: minimap2/align || samtools/flagstat || samtools/stats
     MINIMAP2_ALIGN_READS (
         ch_samplesheet,
         exon6fai,
@@ -67,23 +70,30 @@ workflow ABOTYPER {
     )
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN_READS.out.versions.first())
     
-    // //
-    // // MODULE: Run ABO analysis
-    // //
-    // ANALYZE_ABO (
-    //     ch_reads,
-    //     file(params.reference_exon6),
-    //     file(params.reference_exon7),
-    //     file(params.alleles)
-    // )
-    // ch_versions = ch_versions.mix(ANALYZE_ABO.out.versions.first())
-
-    // //
-    // // MODULE: Aggregate reports
-    // //
-    // AGGREGATE_REPORTS (
-    //     ANALYZE_ABO.out.phenotype.collect()
-    // )
+    //
+    // SUBWORKFLOW: Run pileup for variants
+    //
+    VARIANTS_QUANTIFICATION (
+        MINIMAP2_ALIGN_READS.out.exon6bai,
+        MINIMAP2_ALIGN_READS.out.exon6bam,
+        MINIMAP2_ALIGN_READS.out.exon7bai,
+        MINIMAP2_ALIGN_READS.out.exon7bam,
+        exon6fai,
+        exon6fasta,
+        exon7fai,
+        exon7fasta
+    )
+    ch_versions = ch_versions.mix(VARIANTS_QUANTIFICATION.out.versions.first())
+    
+    //
+    // SUBWORKFLOW: Run ABO prediction
+    //
+    PREDICTABOPHENOTYPE (
+        VARIANTS_QUANTIFICATION.out.exon6metrics,
+        VARIANTS_QUANTIFICATION.out.exon7metrics
+    )
+    ch_versions = ch_versions.mix(PREDICTABOPHENOTYPE.out.versions.first())
+    
     
     //
     // Collate and save software versions

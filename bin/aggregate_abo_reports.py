@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import glob
 import os
 import re
 import sys
@@ -523,49 +524,52 @@ class ABOReportParser:
 
     def process_file(self, filename):
         sample_name, barcode = filename.split("_")
-        exon6_dir = os.path.join(self.input_dir, filename, "exon6")
-        exon7_dir = os.path.join(self.input_dir, filename, "exon7")
+        sample_dir = os.path.join(self.input_dir, filename)
 
-        # Check if both exon6 and exon7 directories exist
-        if not (os.path.exists(exon6_dir) and os.path.exists(exon7_dir)):
-            print(f"Skipping file {filename}. Missing exon6 or exon7 directory.")
+        # Check if the sample directory exists
+        if not os.path.exists(sample_dir):
+            print(f"Skipping file {filename}. Directory not found.")
             return
 
-        exon6_phenotypes = os.path.join(exon6_dir, "ABOPhenotype.txt")
-        exon7_phenotypes = os.path.join(exon7_dir, "ABOPhenotype.txt")
-        exon6_polymorphisms = os.path.join(exon6_dir, "ABOReadPolymorphisms.txt")
-        exon7_polymorphisms = os.path.join(exon7_dir, "ABOReadPolymorphisms.txt")
+        # Search for exon6 and exon7 phenotype files
+        exon6_phenotypes = glob.glob(
+            os.path.join(sample_dir, "**", f"{filename}.ABOPhenotype.txt"),
+            recursive=True,
+        )
+        exon7_phenotypes = glob.glob(
+            os.path.join(sample_dir, "**", f"{filename}.ABOPhenotype.txt"),
+            recursive=True,
+        )
+
+        # Filter exon6 and exon7 files
+        exon6_phenotypes = [f for f in exon6_phenotypes if "exon6" in f.lower()]
+        exon7_phenotypes = [f for f in exon7_phenotypes if "exon7" in f.lower()]
 
         # Check if both exon6 and exon7 ABOPhenotype.txt files exist
-        if not (os.path.exists(exon6_phenotypes) and os.path.exists(exon7_phenotypes)):
+        if not (exon6_phenotypes and exon7_phenotypes):
             print(
                 f"Skipping file {filename}. Missing ABOPhenotype.txt file for exon6 or exon7."
             )
             return
-        if (
-            os.path.getsize(exon6_polymorphisms) == 0
-            or os.path.getsize(exon7_polymorphisms) == 0
-        ):
-            print(
-                f"Skipping file {filename}. Expected polymorphisms not present in alignment file."
-            )
-            return
+
+        # Use the first found file for each exon
+        exon6_phenotype = exon6_phenotypes[0]
+        exon7_phenotype = exon7_phenotypes[0]
 
         # Define sample_df at the beginning of the method
         sample_df = pd.DataFrame({"Barcode": [barcode], "Sequencing_ID": [sample_name]})
 
         try:
-            df_exon6 = self.parse_exon6(exon6_phenotypes)
+            df_exon6 = self.parse_exon6(exon6_phenotype)
         except Exception as e:
             print(f"Error processing exon6 for file {filename}: {str(e)}")
             df_exon6 = None
 
         try:
-            df_exon7 = self.parse_exon7(exon7_phenotypes)
+            df_exon7 = self.parse_exon7(exon7_phenotype)
         except Exception as e:
             print(f"Error processing exon7 for file {filename}: {str(e)}")
             df_exon7 = None
-        # print(df_exon7)
 
         if df_exon6 is not None and df_exon7 is not None:
             df_exon7_pos422 = df_exon7.iloc[[0]].reset_index(drop=True)
@@ -600,9 +604,7 @@ class ABOReportParser:
                 try:
                     # Updated regex pattern
                     # pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
-                    pattern = (
-                        r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
-                    )
+                    pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
                     match = re.match(pattern, filename)
 
                     if match:

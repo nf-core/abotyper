@@ -32,6 +32,8 @@ params.exon6fai   = getGenomeAttribute('exon6fai')
 params.exon6fasta = getGenomeAttribute('exon6fasta')
 params.exon7fai   = getGenomeAttribute('exon7fai')
 params.exon7fasta = getGenomeAttribute('exon7fasta')
+
+// We're considering a pathwest logo for multiqc reports - a little token for our hard work
 params.logo       = getGenomeAttribute('logo')
 
 fai               = params.fai      ? Channel.fromPath(params.fai).map { it -> [[id: it.baseName], it] }.collect()           : Channel.empty()

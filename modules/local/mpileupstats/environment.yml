@@ -1,0 +1,8 @@
+name: mpileup_nucl_freq
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - gzip
+  - re2
