@@ -97,8 +97,10 @@ workflow MINIMAP2_ALIGN_READS {
     emit:
     exon6bam      = MINIMAP2_ALIGN_EXON6.out.bam           // channel: [ val(meta), [ bam ] ]
     exon6bai      = MINIMAP2_ALIGN_EXON6.out.index         // channel: [ val(meta), [ bai ] ]
+    exon6cov      = SAMTOOLS_COVERAGE_EXON6.out.coverage   // channel: [ val(meta), [ txt ] ]
     exon7bam      = MINIMAP2_ALIGN_EXON7.out.bam           // channel: [ val(meta), [ bam ] ]
     exon7bai      = MINIMAP2_ALIGN_EXON7.out.index         // channel: [ val(meta), [ bai ] ]
+    exon7cov      = SAMTOOLS_COVERAGE_EXON7.out.coverage   // channel: [ val(meta), [ txt ] ]
 
     versions      = ch_versions                            // channel: [ versions.yml ]
 }

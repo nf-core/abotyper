@@ -90,7 +90,9 @@ workflow ABOTYPER {
     //
     PREDICTABOPHENOTYPE (
         VARIANTS_QUANTIFICATION.out.exon6metrics,
-        VARIANTS_QUANTIFICATION.out.exon7metrics
+        MINIMAP2_ALIGN_READS.out.exon6cov,
+        VARIANTS_QUANTIFICATION.out.exon7metrics,
+        MINIMAP2_ALIGN_READS.out.exon7cov
     )
     ch_versions = ch_versions.mix(PREDICTABOPHENOTYPE.out.versions.first())
     

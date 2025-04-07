@@ -1,47 +1,143 @@
 #!/usr/bin/env python3
+
 import argparse
 import sys
 import os
+import re
+import json
+import datetime  # Added for timestamps in logging
+import pandas as pd
+import io
+import numpy as np
 
-# Key diagnostic positions for ABO blood typing
+print("=" * 80)
+print(f"ABO Blood Type Prediction Script - Started at {datetime.datetime.now()}")
+print("=" * 80)
+
+# Diagnostic positions dictionary - used only for reference, not for dynamic text generation
+print("Initializing diagnostic positions dictionary...")
 DIAGNOSTIC_POSITIONS = {
-    "exon6": {22: {"G": ["A", "B"], "DEL": ["O"]}},
+    "exon6": {
+        22: {
+            "G": ["A", "B", "A1", "A2", "A3", "O2", "O3", "O4"],
+            "DEL": ["O", "O1"],
+        }
+    },
     "exon7": {
-        422: {"A": ["B"], "C": ["A", "O"]},
-        428: {"A": ["O"], "G": ["A", "B", "O"]},  # O2 variant
-        429: {"G": ["A", "O"], "C": ["B"]},
-        431: {"G": ["O"], "T": ["A", "B", "O"]},
+        # Primary A/B/O markers
+        422: {
+            "A": ["B"],
+            "C": ["A", "A1", "A2", "A3", "O", "O1", "O2", "O3", "O4"],
+        },
+        428: {
+            "A": ["O2"],
+            "G": ["A", "A1", "A2", "A3", "B", "O1", "O3", "O4"],
+        },
+        429: {
+            "G": ["A", "A1", "A2", "A3", "O", "O1", "O2", "O3", "O4"],
+            "C": ["B"],
+        },
+        431: {
+            "G": ["O3"],
+            "A": ["O4"],
+            "T": ["A", "A1", "A2", "A3", "B", "O1", "O2"],
+        },
+        # A subtype markers
+        467: {
+            "C": ["A1"],
+            "T": ["A2", "A3"],
+        },
+        539: {
+            "G": ["A1", "A2"],
+            "A": ["A3"],
+        },
+        646: {
+            "T": ["A1"],
+            "A": ["A2"],
+        },
+        681: {
+            "G": ["A1", "A2"],
+            "A": ["A3"],
+        },
+        745: {
+            "C": ["A1", "A2"],
+            "T": ["A3"],
+        },
+        820: {
+            "G": ["A1", "A2"],
+            "A": ["A3"],
+        },
+        1054: {
+            "C": ["A1", "A3"],
+            "T": ["A2"],
+        },
+        1061: {
+            "C": ["A1"],
+            "DEL": ["A2", "A3"],
+        },
     },
 }
+print("Diagnostic positions dictionary initialized successfully")
+
+
+def format_number(value):
+    """Format number as integer if it's whole, otherwise as float with 4 decimals."""
+    if (
+        abs(value - round(value)) < 1e-10
+    ):  # Using small epsilon to account for floating point precision
+        return f"{int(value)}"
+    else:
+        return f"{value:.4f}"
 
 
 def read_nucleotide_frequencies(input_file):
     """Read nucleotide frequency data from input file and return positions and max position."""
+    print(
+        f"\n[{datetime.datetime.now()}] Reading nucleotide frequencies from: {input_file}"
+    )
     positions = {}
     max_position = 0
+    any_data = False
 
     try:
-        with open(input_file, "r") as f:
-            # Skip header line
-            header = f.readline().strip()
+        # Check if the input file is empty
+        print(f"Checking if input file exists and has content...")
+        if os.stat(input_file).st_size == 0:
+            print(f"Input file {input_file} is empty.")
+            return {}, 0, True  # Return empty dict, max_pos 0, and empty_file=True
 
-            # Read each position
-            for line in f:
-                fields = line.strip().split("\t")
-                if len(fields) < 10:
-                    continue
+        print(f"Opening input file for reading with pandas...")
+        # Read the TSV file with pandas
+        df = pd.read_csv(input_file, sep="\t")
+        print(f"Data shape: {df.shape}")
+        print(f"Columns found: {list(df.columns)}")
 
-                pos = int(fields[0])
-                ref_base = fields[1]
-                match_percent = float(fields[2])
-                mismatch_percent = float(fields[3])
-                insertion_percent = float(fields[4])
-                deletion_percent = float(fields[5])
-                a_percent = float(fields[6])
-                g_percent = float(fields[7])
-                c_percent = float(fields[8])
-                t_percent = float(fields[9])
+        # Check if there are any data rows
+        if df.empty or len(df) < 134:  # using exon 6 minimum length of 134 bp
+            print(f"Input file {input_file} contains insufficient data.")
+            return {}, 0, True  # Treat as empty file
 
+        print(f"Processing {len(df)} data rows...")
+        valid_row_count = 0
+
+        # Process each row in the dataframe
+        for index, row in df.iterrows():
+            try:
+                # Access columns by name
+                pos = int(row["Ref_Position_1based"])
+                ref_base = row["Ref_Base"]
+                match_percent = float(row["Match_Percent"])
+                mismatch_percent = float(row["Mismatch_Percent"])
+                insertion_percent = float(row["Insertion_Percent"])
+                deletion_percent = float(row["Deletion_Percent"])
+                a_percent = float(row["A_Percent"])
+                g_percent = float(row["G_Percent"])
+                c_percent = float(row["C_Percent"])
+                t_percent = float(row["T_Percent"])
+
+                any_data = True  # Mark that we found at least one data row
+
+                # Store the data
                 positions[pos] = {
                     "ref_base": ref_base,
                     "match_percent": match_percent,
@@ -52,195 +148,541 @@ def read_nucleotide_frequencies(input_file):
                     "G_percent": g_percent,
                     "C_percent": c_percent,
                     "T_percent": t_percent,
-                    "coverage": 430,  # Placeholder, set to approximate count
+                    "coverage": 0,  # Will only be updated if coverage file is provided
                 }
 
                 # Track the maximum position
                 if pos > max_position:
                     max_position = pos
+
+                valid_row_count += 1
+
+            except (ValueError, KeyError) as e:
+                print(f"Warning: Could not parse row {index}: {row}. Error: {e}")
+                continue
+
+        print(
+            f"Finished processing {len(df)} rows, {valid_row_count} valid positions extracted"
+        )
+
+        # If no data was found, return a flag indicating so
+        if not any_data:
+            print("Alignment file contains no valid data.")
+            return {}, 0, True  # Return empty dict, max_pos 0, and empty_file=True
+
+        print(
+            f"Successfully read {len(positions)} positions, max position: {max_position}"
+        )
+
     except Exception as e:
         print(f"Error reading nucleotide frequency file: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+        print(
+            f"Exception details: {type(e).__name__} at line {sys.exc_info()[2].tb_lineno}"
+        )
+        return {}, 0, True  # On error, treat as empty file
 
-    return positions, max_position
+    return (
+        positions,
+        max_position,
+        False,
+    )  # Return positions, max_pos, and empty_file=False
 
 
-def determine_exon_from_reference_length(ref_length):
-    """Determine which exon we're working with based on reference sequence length."""
-    # Use approximate ranges to account for potential variations
-    if 100 <= ref_length <= 150:
+def read_coverage_file(coverage_file):
+    """Read coverage information from coverage statistics file.
+    Returns a dictionary with numreads and covbases if found, otherwise empty dict."""
+    print(
+        f"\n[{datetime.datetime.now()}] Reading coverage information from: {coverage_file}"
+    )
+
+    try:
+        # Check if file exists
+        if not os.path.exists(coverage_file):
+            print(f"Coverage file does not exist: {coverage_file}")
+            return {}
+
+        # Read file with pandas, handling # in header
+        print(f"Reading coverage file with pandas...")
+        df = pd.read_csv(coverage_file, sep="\t", comment=None)
+
+        # Check if we have any data rows
+        if len(df) < 1:
+            print("Coverage file has no data rows")
+            return {}
+
+        print(f"Found {len(df)} data rows with columns: {list(df.columns)}")
+
+        # Find the numreads and covbases columns (handle # prefix if present)
+        numreads_col = None
+        covbases_col = None
+
+        for col in df.columns:
+            if "numreads" in col.lower():
+                numreads_col = col
+            elif "covbases" in col.lower():
+                covbases_col = col
+
+        # If we found both columns, extract the values
+        if numreads_col and covbases_col:
+            numreads = int(df.iloc[0][numreads_col])
+            covbases = int(df.iloc[0][covbases_col])
+
+            coverage_info = {"numreads": numreads, "covbases": covbases}
+
+            print(f"Extracted coverage info: numreads={numreads}, covbases={covbases}")
+            return coverage_info
+        else:
+            print(f"Required columns not found. Available columns: {list(df.columns)}")
+            return {}
+
+    except Exception as e:
+        print(f"Error reading coverage file: {str(e)}")
+        return {}
+
+
+def determine_exon_type(filename):
+    """Determine if the input file is for exon6 or exon7 based on filename."""
+    print(
+        f"\n[{datetime.datetime.now()}] Determining exon type from filename: {filename}"
+    )
+    filename = filename.lower()
+    if "exon6" in filename:
+        print(f"✓ Exon type determined: exon6 (from filename)")
         return "exon6"
-    elif 600 <= ref_length <= 700:
+    elif "exon7" in filename:
+        print(f"✓ Exon type determined: exon7 (from filename)")
         return "exon7"
     else:
+        print(
+            f"! Cannot determine exon type from filename. Will fall back to position-based method"
+        )
+        # Fallback to the old method using position
         return None
 
 
-def generate_abo_phenotype_report(positions, output_file, ref_length):
-    """Generate the ABO phenotype report based on the reference length."""
-    # Check if we have any positions at all
-    if not positions:
-        # Handle empty or no alignment case
-        with open(output_file, "w") as f:
-            f.write("No reads aligned\n")
-        return
+def generate_exon6_report(positions, output_file, numreads=0, covbases=0):
+    """Generate report specifically for exon 6."""
+    print(f"\n[{datetime.datetime.now()}] Generating exon 6 report")
+    print(f"Output file: {output_file}")
+    print(f"Positions to process: {list(positions.keys())}")
+    print(f"Coverage information: numreads={numreads}, covbases={covbases}")
 
-    exon_type = determine_exon_from_reference_length(ref_length)
-
-    # Check if we can determine exon type
-    if not exon_type:
-        print(f"Warning: Cannot determine exon type from reference length {ref_length}")
-        # Try to auto-detect based on diagnostic positions present
-        if 22 in positions and not any(
-            pos in positions for pos in [422, 428, 429, 431]
-        ):
-            exon_type = "exon6"
-        elif (
-            any(pos in positions for pos in [422, 428, 429, 431])
-            and 22 not in positions
-        ):
-            exon_type = "exon7"
-        else:
-            print("Warning: Cannot reliably determine exon type from positions")
-            # Create empty file with message for negative controls
-            with open(output_file, "w") as f:
-                f.write("No reads aligned\n")
-            return
-
-    # Check if we have any of the diagnostic positions for the determined exon
-    if exon_type == "exon6" and 22 not in positions:
-        print("Warning: Exon 6 identified but position 22 not found in data")
-        with open(output_file, "w") as f:
-            f.write("No reads aligned\n")
-        return
-
-    if exon_type == "exon7" and not any(
-        pos in positions for pos in [422, 428, 429, 431]
-    ):
-        print("Warning: Exon 7 identified but no diagnostic positions found in data")
-        with open(output_file, "w") as f:
-            f.write("No reads aligned\n")
-        return
+    coverage_display = f" (reads={numreads}, cov={covbases})" if numreads > 0 else ""
 
     try:
+        print(f"Opening output file for writing: {output_file}")
         with open(output_file, "w") as f:
-            if exon_type == "exon6":
-                # Write Exon 6 section
-                f.write("Exon 6:\n")
+            print("Writing header to file...")
+            f.write("Exon 6:\n")
 
-                # Write Exon 6 position 22 if available
-                if 22 in positions:
-                    pos_data = positions[22]
-                    f.write("\nExon 6 position(1-based): 22\n")
-                    f.write("G nucleotide: A or B blood type.\n")
-                    f.write("Deletion    : O blood type(O1).")
+            # Primary ABO marker - position 22 (c.261)
+            if 22 in positions:
+                print("Position 22 data found in file")
+                pos_data = positions[22]
+                print(f"Position 22 data: {pos_data}")
 
-                    # Print base polymorphisms
+                print("Writing position information to file...")
+                f.write("\nExon 6 position(1-based): 22\n")
+
+                print("Writing interpretation text...")
+                # Simple interpretation text
+                f.write("G nucleotide: A or B blood type.\n")
+                f.write("Deletion    : O blood type(O1).\n")
+
+                print("Writing raw data to file...")
+                # Raw data output - exactly as from input file
+                f.write(
+                    f"(1-based) Position:22, Reference Base={pos_data['ref_base']}\n"
+                )
+                f.write(
+                    f"Aligned Read Count:{pos_data['coverage']}{coverage_display}\n"
+                )
+                f.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
+                f.write(
+                    f"{format_number(pos_data['match_percent'])}\t"
+                    f"{format_number(pos_data['mismatch_percent'])}\t"
+                    f"{format_number(pos_data['insertion_percent'])}\t"
+                    f"{format_number(pos_data['deletion_percent'])}\t"
+                    f"{format_number(pos_data['A_percent'])}\t"
+                    f"{format_number(pos_data['G_percent'])}\t"
+                    f"{format_number(pos_data['C_percent'])}\t"
+                    f"{format_number(pos_data['T_percent'])}\n"
+                )
+                print("Finished writing position 22 data")
+            else:
+                print("! Position 22 data not found in positions dictionary")
+                
+            # A subtype positions in exon 6
+            # Map CDS positions to exon positions: c.266 → 27, c.268 → 29, c.297 → 58
+            a_subtype_positions = [27, 29, 58]
+            available_subtype_positions = sorted(
+                [p for p in a_subtype_positions if p in positions]
+            )
+            
+            if available_subtype_positions:
+                print("Writing A subtype header...")
+                f.write("\n# -------- A subtypes variants in exon 6 --------\n")
+                
+                for pos in available_subtype_positions:
+                    print(f"Processing A subtype position {pos}")
+                    pos_data = positions[pos]
+                    
+                    f.write(f"\nExon 6 position(1-based): {pos}\n")
+                    
+                    # Add interpretations for A subtype markers
+                    if pos == 27:  # c.266C>T
+                        f.write("C nucleotide: A1 or A3 subtype.\n")
+                        f.write("T nucleotide: A2 subtype.\n")
+                    elif pos == 29:  # c.268T>C
+                        f.write("T nucleotide: A1 or A3 subtype.\n")
+                        f.write("C nucleotide: A2 subtype.\n")
+                    elif pos == 58:  # c.297A>G
+                        f.write("A nucleotide: A1 or A3 subtype.\n")
+                        f.write("G nucleotide: A2 subtype.\n")
+                        
+                    # Raw data output
                     f.write(
-                        f"\n(1-based) Position:22, Reference Base={pos_data['ref_base']}\n"
+                        f"(1-based) Position:{pos}, Reference Base={pos_data['ref_base']}\n"
                     )
-                    f.write(f"Aligned Read Count:{pos_data['coverage']}\n")
+                    f.write(
+                        f"Aligned Read Count:{pos_data['coverage']}{coverage_display}\n"
+                    )
                     f.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
                     f.write(
-                        f"{round(pos_data['match_percent'])}\t"
-                        f"{round(pos_data['mismatch_percent'])}\t"
-                        f"{round(pos_data['insertion_percent'])}\t"
-                        f"{round(pos_data['deletion_percent'])}\t"
-                        f"{round(pos_data['A_percent'])}\t"
-                        f"{round(pos_data['G_percent'])}\t"
-                        f"{round(pos_data['C_percent'])}\t"
-                        f"{round(pos_data['T_percent'])}\t\n"
+                        f"{format_number(pos_data['match_percent'])}\t"
+                        f"{format_number(pos_data['mismatch_percent'])}\t"
+                        f"{format_number(pos_data['insertion_percent'])}\t"
+                        f"{format_number(pos_data['deletion_percent'])}\t"
+                        f"{format_number(pos_data['A_percent'])}\t"
+                        f"{format_number(pos_data['G_percent'])}\t"
+                        f"{format_number(pos_data['C_percent'])}\t"
+                        f"{format_number(pos_data['T_percent'])}\n"
                     )
 
-            elif exon_type == "exon7":
-                # Write Exon 7 section
-                f.write("Exon 7:\n")
-
-                # Write each Exon 7 position in order
-                for pos in [422, 428, 429, 431]:
-                    if pos in positions:
-                        pos_data = positions[pos]
-                        f.write(f"\nExon 7 position(1-based): {pos}\n")
-
-                        # Write the interpretation based on position
-                        if pos == 422:
-                            f.write("A nucleotide: B blood type.\n")
-                            f.write("C nucelotide: A or O blood type.")
-                        elif pos == 428:
-                            f.write("A nucleotide: O blood type (O2).\n")
-                            f.write("G nucelotide: A or B or O blood type.")
-                        elif pos == 429:
-                            f.write("G nucleotide: A or O blood type.\n")
-                            f.write("C nucelotide: B blood type.")
-                        elif pos == 431:
-                            f.write("G nucleotide: O blood type.\n")
-                            f.write("T nucelotide: A or B or O blood type.")
-
-                        # Print base polymorphisms
-                        f.write(
-                            f"\n(1-based) Position:{pos}, Reference Base={pos_data['ref_base']}\n"
-                        )
-                        f.write(f"Aligned Read Count:{pos_data['coverage']}\n")
-                        f.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
-                        f.write(
-                            f"{round(pos_data['match_percent'])}\t"
-                            f"{round(pos_data['mismatch_percent'])}\t"
-                            f"{round(pos_data['insertion_percent'])}\t"
-                            f"{round(pos_data['deletion_percent'])}\t"
-                            f"{round(pos_data['A_percent'])}\t"
-                            f"{round(pos_data['G_percent'])}\t"
-                            f"{round(pos_data['C_percent'])}\t"
-                            f"{round(pos_data['T_percent'])}\t\n"
-                        )
+        print(f"✓ Exon 6 report successfully written to {output_file}")
 
     except Exception as e:
-        print(f"Error generating ABO phenotype report: {str(e)}", file=sys.stderr)
-        # Still create the file with the error message
+        print(f"Error generating Exon 6 report: {str(e)}", file=sys.stderr)
+        print(
+            f"Exception details: {type(e).__name__} at line {sys.exc_info()[2].tb_lineno}"
+        )
+        # Create empty file on any error
+        print(f"Creating empty file due to error")
+        open(output_file, "w").close()
+        print(f"Empty file created due to error: {output_file}")
+
+
+def generate_exon7_report(positions, output_file, numreads=0, covbases=0):
+    """Generate report specifically for exon 7."""
+    print(f"\n[{datetime.datetime.now()}] Generating exon 7 report")
+    print(f"Output file: {output_file}")
+    print(f"Positions to process: {list(positions.keys())}")
+    print(f"Coverage information: numreads={numreads}, covbases={covbases}")
+
+    # Create coverage display string if coverage info is available
+    coverage_display = f" (reads={numreads}, cov={covbases})" if numreads > 0 else ""
+    print(f"Coverage display string: '{coverage_display}'")
+
+    try:
+        print(f"Opening output file for writing: {output_file}")
         with open(output_file, "w") as f:
-            f.write("No reads aligned\n")
+            print("Writing header to file...")
+            f.write("Exon 7:\n")
+
+            # Process primary diagnostic positions if available
+            primary_positions = [422, 428, 429, 431]
+            print(f"Processing primary diagnostic positions: {primary_positions}")
+
+            # Check if any primary positions exist
+            primary_exists = any(pos in positions for pos in primary_positions)
+            if primary_exists:
+                print("Found primary diagnostic positions in data")
+            else:
+                print("No primary diagnostic positions found in exon 7 data")
+
+            for pos in primary_positions:
+                if pos in positions:
+                    print(f"Processing primary position {pos}")
+                    pos_data = positions[pos]
+                    print(f"Position {pos} data: {pos_data}")
+
+                    f.write(f"\nExon 7 position(1-based): {pos}\n")
+
+                    print(f"Writing interpretation text for position {pos}...")
+                    # Write the fixed interpretation text for each position
+                    if pos == 422:
+                        f.write("A nucleotide: B blood type.\n")
+                        f.write("C nucleotide: A or O blood type.\n")
+                    elif pos == 428:
+                        f.write("A nucleotide: O blood type (O2).\n")
+                        f.write("G nucleotide: A or B or O blood type.\n")
+                    elif pos == 429:
+                        f.write("G nucleotide: A or O blood type.\n")
+                        f.write("C nucleotide: B blood type.\n")
+                    elif pos == 431:
+                        f.write("G nucleotide: O blood type (O3).\n")
+                        f.write("A nucleotide: O blood type (O4).\n")
+                        f.write("T nucleotide: A or B or O blood type.\n")
+
+                    print(f"Writing raw data for position {pos}...")
+                    # Raw data output - exactly as from input file
+                    f.write(
+                        f"(1-based) Position:{pos}, Reference Base={pos_data['ref_base']}\n"
+                    )
+                    f.write(
+                        f"Aligned Read Count:{pos_data['coverage']}{coverage_display}\n"
+                    )
+                    f.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
+                    f.write(
+                        f"{format_number(pos_data['match_percent'])}\t"
+                        f"{format_number(pos_data['mismatch_percent'])}\t"
+                        f"{format_number(pos_data['insertion_percent'])}\t"
+                        f"{format_number(pos_data['deletion_percent'])}\t"
+                        f"{format_number(pos_data['A_percent'])}\t"
+                        f"{format_number(pos_data['G_percent'])}\t"
+                        f"{format_number(pos_data['C_percent'])}\t"
+                        f"{format_number(pos_data['T_percent'])}\n"
+                    )
+                else:
+                    print(f"Primary position {pos} not found in data")
+
+            # Process A subtype positions only (no B subtypes)
+            a_subtype_positions = [467, 539, 745, 820, 1054, 1061]
+            print(f"Processing A subtype positions: {a_subtype_positions}")
+
+            available_subtype_positions = sorted(
+                [p for p in a_subtype_positions if p in positions]
+            )
+            print(f"Available A subtype positions: {available_subtype_positions}")
+
+            if available_subtype_positions:
+                print("Writing subtype variant header...")
+                f.write("\n# -------- A subtypes variants --------\n")
+
+                for pos in available_subtype_positions:
+                    print(f"Processing A subtype position {pos}")
+                    pos_data = positions[pos]
+                    print(f"Position {pos} data: {pos_data}")
+
+                    f.write(f"\nExon 7 position(1-based): {pos}\n")
+
+                    print(f"Writing interpretation text for position {pos}...")
+                    # Add interpretation for A subtype positions only
+                    if pos == 467:
+                        f.write("C nucleotide: A1 subtype.\n")
+                        f.write("T nucleotide: Possible A2 or A3 subtype.\n")
+                    elif pos == 539:
+                        f.write("G nucleotide: A1 or A2 subtype.\n")
+                        f.write("A nucleotide: A3 subtype.\n")
+                    elif pos == 745:
+                        f.write("C nucleotide: A1 or A2 subtype.\n")
+                        f.write("T nucleotide: A3 subtype.\n")
+                    elif pos == 820:
+                        f.write("G nucleotide: A1 or A2 subtype.\n")
+                        f.write("A nucleotide: A3 subtype.\n")
+                    elif pos == 1054:
+                        f.write("C nucleotide: A1 or A3 subtype.\n")
+                        f.write("T nucleotide: A2 subtype.\n")
+                    elif pos == 1061:
+                        f.write("C nucleotide: A1 subtype.\n")
+                        f.write("Deletion: A2 or A3 subtype (weaker expression).\n")
+
+                    print(f"Writing raw data for position {pos}...")
+                    # Raw data output - exactly as from input file
+                    f.write(
+                        f"(1-based) Position:{pos}, Reference Base={pos_data['ref_base']}\n"
+                    )
+                    f.write(
+                        f"Aligned Read Count:{pos_data['coverage']}{coverage_display}\n"
+                    )
+                    f.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
+                    f.write(
+                        f"{format_number(pos_data['match_percent'])}\t"
+                        f"{format_number(pos_data['mismatch_percent'])}\t"
+                        f"{format_number(pos_data['insertion_percent'])}\t"
+                        f"{format_number(pos_data['deletion_percent'])}\t"
+                        f"{format_number(pos_data['A_percent'])}\t"
+                        f"{format_number(pos_data['G_percent'])}\t"
+                        f"{format_number(pos_data['C_percent'])}\t"
+                        f"{format_number(pos_data['T_percent'])}\n"
+                    )
+            else:
+                print("No A subtype positions found in data")
+
+        print(f"✓ Exon 7 report successfully written to {output_file}")
+
+    except Exception as e:
+        print(f"Error generating Exon 7 report: {str(e)}", file=sys.stderr)
+        print(
+            f"Exception details: {type(e).__name__} at line {sys.exc_info()[2].tb_lineno}"
+        )
+        # Create empty file on any error
+        print(f"Creating empty file due to error")
+        open(output_file, "w").close()
+        print(f"Empty file created due to error: {output_file}")
 
 
 def main():
+    """Main function to process nucleotide frequencies."""
+    print(f"\n[{datetime.datetime.now()}] Starting main function")
+    print("=" * 60)
+
+    print("Parsing command line arguments...")
     parser = argparse.ArgumentParser(
-        description="Generate ABO phenotype report from nucleotide frequencies."
+        description="Extract metrics for ABO typing positions from nucleotide frequency data."
     )
     parser.add_argument(
-        "-i", "--input", required=True, help="Input nucleotide frequency file"
+        "-i",
+        "--input",
+        required=True,
+        help="Input samtools mpileup nucleotide variants metrics",
     )
     parser.add_argument(
-        "-o",
-        "--output",
-        default="ABOPhenotype.txt",
-        help="Output ABO phenotype report file (default: ABOPhenotype.txt)",
+        "-o", "--output", required=True, help="Output filename for ABO phenotype report"
     )
+    parser.add_argument(
+        "-c", "--coverage", help="Input samtools coverage statistics file"
+    )
+    parser.add_argument(
+        "-e",
+        "--exon",
+        choices=["exon6", "exon7"],
+        help="Explicitly specify which exon data is being processed",
+    )
+
     args = parser.parse_args()
+    print(f"Input file: {args.input}")
+    print(f"Output file: {args.output}")
+    print(f"Coverage file: {args.coverage if args.coverage else 'Not provided'}")
+    print(f"Exon type specified: {args.exon if args.exon else 'Not specified'}")
 
     try:
-        # Try to read nucleotide frequencies and determine max position
-        positions, max_position = read_nucleotide_frequencies(args.input)
+        # Read nucleotide frequencies and determine max position
+        print("\nStep 1: Reading nucleotide frequencies...")
+        positions, max_position, empty_file = read_nucleotide_frequencies(args.input)
+        print(f"Read {len(positions)} positions, max position: {max_position}")
+        print(f"Empty file flag: {empty_file}")
 
-        # Check if we have any data
-        if not positions or max_position == 0:
-            print("Warning: No position data found in input file")
-            with open(args.output, "w") as f:
-                f.write("No reads aligned\n")
-            print(f"Empty report written to: {args.output}")
-            return
+        # If input file was empty or we have no relevant positions, create an empty output file
+        if empty_file or not positions:
+            print("No data available. Creating empty file for tracking failures.")
+            # Create a completely empty file
+            open(args.output, "w").close()
+            print(f"Empty file written to: {args.output}")
+            return  # Exit function early
 
-        print(f"Detected maximum position: {max_position}")
+        # Read coverage file if provided
+        numreads = 0
+        covbases = 0
 
-        # Generate the ABO phenotype report using the max position as reference length
-        generate_abo_phenotype_report(positions, args.output, max_position)
+        if args.coverage:
+            print("\nStep 2: Reading coverage information...")
+            coverage_info = read_coverage_file(args.coverage)
+            print(f"Coverage info contains {len(coverage_info)} entries")
 
-        print(f"ABO phenotype report written to: {args.output}")
+            if coverage_info:
+                print("Extracting coverage data")
+                numreads = coverage_info.get("numreads", 0)
+                covbases = coverage_info.get("covbases", 0)
+                print(
+                    f"Coverage data extracted: numreads={numreads}, covbases={covbases}"
+                )
+
+                # Update each position's coverage with actual read count
+                print(
+                    f"Updating coverage information for {len(positions)} positions..."
+                )
+                for pos in positions:
+                    positions[pos]["coverage"] = numreads
+                print("Coverage information updated for all positions")
+            else:
+                print("No coverage information found in coverage file")
+        else:
+            print("No coverage file provided, using default values")
+
+        # Determine exon type - first check explicit argument, then filename, finally fallback to position
+        print("\nStep 3: Determining exon type...")
+        exon_type = args.exon
+        if exon_type:
+            print(f"Using explicitly specified exon type: {exon_type}")
+        else:
+            print(
+                "Exon type not explicitly specified, trying to determine from filename..."
+            )
+            exon_type = determine_exon_type(args.input)
+            if not exon_type:
+                print("Exon type could not be determined from filename")
+                print("Falling back to position-based determination...")
+                # Fallback to position-based determination
+                exon_type = "exon7" if max_position > 135 else "exon6"
+                print(
+                    f"Exon type determined by position: {exon_type} (max position = {max_position})"
+                )
+
+        print(f"\nProcessing {exon_type} data")
+
+        # Filter out positions not relevant to the detected exon type
+        print("\nStep 4: Filtering positions relevant to the exon type...")
+        filtered_positions = {}
+
+        if exon_type == "exon6":
+            print("Processing as exon6 - position 22 and A subtype positions")
+            # For exon6, keep position 22 and A subtype positions if they exist
+            exon6_positions = [22, 27, 29, 58]  # Added A subtype positions
+            for pos in exon6_positions:
+                if pos in positions:
+                    filtered_positions[pos] = positions[pos]
+                    print(f"Position {pos} found and kept for processing")
+                else:
+                    print(f"Position {pos} not found in data")
+            
+            # Generate exon 6 report
+            print("\nStep 5: Generating exon 6 report...")
+            generate_exon6_report(filtered_positions, args.output, numreads, covbases)
+            
+        else:  # exon7
+            print("Processing as exon7")
+            # For exon7, exclude position 22 and only keep exon7 positions
+            # Using only the specified A subtype positions
+            exon7_positions = [422, 428, 429, 431, 467, 539, 745, 820, 1054, 1061]
+            print(f"Relevant exon7 positions: {exon7_positions}")
+
+            for pos in exon7_positions:
+                if pos in positions:
+                    filtered_positions[pos] = positions[pos]
+                    print(f"Position {pos} found and kept for processing")
+                else:
+                    print(f"Position {pos} not found in data")
+
+            print(f"Filtered to {len(filtered_positions)} relevant positions for exon7")
+
+            # Generate exon 7 report
+            print("\nStep 5: Generating exon 7 report...")
+            generate_exon7_report(filtered_positions, args.output, numreads, covbases)
+
+        print(f"\n✓ ABO phenotype metrics written to: {args.output}")
 
     except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
-        # Create empty file with message on any error
-        with open(args.output, "w") as f:
-            f.write("No reads aligned\n")
-        print(f"Empty report written to: {args.output}")
+        print(f"\n! ERROR: {str(e)}", file=sys.stderr)
+        print(
+            f"! Exception details: {type(e).__name__} at line {sys.exc_info()[2].tb_lineno}"
+        )
+        # Create empty file with no message on any error
+        print("Creating empty output file due to error")
+        open(args.output, "w").close()
+        print(f"Empty file written to: {args.output}")
 
+    print(f"\n[{datetime.datetime.now()}] Main function completed")
+    print("=" * 60)
 
 if __name__ == "__main__":
-    main()
+    try:
+        print(f"Script execution started at: {datetime.datetime.now()}")
+        main()
+        print(f"Script execution completed successfully at: {datetime.datetime.now()}")
+    except Exception as e:
+        print(f"! CRITICAL ERROR: Unhandled exception: {str(e)}")
+        print(
+            f"! Exception details: {type(e).__name__} at line {sys.exc_info()[2].tb_lineno}"
+        )
+        sys.exit(1)

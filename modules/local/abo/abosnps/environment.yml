@@ -1,7 +1,12 @@
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+name: getabosnps
 channels:
   - conda-forge
   - bioconda
+  - defaults
 dependencies:
-  - "YOUR-TOOL-HERE"
+  - python=3.9
+  - pandas=2.2.3
+  - numpy
+  - pip
+  - pip:
+      - json5 # A JSON pa

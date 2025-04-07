@@ -6,7 +6,9 @@ workflow PREDICTABOPHENOTYPE {
 
     take:
     ch_variants_freq_e6 // channel: [ val(meta), [ freq ] ]
+    ch_bam_coverage_e6  // channel: [ val(meta), [ cov ] ]
     ch_variants_freq_e7 // channel: [ val(meta), [ freq ] ]
+    ch_bam_coverage_e7  // channel: [ val(meta), [ cov ] ]
 
     main:
 
@@ -16,8 +18,8 @@ workflow PREDICTABOPHENOTYPE {
     // ch_variants_freq_e6.view { meta, freq -> "E6: meta=$meta, freq=$freq" }
     // ch_variants_freq_e7.view { meta, freq -> "E7: meta=$meta, freq=$freq" }
 
-    SNPS_EXON6 ( ch_variants_freq_e6 )
-    SNPS_EXON7 ( ch_variants_freq_e7 )
+    SNPS_EXON6 ( ch_variants_freq_e6.join(ch_bam_coverage_e6), "exon6")
+    SNPS_EXON7 ( ch_variants_freq_e7.join(ch_bam_coverage_e7), "exon7")
 
     ch_versions = ch_versions.mix(SNPS_EXON6.out.versions.first())
     ch_versions = ch_versions.mix(SNPS_EXON7.out.versions.first())
