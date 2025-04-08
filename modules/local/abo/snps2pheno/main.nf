@@ -8,7 +8,13 @@ process ABOSNPS2PHENO {
         'biocontainers/python:3.9--1' }"
 
     publishDir "${params.outdir}", mode: 'copy'
-
+    
+    /*
+    changes to python script not processed properly on re-run
+    Disable caching for the process to repeat every time
+    */
+    cache false
+    
     input:
     tuple path(sample_dir), val(metas), path(files)
 

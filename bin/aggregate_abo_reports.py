@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 import os
 import re
 import sys
@@ -32,6 +33,7 @@ print(
 
 
 class ABOReportParser:
+
     def __init__(self, input_dir):
         """
         Initialize the ABOReportParser.
@@ -48,59 +50,54 @@ class ABOReportParser:
         """
         Define the column headers for all exon positions.
         """
-        # Basic ABO typing positions
-        exon6 = ["Exon6_pos22"] * 10  # c.261 position - del is ABO*O
+        # Primary ABO typing variant in exon 6
+        exon6 = ["Exon6_pos22"] * 10  # c.261
 
-        # A subtype positions in exon 6
-        exon6_27 = ["Exon6_pos27"] * 10  # c.266 position - A1/A3 vs A2
-        exon6_29 = ["Exon6_pos29"] * 10  # c.268 position - A1/A3 vs A2
-        exon6_58 = ["Exon6_pos58"] * 10  # c.297 position - A1/A3 vs A2
+        # ABO*A2 subtype positions in exon 6
+        exon6_27 = ["Exon6_pos27"] * 10  # c.266
+        exon6_29 = ["Exon6_pos29"] * 10  # c.268
+        exon6_58 = ["Exon6_pos58"] * 10  # c.297
 
-        # Primary diagnostic positions in exon 7
-        exon7_422 = ["Exon7_pos422"] * 10
-        exon7_428 = ["Exon7_pos428"] * 10
-        exon7_429 = ["Exon7_pos429"] * 10
-        exon7_431 = ["Exon7_pos431"] * 10
+        # Primary variants in exon 7
+        exon7_422 = ["Exon7_pos422"] * 10  # c.796C>A
+        exon7_428 = ["Exon7_pos428"] * 10  # c.802G>A / c.802G>C
+        exon7_429 = ["Exon7_pos429"] * 10  # c.803G>C / c.803G>T
+        exon7_431 = ["Exon7_pos431"] * 10  # c.804dupG
 
         # A subtype positions in exon 7
-        exon7_467 = ["Exon7_pos467"] * 10  # A1 vs A2/A3
-        exon7_539 = ["Exon7_pos539"] * 10  # A1/A2 vs A3
-        exon7_646 = ["Exon7_pos646"] * 10  # A1 vs A2
-        exon7_681 = ["Exon7_pos681"] * 10  # A1/A2 vs A3
-        exon7_745 = ["Exon7_pos745"] * 10  # A1/A2 vs A3
-        exon7_820 = ["Exon7_pos820"] * 10  # A1/A2 vs A3
-        exon7_1054 = ["Exon7_pos1054"] * 10  # A1/A3 vs A2
-        exon7_1061 = ["Exon7_pos1061"] * 10  # A1 vs A2/A3
+        exon7_93 = ["Exon7_pos93"] * 10  # c.467C>T
+        exon7_165 = ["Exon7_pos165"] * 10  # c.539G>C / c.539G>A
+        exon7_272 = ["Exon7_pos272"] * 10  # c.646
+        exon7_307 = ["Exon7_pos307"] * 10  # c.681
+        exon7_371 = ["Exon7_pos371"] * 10  # c.745C>T
+        exon7_446 = ["Exon7_pos446"] * 10  # c.820G>A
+        exon7_680 = ["Exon7_pos680"] * 10  # c.1054C>T
+        exon7_687 = ["Exon7_pos687"] * 10  # c.1061delC
 
         # Ensure all arrays have the same length
         max_len = 10  # All arrays are initialized with 10 elements
 
-        # Construct header columns
         header_cols = (
-            ["", ""]  # Barcode and Sequencing_ID
+            ["", ""]
             + exon6
-            # Add exon 6 A subtype positions
             + exon6_27
             + exon6_29
             + exon6_58
-            # Primary positions
             + exon7_422
             + exon7_428
             + exon7_429
             + exon7_431
-            # All A subtype positions
-            + exon7_467
-            + exon7_539
-            + exon7_646
-            + exon7_681
-            + exon7_745
-            + exon7_820
-            + exon7_1054
-            + exon7_1061
-            + ["", "", "", ""]  # Result columns
+            + exon7_93
+            + exon7_165
+            + exon7_272
+            + exon7_307
+            + exon7_371
+            + exon7_446
+            + exon7_680
+            + exon7_687
+            + ["", "", "", ""]
         )
 
-        # Construct header rows
         column_metrics = [
             "#Reads",
             "Mat",
@@ -115,11 +112,10 @@ class ABOReportParser:
         ]
         header_rows = (
             ["Barcode", "Sequencing_ID"]
-            + column_metrics * 16  # 16 positions total (4 exon6 + 12 exon7)
+            + column_metrics * 16
             + ["Phenotype", "Genotype", "ExtendedGenotype", "Reliability"]
         )
 
-        # Create MultiIndex for DataFrame columns
         self.columns = pd.MultiIndex.from_arrays([header_cols, header_rows])
 
     def parse_exon7(self, filename):
@@ -130,7 +126,6 @@ class ABOReportParser:
             with open(filename, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
-            # Lists to store data for each position
             positions = []
             counts = []
             mat_values = []
@@ -142,25 +137,21 @@ class ABOReportParser:
             c_values = []
             t_values = []
 
-            # Process file line by line
             i = 0
             while i < len(lines):
                 line = lines[i].strip()
 
-                # Find position markers
                 if "Exon 7 position(1-based):" in line:
                     pos_match = re.search(r":\s*(\d+)", line)
                     if pos_match:
                         pos = int(pos_match.group(1))
 
-                        # Look for read count (typically 4 lines after position)
                         for j in range(i, min(i + 10, len(lines))):
                             if "Aligned Read Count:" in lines[j]:
                                 count_match = re.search(r":\s*(\d+)", lines[j])
                                 if count_match:
                                     count = int(count_match.group(1))
 
-                                    # Look for stats line (typically 2 lines after read count)
                                     stats_idx = j + 2
                                     if (
                                         stats_idx < len(lines)
@@ -172,7 +163,6 @@ class ABOReportParser:
                                                 float(x) for x in stats
                                             ]
 
-                                            # Store all values
                                             positions.append(pos)
                                             counts.append(count)
                                             mat_values.append(mat)
@@ -184,11 +174,9 @@ class ABOReportParser:
                                             c_values.append(c)
                                             t_values.append(t)
 
-                                            # Skip to next position
                                             break
                 i += 1
 
-            # Create DataFrame
             df = pd.DataFrame(
                 {
                     "Exon": ["7"] * len(positions),
@@ -206,25 +194,27 @@ class ABOReportParser:
             )
 
             # Make sure all needed positions are in the DataFrame
-            # Primary positions + all A subtype positions
+            # Primary positions + all subtype positions
+            # pos. exon7= exonic(CDS) 422(796),428(802),429(803),431(805),93(467),165(539),687(1061)
+            # Additional exonic(CDS) 272(646), 307(681), 371(745), 446(820), 680(1054)
+            # [93, 165, 272, 307, 371, 446, 680, 687]
             all_positions = [
                 422,
                 428,
                 429,
-                431,  # Primary positions
-                467,
-                539,
-                646,
-                681,
-                745,
-                820,
-                1054,
-                1061,  # A subtypes
+                431,  # Primary
+                93,
+                165,
+                272,
+                307,
+                371,
+                446,
+                680,
+                687,  # A1/A2/A3 subtypes
             ]
 
             for pos in all_positions:
                 if pos not in df["Position"].values:
-                    # Add empty row for missing position
                     df = pd.concat(
                         [
                             df,
@@ -247,13 +237,11 @@ class ABOReportParser:
                         ignore_index=True,
                     )
 
-            # Sort by position
             df = df.sort_values("Position").reset_index(drop=True)
 
-            # AFTER adding all positions, apply get_type
             df["Type"] = df.apply(
                 lambda row: self.get_type(
-                    row["Position"], row["A"], row["G"], row["C"], row["T"]
+                    row["Position"], row["A"], row["G"], row["C"], row["T"], row["Del"]
                 ),
                 axis=1,
             )
@@ -262,7 +250,6 @@ class ABOReportParser:
 
         except Exception as e:
             print(f"Error parsing exon 7 file {filename}: {str(e)}")
-            # Return empty DataFrame with all required positions
             empty_df = pd.DataFrame(
                 columns=[
                     "Exon",
@@ -280,20 +267,19 @@ class ABOReportParser:
                 ]
             )
 
-            # Use the same all_positions list as above
             for pos in [
                 422,
                 428,
                 429,
-                431,  # Primary positions
-                467,
-                539,
-                646,
-                681,
-                745,
-                820,
-                1054,
-                1061,  # A subtypes
+                431,
+                93,
+                165,
+                272,
+                307,
+                371,
+                446,
+                680,
+                687,
             ]:
                 empty_df = pd.concat(
                     [
@@ -326,7 +312,6 @@ class ABOReportParser:
             with open(filename, "r", encoding="utf-8") as f:
                 lines = f.readlines()
 
-            # Lists to store data for each position
             positions = []
             counts = []
             mat_values = []
@@ -338,25 +323,21 @@ class ABOReportParser:
             c_values = []
             t_values = []
 
-            # Process file line by line
             i = 0
             while i < len(lines):
                 line = lines[i].strip()
 
-                # Find position markers
                 if "Exon 6 position(1-based):" in line:
                     pos_match = re.search(r":\s*(\d+)", line)
                     if pos_match:
                         pos = int(pos_match.group(1))
 
-                        # Look for read count (typically 4 lines after position)
                         for j in range(i, min(i + 10, len(lines))):
                             if "Aligned Read Count:" in lines[j]:
                                 count_match = re.search(r":\s*(\d+)", lines[j])
                                 if count_match:
                                     count = int(count_match.group(1))
 
-                                    # Look for stats line (typically 2 lines after read count)
                                     stats_idx = j + 2
                                     if (
                                         stats_idx < len(lines)
@@ -368,7 +349,6 @@ class ABOReportParser:
                                                 float(x) for x in stats
                                             ]
 
-                                            # Store all values
                                             positions.append(pos)
                                             counts.append(count)
                                             mat_values.append(mat)
@@ -380,11 +360,9 @@ class ABOReportParser:
                                             c_values.append(c)
                                             t_values.append(t)
 
-                                            # Skip to next position
                                             break
                 i += 1
 
-            # Create DataFrame
             df = pd.DataFrame(
                 {
                     "Exon": ["6"] * len(positions),
@@ -401,12 +379,10 @@ class ABOReportParser:
                 }
             )
 
-            # Make sure all needed positions are in the DataFrame
-            all_positions = [22, 27, 29, 58]  # All exon 6 positions
+            all_positions = [22, 27, 29, 58]
 
             for pos in all_positions:
                 if pos not in df["Position"].values:
-                    # Add empty row for missing position
                     df = pd.concat(
                         [
                             df,
@@ -429,10 +405,8 @@ class ABOReportParser:
                         ignore_index=True,
                     )
 
-            # Sort by position
             df = df.sort_values("Position").reset_index(drop=True)
 
-            # Apply type determination for each position
             df["Type"] = df.apply(
                 lambda row: self.get_type_exon6(
                     row["Position"], row["A"], row["G"], row["C"], row["T"], row["Del"]
@@ -444,7 +418,6 @@ class ABOReportParser:
 
         except Exception as e:
             print(f"Error parsing exon 6: {str(e)}")
-            # Return empty DataFrame with all required positions
             empty_df = pd.DataFrame(
                 columns=[
                     "Exon",
@@ -462,7 +435,6 @@ class ABOReportParser:
                 ]
             )
 
-            # Add all required positions
             for pos in [22, 27, 29, 58]:
                 empty_df = pd.concat(
                     [
@@ -497,8 +469,7 @@ class ABOReportParser:
             pos: The position number
             a, g, c, t, dele: Nucleotide and deletion percentages
         """
-        if pos == 22:
-            # Original position 22 typing logic
+        if pos == 22:  # c.261
             if g >= 80 and g > dele:
                 return "A or B or O"
             elif dele >= 80 and dele > g:
@@ -508,29 +479,29 @@ class ABOReportParser:
             elif 20 < dele < 80 and 20 < g < 80:
                 return "O1 and (A or B or O)"
 
-        elif pos == 27:  # c.266 - A1/A3 vs A2
+        elif pos == 27:  # c.266
             if c >= 80:
                 return "A1 or A3"
             elif t >= 80:
                 return "A2"
             elif 20 < c < 80 and 20 < t < 80:
-                return "A1/A3 and A2"
+                return "A"
 
-        elif pos == 29:  # c.268 - A1/A3 vs A2
+        elif pos == 29:  # c.268
             if t >= 80:
                 return "A1 or A3"
             elif c >= 80:
                 return "A2"
             elif 20 < t < 80 and 20 < c < 80:
-                return "A1/A3 and A2"
+                return "A"
 
-        elif pos == 58:  # c.297 - A1/A3 vs A2
+        elif pos == 58:  # c.297
             if a >= 80:
                 return "A1 or A3"
             elif g >= 80:
                 return "A2"
             elif 20 < a < 80 and 20 < g < 80:
-                return "A1/A3 and A2"
+                return "A"
 
         return ""
 
@@ -545,15 +516,12 @@ class ABOReportParser:
             Updated DataFrame with added phenotype and genotype columns
         """
         try:
-            # Extract type information for all positions
             positions = {
-                # Primary positions
                 "exon6_22": (
                     df.loc[0, ("Exon6_pos22", "Type")]
                     if ("Exon6_pos22", "Type") in df.columns
                     else ""
                 ),
-                # A subtype positions in exon 6
                 "exon6_27": (
                     df.loc[0, ("Exon6_pos27", "Type")]
                     if ("Exon6_pos27", "Type") in df.columns
@@ -569,71 +537,68 @@ class ABOReportParser:
                     if ("Exon6_pos58", "Type") in df.columns
                     else ""
                 ),
-                # Primary positions in exon 7
-                "pos422": (
+                "exon7_422": (
                     df.loc[0, ("Exon7_pos422", "Type")]
                     if ("Exon7_pos422", "Type") in df.columns
                     else ""
                 ),
-                "pos428": (
+                "exon7_428": (
                     df.loc[0, ("Exon7_pos428", "Type")]
                     if ("Exon7_pos428", "Type") in df.columns
                     else ""
                 ),
-                "pos429": (
+                "exon7_429": (
                     df.loc[0, ("Exon7_pos429", "Type")]
                     if ("Exon7_pos429", "Type") in df.columns
                     else ""
                 ),
-                "pos431": (
+                "exon7_431": (
                     df.loc[0, ("Exon7_pos431", "Type")]
                     if ("Exon7_pos431", "Type") in df.columns
                     else ""
                 ),
-                # A subtype positions in exon 7
-                "pos467": (
-                    df.loc[0, ("Exon7_pos467", "Type")]
-                    if ("Exon7_pos467", "Type") in df.columns
+                "exon7_93": (  # pos467
+                    df.loc[0, ("Exon7_pos93", "Type")]
+                    if ("Exon7_pos93", "Type") in df.columns
                     else ""
                 ),
-                "pos539": (
-                    df.loc[0, ("Exon7_pos539", "Type")]
-                    if ("Exon7_pos539", "Type") in df.columns
+                "exon7_165": (  # pos539
+                    df.loc[0, ("Exon7_pos165", "Type")]
+                    if ("Exon7_pos165", "Type") in df.columns
                     else ""
                 ),
-                "pos646": (
-                    df.loc[0, ("Exon7_pos646", "Type")]
-                    if ("Exon7_pos646", "Type") in df.columns
+                "exon7_272": (  # pos646
+                    df.loc[0, ("Exon7_pos272", "Type")]
+                    if ("Exon7_pos272", "Type") in df.columns
                     else ""
                 ),
-                "pos681": (
-                    df.loc[0, ("Exon7_pos681", "Type")]
-                    if ("Exon7_pos681", "Type") in df.columns
+                "exon7_307": (  # pos681
+                    df.loc[0, ("Exon7_pos307", "Type")]
+                    if ("Exon7_pos307", "Type") in df.columns
                     else ""
                 ),
-                "pos745": (
-                    df.loc[0, ("Exon7_pos745", "Type")]
-                    if ("Exon7_pos745", "Type") in df.columns
+                "exon7_371": (  # pos745
+                    df.loc[0, ("Exon7_pos371", "Type")]
+                    if ("Exon7_pos371", "Type") in df.columns
                     else ""
                 ),
-                "pos820": (
-                    df.loc[0, ("Exon7_pos820", "Type")]
-                    if ("Exon7_pos820", "Type") in df.columns
+                "exon7_446": (  # pos820
+                    df.loc[0, ("Exon7_pos446", "Type")]
+                    if ("Exon7_pos446", "Type") in df.columns
                     else ""
                 ),
-                "pos1054": (
-                    df.loc[0, ("Exon7_pos1054", "Type")]
-                    if ("Exon7_pos1054", "Type") in df.columns
+                "exon7_680": (  # pos1054
+                    df.loc[0, ("Exon7_pos680", "Type")]
+                    if ("Exon7_pos680", "Type") in df.columns
                     else ""
                 ),
-                "pos1061": (
-                    df.loc[0, ("Exon7_pos1061", "Type")]
-                    if ("Exon7_pos1061", "Type") in df.columns
+                "exon7_687": (  # pos1061
+                    df.loc[0, ("Exon7_pos687", "Type")]
+                    if ("Exon7_pos687", "Type") in df.columns
                     else ""
                 ),
             }
 
-            # Get read counts for reliability assessment (primary positions only)
             read_counts = {
                 "exon6_22": (
                     df.loc[0, ("Exon6_pos22", "#Reads")]
@@ -662,7 +627,6 @@ class ABOReportParser:
                 ),
             }
 
-            # Initialize output data
             result = {
                 "phenotype": "Unknown",
                 "genotype": "Unknown",
@@ -670,10 +634,6 @@ class ABOReportParser:
                 "reliability": "Unknown",
             }
 
-            # Add more implementation specific to this method in the next step
-            # Logic will be implemented to determine blood types
-
-            # Return the updated dataframe with phenotype information
             df.loc[0, ("", "Phenotype")] = result["phenotype"]
             df.loc[0, ("", "Genotype")] = result["genotype"]
             df.loc[0, ("", "ExtendedGenotype")] = result["extended_genotype"]
@@ -683,14 +643,13 @@ class ABOReportParser:
 
         except Exception as e:
             print(f"Error in add_phenotype_genotype: {str(e)}")
-            # Set error values
             df.loc[0, ("", "Phenotype")] = "Error"
             df.loc[0, ("", "Genotype")] = "Error"
             df.loc[0, ("", "ExtendedGenotype")] = "Error"
             df.loc[0, ("", "Reliability")] = "Error processing"
             return df
 
-    def get_type(self, pos, a, g, c, t):
+    def get_type(self, pos, a, g, c, t, dele):
         """
         Determine the blood type or subtype for each position based on nucleotide percentages.
         This is used for first-pass analysis regardless of phenotype.
@@ -699,7 +658,7 @@ class ABOReportParser:
             pos: The position number
             a, g, c, t: Nucleotide percentages
         """
-        # Primary diagnostic positions
+        # Primary ABO variants
         if pos == 422:
             if c >= 80:
                 return "A or O"
@@ -738,73 +697,89 @@ class ABOReportParser:
                 return "O3 and (O or A or B)"
 
         # A subtype positions
-        elif pos == 467:
+        elif pos == 93:  # genomic pos 467 /A3
             if c >= 80:
                 return "A1"
             elif t >= 80:
                 return "A2 or A3"
             elif 20 < c < 80 and 20 < t < 80:
-                return "A1 and (A2 or A3)"
-        elif pos == 539:  # A1/A2 vs A3
+                return "A"
+        elif pos == 165:  # genomic pos 539
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
             elif 20 < c < 80 and 20 < t < 80:
-                return "(A1 or A2) and A3"
-        elif pos == 646:
+                return "A"
+        elif pos == 272:  # genomic pos 646
             if t >= 80:
                 return "A1"
             elif a >= 80:
                 return "A2"
             elif 20 < t < 80 and 20 < a < 80:
-                return "A1 and A2"
-        elif pos == 681:
+                return "A1 or A2"
+        elif pos == 307:  # genomic pos 681
             if g >= 80:
                 return "A1 or A2"
             elif a >= 80:
                 return "A3"
             elif 20 < g < 80 and 20 < a < 80:
-                return "(A1 or A2) and A3"
-        elif pos == 745:  # A1/A2 vs A3
+                return "A"
+        elif pos == 371:  # genomic pos 745
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
             elif 20 < c < 80 and 20 < t < 80:
-                return "(A1 or A2) and A3"
-        elif pos == 820:  # A1/A2 vs A3
+                return "A"
+        elif pos == 446:  # genomic pos 820
             if a >= 80:
                 return "A1 or A2"
             elif c >= 80:
                 return "A3"
             elif 20 < a < 80 and 20 < c < 80:
-                return "(A1 or A2) and A3"
-        elif pos == 1054:  # A1/A3 vs A2
+                return "A"
+        elif pos == 680:  # genomic pos 1054
             if g >= 80:
                 return "A1 or A3"
             elif a >= 80:
                 return "A2"
             elif 20 < g < 80 and 20 < a < 80:
-                return "(A1 or A3) and A2"
-        elif pos == 1061:  # A1 vs A2/A3
+                return "A"
+        elif pos == 687:  # genomic pos 1061 /A3
             if c >= 80:
                 return "A1"
-            elif t >= 80:
+            elif dele >= 80:  # Deletion indicates A2 or A3 subtypes
                 return "A2 or A3"
-            elif 20 < c < 80 and 20 < t < 80:
-                return "A1 and (A2 or A3)"
+            elif 20 < c < 80 and 20 < dele < 80:
+                return "A"
 
         return ""
 
     def assign_phenotype_genotype(self, df):
         """Assign the phenotype and genotype information"""
         try:
+            # Primary positions
             type_exon6 = df.at[0, ("Exon6_pos22", "Type")]
             type_exon7_422 = df.at[0, ("Exon7_pos422", "Type")]
             type_exon7_428 = df.at[0, ("Exon7_pos428", "Type")]
             type_exon7_429 = df.at[0, ("Exon7_pos429", "Type")]
             type_exon7_431 = df.at[0, ("Exon7_pos431", "Type")]
+
+            # Exon 6 A subtype positions
+            type_exon6_27 = df.at[0, ("Exon6_pos27", "Type")]
+            type_exon6_29 = df.at[0, ("Exon6_pos29", "Type")]
+            type_exon6_58 = df.at[0, ("Exon6_pos58", "Type")]
+
+            # Exon 7 A subtype positions
+            type_exon7_93 = df.at[0, ("Exon7_pos93", "Type")]
+            type_exon7_165 = df.at[0, ("Exon7_pos165", "Type")]
+            type_exon7_272 = df.at[0, ("Exon7_pos272", "Type")]
+            type_exon7_307 = df.at[0, ("Exon7_pos307", "Type")]
+            type_exon7_371 = df.at[0, ("Exon7_pos371", "Type")]
+            type_exon7_446 = df.at[0, ("Exon7_pos446", "Type")]
+            type_exon7_680 = df.at[0, ("Exon7_pos680", "Type")]
+            type_exon7_687 = df.at[0, ("Exon7_pos687", "Type")]
 
             nreads6 = df.at[0, ("Exon6_pos22", "#Reads")]
             nreads_exon7_p422 = df.at[0, ("Exon7_pos422", "#Reads")]
@@ -812,12 +787,11 @@ class ABOReportParser:
             nreads_exon7_p429 = df.at[0, ("Exon7_pos429", "#Reads")]
             nreads_exon7_p431 = df.at[0, ("Exon7_pos431", "#Reads")]
 
-            # Default values
             Phenotype = "Unknown"
             Genotype = "Unknown"
             ExtendedGenotype = "Unknown"
 
-            # PART 1: PRIMARY GENOTYPING LOGIC - Match exact patterns
+            # PART 1: PRIMARY PHENOTYPING LOGIC
 
             ## OA COMBINATIONS ---------------------------------------------------------------------------
             ## combination 1 | AO1 --
@@ -978,208 +952,125 @@ class ABOReportParser:
                 Genotype = "AA"
                 ExtendedGenotype = "AA"
 
-                # PART 2: A SUBTYPING - ONLY APPLY FOR AA GENOTYPE
+                # PART 2: ABO*A SUBTYPING - ONLY APPLY FOR AA GENOTYPE FOR NOW
+                # TODO Explore A subtypes in AO blood types
                 try:
-                    # Get all A subtype positions
-                    # From exon 6
-                    type_exon6_27 = (
-                        df.at[0, ("Exon6_pos27", "Type")]
-                        if ("Exon6_pos27", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon6_29 = (
-                        df.at[0, ("Exon6_pos29", "Type")]
-                        if ("Exon6_pos29", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon6_58 = (
-                        df.at[0, ("Exon6_pos58", "Type")]
-                        if ("Exon6_pos58", "Type") in df.columns
-                        else ""
-                    )
+                    a1_evidence = 0
+                    a2_evidence = 0
+                    a3_evidence = 0
 
-                    # From exon 7
-                    type_exon7_467 = (
-                        df.at[0, ("Exon7_pos467", "Type")]
-                        if ("Exon7_pos467", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_539 = (
-                        df.at[0, ("Exon7_pos539", "Type")]
-                        if ("Exon7_pos539", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_646 = (
-                        df.at[0, ("Exon7_pos646", "Type")]
-                        if ("Exon7_pos646", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_681 = (
-                        df.at[0, ("Exon7_pos681", "Type")]
-                        if ("Exon7_pos681", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_745 = (
-                        df.at[0, ("Exon7_pos745", "Type")]
-                        if ("Exon7_pos745", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_820 = (
-                        df.at[0, ("Exon7_pos820", "Type")]
-                        if ("Exon7_pos820", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_1054 = (
-                        df.at[0, ("Exon7_pos1054", "Type")]
-                        if ("Exon7_pos1054", "Type") in df.columns
-                        else ""
-                    )
-                    type_exon7_1061 = (
-                        df.at[0, ("Exon7_pos1061", "Type")]
-                        if ("Exon7_pos1061", "Type") in df.columns
-                        else ""
-                    )
+                    if type_exon6_27 == "A1 or A3":
+                        a1_evidence += 1
+                    if type_exon6_27 == "A2":
+                        a2_evidence += 1
 
-                    # Determine A subtypes based on markers
-                    a1_markers = False
-                    a2_markers = False
-                    a3_markers = False
+                    if type_exon6_29 == "A1 or A3":
+                        a1_evidence += 1
+                    if type_exon6_29 == "A2":
+                        a2_evidence += 1
 
-                    # Process exon 6 positions
+                    if type_exon6_58 == "A1 or A3":
+                        a1_evidence += 1
+                    if type_exon6_58 == "A2":
+                        a2_evidence += 1
+
+                    if type_exon7_93 == "A1":
+                        a1_evidence += 2
+                    if type_exon7_93 == "A2 or A3":
+                        a2_evidence += 1
+                        a3_evidence += 1
+
+                    if type_exon7_165 == "A1 or A2":
+                        a1_evidence += 1
+                        a2_evidence += 1
+                    if type_exon7_165 == "A3":
+                        a3_evidence += 2
+
+                    if type_exon7_272 == "A1":
+                        a1_evidence += 2
+                    if type_exon7_272 == "A2":
+                        a2_evidence += 2
+
+                    if type_exon7_307 == "A1 or A2":
+                        a1_evidence += 1
+                        a2_evidence += 1
+                    if type_exon7_307 == "A3":
+                        a3_evidence += 2
+
+                    if type_exon7_371 == "A1 or A2":
+                        a1_evidence += 1
+                        a2_evidence += 1
+                    if type_exon7_371 == "A3":
+                        a3_evidence += 2
+
+                    if type_exon7_446 == "A1 or A2":
+                        a1_evidence += 1
+                        a2_evidence += 1
+                    if type_exon7_446 == "A3":
+                        a3_evidence += 2
+
+                    if type_exon7_680 == "A1 or A3":
+                        a1_evidence += 1
+                        a3_evidence += 1
+                    if type_exon7_680 == "A2":
+                        a2_evidence += 2
+
+                    if type_exon7_687 == "A1":
+                        a1_evidence += 3
+                    if type_exon7_687 == "A2 or A3":
+                        a2_evidence += 2
+                        a3_evidence += 2
+
+                    heterozygous = False
                     if (
-                        "A1 or A3" in str(type_exon6_27)
-                        or "A1 or A3" in str(type_exon6_29)
-                        or "A1 or A3" in str(type_exon6_58)
+                        "and" in str(type_exon7_93)
+                        or "and" in str(type_exon7_165)
+                        or "and" in str(type_exon7_272)
+                        or "and" in str(type_exon7_307)
+                        or "and" in str(type_exon7_371)
+                        or "and" in str(type_exon7_446)
+                        or "and" in str(type_exon7_680)
+                        or "and" in str(type_exon7_687)
                     ):
-                        if (
-                            "A3" in str(type_exon7_539)
-                            or "A3" in str(type_exon7_681)
-                            or "A3" in str(type_exon7_745)
-                            or "A3" in str(type_exon7_820)
-                        ):
-                            a3_markers = True
+                        heterozygous = True
+
+                    if heterozygous:
+                        scores = [
+                            (a1_evidence, "A1"),
+                            (a2_evidence, "A2"),
+                            (a3_evidence, "A3"),
+                        ]
+                        scores.sort(reverse=True)
+
+                        if scores[0][0] > 0 and scores[1][0] > 0:
+                            ExtendedGenotype = f"{scores[0][1]}{scores[1][1]}"
                         else:
-                            a1_markers = True
-
-                    if (
-                        "A2" in str(type_exon6_27)
-                        or "A2" in str(type_exon6_29)
-                        or "A2" in str(type_exon6_58)
-                    ):
-                        a2_markers = True
-
-                    # Position 467 rules
-                    if type_exon7_467 == "A1":
-                        a1_markers = True
-                    elif type_exon7_467 == "A2 or A3":
-                        if (
-                            "A3" in str(type_exon7_681)
-                            or "A3" in str(type_exon7_539)
-                            or "A3" in str(type_exon7_745)
-                            or "A3" in str(type_exon7_820)
-                        ):
-                            a3_markers = True
+                            ExtendedGenotype = f"{scores[0][1]}{scores[0][1]}"
+                    else:
+                        if a1_evidence > a2_evidence and a1_evidence > a3_evidence:
+                            ExtendedGenotype = "A1A1"
+                        elif a2_evidence > a1_evidence and a2_evidence > a3_evidence:
+                            ExtendedGenotype = "A2A2"
+                        elif a3_evidence > a1_evidence and a3_evidence > a2_evidence:
+                            ExtendedGenotype = "A3A3"
                         else:
-                            a2_markers = True
-
-                    # Position 539 rules
-                    if "A1 or A2" in str(type_exon7_539):
-                        if (
-                            "A1" in str(type_exon7_467)
-                            or "A1" in str(type_exon7_1061)
-                            or "A1" in str(type_exon7_646)
-                        ):
-                            a1_markers = True
-                        else:
-                            a2_markers = True
-                    elif "A3" in str(type_exon7_539):
-                        a3_markers = True
-
-                    # Position 646 rules
-                    if type_exon7_646 == "A1":
-                        a1_markers = True
-                    elif type_exon7_646 == "A2":
-                        a2_markers = True
-
-                    # Position 681 rules
-                    if "A1 or A2" in str(type_exon7_681):
-                        if (
-                            "A1" in str(type_exon7_467)
-                            or "A1" in str(type_exon7_646)
-                            or "A1" in str(type_exon7_1061)
-                        ):
-                            a1_markers = True
-                        else:
-                            a2_markers = True
-                    elif "A3" in str(type_exon7_681):
-                        a3_markers = True
-
-                    # Position 745, 820, 1054, 1061 rules
-                    if "A1" in str(type_exon7_1061):
-                        a1_markers = True
-                    elif "A2 or A3" in str(type_exon7_1061):
-                        if (
-                            "A3" in str(type_exon7_539)
-                            or "A3" in str(type_exon7_681)
-                            or "A3" in str(type_exon7_745)
-                            or "A3" in str(type_exon7_820)
-                        ):
-                            a3_markers = True
-                        else:
-                            a2_markers = True
-
-                    # Special mixed rules
-                    if (
-                        "A1 and" in str(type_exon7_467)
-                        or "A1 and" in str(type_exon7_646)
-                        or "A1 and" in str(type_exon7_1061)
-                    ):
-                        if (
-                            "A3" in str(type_exon7_681)
-                            or "A3" in str(type_exon7_539)
-                            or "A3" in str(type_exon7_745)
-                            or "A3" in str(type_exon7_820)
-                        ):
-                            a1_markers = True
-                            a3_markers = True
-                        else:
-                            a1_markers = True
-                            a2_markers = True
-
-                    # Apply A extended genotype
-                    if a1_markers and a2_markers and a3_markers:
-                        # Just use the two clearest signals
-                        if (
-                            "A1" in str(type_exon7_467)
-                            or "A1" in str(type_exon7_646)
-                            or "A1" in str(type_exon7_1061)
-                        ):
-                            if (
-                                "A3" in str(type_exon7_681)
-                                or "A3" in str(type_exon7_539)
-                                or "A3" in str(type_exon7_745)
-                                or "A3" in str(type_exon7_820)
-                            ):
-                                ExtendedGenotype = "A1A3"
-                            else:
-                                ExtendedGenotype = "A1A2"
-                        else:
-                            ExtendedGenotype = "A2A3"
-                    elif a1_markers and a2_markers:
-                        ExtendedGenotype = "A1A2"
-                    elif a1_markers and a3_markers:
-                        ExtendedGenotype = "A1A3"
-                    elif a2_markers and a3_markers:
-                        ExtendedGenotype = "A2A3"
-                    elif a1_markers:
-                        ExtendedGenotype = "A1A1"
-                    elif a2_markers:
-                        ExtendedGenotype = "A2A2"
-                    elif a3_markers:
-                        ExtendedGenotype = "A3A3"
+                            ExtendedGenotype = "A1A1"
                 except Exception as e:
-                    print(f"Warning: A subtyping error: {str(e)}")
-                    # Keep default AA
+                    print(f"Error in A subtype determination: {str(e)}")
+                    print(
+                        f"Unable to determine A subtypes, defaulting to base genotype 'AA'"
+                    )
+                    ExtendedGenotype = "AA"
+
+                    try:
+                        print(
+                            f"Position data that caused error - Exon6_27: {type_exon6_27}, Exon6_29: {type_exon6_29}"
+                        )
+                        print(
+                            f"Exon7_93: {type_exon7_93}, Exon7_165: {type_exon7_165}, Exon7_687: {type_exon7_687}"
+                        )
+                    except:
+                        pass
 
             ## combination 14 | BB ---------------------------------------------------------------------------
             elif (
@@ -1212,7 +1103,6 @@ class ABOReportParser:
                 Genotype = "Unknown"
                 ExtendedGenotype = "Unknown"
 
-            # Determine reliability based on read counts
             read_counts = [
                 nreads6,
                 nreads_exon7_p422,
@@ -1224,10 +1114,10 @@ class ABOReportParser:
 
             if read_counts:
                 min_reads = min(read_counts)
-                if min_reads <= 20:
+                if min_reads < 20:
                     Reliability = "Very Low(\u226420 reads)"
-                elif min_reads < 50:
-                    Reliability = "Low (\u226450 reads)"
+                elif min_reads < 40:
+                    Reliability = "Low (\u226440 reads)"
                 elif min_reads >= 500:
                     Reliability = "Robust(\u2265500 reads)"
                 else:
@@ -1235,7 +1125,6 @@ class ABOReportParser:
             else:
                 Reliability = "Unknown (no read data)"
 
-            # Update DataFrame with results
             df[("", "Phenotype")] = Phenotype
             df[("", "Genotype")] = Genotype
             df[("", "ExtendedGenotype")] = ExtendedGenotype
@@ -1257,7 +1146,6 @@ class ABOReportParser:
     def process_file(self, filename):
         """Process a single file and extract all necessary data."""
         try:
-            # Parse sample name and barcode from filename
             if "_" in filename:
                 parts = filename.split("_")
                 sample_name = "_".join(parts[:-1])
@@ -1266,11 +1154,9 @@ class ABOReportParser:
                 sample_name = filename
                 barcode = ""
 
-            # Check for exon6 and exon7 directories
             exon6_dir = os.path.join(self.input_dir, filename, "exon6")
             exon7_dir = os.path.join(self.input_dir, filename, "exon7")
 
-            # Check if both exon6 and exon7 directories exist
             if not (os.path.exists(exon6_dir) and os.path.exists(exon7_dir)):
                 print(f"Skipping file {filename}. Missing exon6 or exon7 directory.")
                 return
@@ -1278,11 +1164,9 @@ class ABOReportParser:
             exon6_phenotypes = os.path.join(exon6_dir, "*.ABOPhenotype.txt")
             exon7_phenotypes = os.path.join(exon7_dir, "*.ABOPhenotype.txt")
 
-            # Find phenotype files
             exon6_phenotype_files = glob.glob(exon6_phenotypes)
             exon7_phenotype_files = glob.glob(exon7_phenotypes)
 
-            # In process_file method where you check for missing files:
             if not exon6_phenotype_files:
                 print(f"Missing exon6 phenotype files for {filename}. Skipping.")
                 self.failed_samples.append(
@@ -1297,7 +1181,6 @@ class ABOReportParser:
                 )
                 return
 
-            # Check if files are empty (0 KB)
             if os.path.getsize(exon6_phenotype_files[0]) == 0:
                 print(f"Empty exon6 phenotype file (0 kb) for {filename}. Skipping.")
                 self.failed_samples.append(
@@ -1312,16 +1195,13 @@ class ABOReportParser:
                 )
                 return
 
-            # Create empty result DataFrame
             result_df = pd.DataFrame(columns=self.columns)
             result_df.loc[0, ("", "Barcode")] = barcode.replace("barcode", "")
             result_df.loc[0, ("", "Sequencing_ID")] = sample_name
 
-            # Process exon6 data for all positions (22, 27, 29, 58)
             exon6_data = self.parse_exon6(exon6_phenotype_files[0])
             if not exon6_data.empty:
-                # Process each exon6 position
-                for pos in [22, 27, 29, 58]:  # All exon6 positions
+                for pos in [22, 27, 29, 58]:
                     pos_df = exon6_data[exon6_data["Position"] == pos]
                     if not pos_df.empty:
                         for col in [
@@ -1341,23 +1221,21 @@ class ABOReportParser:
                                     pos_df.iloc[0][col]
                                 )
 
-            # Process exon7 data for all positions
             exon7_data = self.parse_exon7(exon7_phenotype_files[0])
             if not exon7_data.empty:
-                # Process all positions - removed B subtype positions (526, 640, 657)
                 all_positions = [
                     422,
                     428,
                     429,
-                    431,  # Primary positions
-                    467,
-                    539,
-                    646,
-                    681,
-                    745,
-                    820,
-                    1054,
-                    1061,  # A subtypes
+                    431,
+                    93,
+                    165,
+                    272,
+                    307,
+                    371,
+                    446,
+                    680,
+                    687,
                 ]
 
                 for pos in all_positions:
@@ -1380,10 +1258,8 @@ class ABOReportParser:
                                     pos_df.iloc[0][col]
                                 )
 
-            # Determine phenotype and genotype
             result_df = self.assign_phenotype_genotype(result_df)
 
-            # Add the processed result to the results list
             self.results.append(result_df)
 
             print(f"Successfully processed {filename}")
@@ -1399,22 +1275,17 @@ class ABOReportParser:
         for filename in os.listdir(self.input_dir):
             if os.path.isdir(os.path.join(self.input_dir, filename)):
                 try:
-                    # Updated regex pattern
-                    # pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
                     pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
                     match = re.match(pattern, filename)
 
                     if match:
                         print("\nProcessing file: " + filename)
 
-                        # Extract barcode and sample_name from the filename
                         parts = filename.split("_")
 
                         if len(parts) >= 2:
                             sample_name = parts[0]
-                            barcode = parts[
-                                -1
-                            ]  # Assuming barcode is always the last part
+                            barcode = parts[-1]
                             if barcode.startswith("barcode"):
                                 print(
                                     f"Extracted Sample: {sample_name}, Barcode: {barcode}"
@@ -1435,19 +1306,15 @@ class ABOReportParser:
                     else:
                         print(f"\nFile does not match expected patterns: {filename}")
                 except Exception as e:
-                    # Handle exceptions
                     print(f"\nError processing file {filename}: {e}")
                 finally:
-                    # Any cleanup code goes here
                     print(f"Finished processing file: {filename}")
 
     def merge_dataframes(self):
         final_df = pd.concat(self.results)
 
-        # Force convert Barcode to int
         final_df[("", "Barcode")] = final_df[("", "Barcode")].astype(int)
 
-        # Sort by two columns nested under "Sample"
         final_df = final_df.sort_values(
             by=[("", "Sequencing_ID"), ("", "Barcode")], ascending=True
         )
@@ -1456,7 +1323,6 @@ class ABOReportParser:
 
     def save_results_to_file(self, final_df):
         """Save results to text and Excel files with proper handling of headers and formatting."""
-        # Save to text file
         try:
             final_df.to_csv("./ABO_result.txt", sep="\t", index=False)
             print("Results saved successfully to text file.")
@@ -1464,25 +1330,19 @@ class ABOReportParser:
             print(f"Error saving to text file: {txt_err}")
             return
 
-        # Save to Excel file
         try:
-            # IMPORTANT: Identify read count columns BEFORE dropping the MultiIndex level
             read_count_cols = []
             if isinstance(final_df.columns, pd.MultiIndex):
-                # For MultiIndex columns, find each ExonX_posN/#Reads column
                 for i, col in enumerate(final_df.columns):
-                    if col[1] == "#Reads":  # Second level is "#Reads"
+                    if col[1] == "#Reads":
                         read_count_cols.append(i)
             else:
-                # For regular columns, just find any with "#Reads"
                 for i, col in enumerate(final_df.columns):
                     if "#Reads" in str(col):
                         read_count_cols.append(i)
 
-            # Now create the Excel writer
             writer = pd.ExcelWriter("./ABO_result.xlsx", engine="xlsxwriter")
 
-            # Check if columns are MultiIndex and drop a level if necessary
             if isinstance(final_df.columns, pd.MultiIndex):
                 final_df.columns = final_df.columns.droplevel()
 
@@ -1494,7 +1354,7 @@ class ABOReportParser:
             workbook = writer.book
             worksheet = writer.sheets["ABO_Result"]
 
-            # Define formats
+            # Define Excel formats
             data_format = workbook.add_format(
                 {"bg_color": "white", "font_color": "black", "border": 1}
             )
@@ -1523,20 +1383,19 @@ class ABOReportParser:
             # Find the Reliability column index (it's the last column)
             reliability_col = xl_col_to_name(num_cols - 1)
 
-            # Add this line to debug
+            # Sanity check in dev
             print(f"Data has {num_rows} rows, starting at row 3 with two header rows")
 
             # Apply conditional formatting to each read count column
-            # We're using the indices we saved BEFORE dropping the level
             for col_idx in read_count_cols:
                 col_letter = xl_col_to_name(col_idx)
 
                 # Very low reads (≤20) - red background
                 worksheet.conditional_format(
-                    f"{col_letter}3:{col_letter}{num_rows + 2}",  # Changed to start at row 3
+                    f"{col_letter}3:{col_letter}{num_rows + 2}",
                     {
                         "type": "cell",
-                        "criteria": "<=",
+                        "criteria": "<",
                         "value": 20,
                         "format": red_bg_format,
                     },
@@ -1548,8 +1407,8 @@ class ABOReportParser:
                     {
                         "type": "cell",
                         "criteria": "between",
-                        "minimum": 21,
-                        "maximum": 49,
+                        "minimum": 20,
+                        "maximum": 39,
                         "format": orange_bg_format,
                     },
                 )
@@ -1559,13 +1418,12 @@ class ABOReportParser:
                 f"Applying read count conditional formatting to columns: {[xl_col_to_name(i) for i in read_count_cols]}"
             )
 
-            # Apply row-level conditional formatting based on reliability
             try:
                 worksheet.conditional_format(
-                    f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",  # Changed to start at row 3
+                    f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",
                     {
                         "type": "formula",
-                        "criteria": f'=${reliability_col}3="Very Low(\u226420 reads)"',  # Changed to reference row 3
+                        "criteria": f'=${reliability_col}3="Very Low(\u226420 reads)"',
                         "format": red_bg_format,
                     },
                 )
@@ -1588,7 +1446,6 @@ class ABOReportParser:
                     if not pd.isna(cell_value):
                         worksheet.write(row + 2, col, cell_value, data_format)
 
-            # Define all column headers and their ranges
             header_columns = [
                 "Exon6_pos22",
                 "Exon6_pos27",
@@ -1598,34 +1455,31 @@ class ABOReportParser:
                 "Exon7_pos428",
                 "Exon7_pos429",
                 "Exon7_pos431",
-                "Exon7_pos467",
-                "Exon7_pos539",
-                "Exon7_pos646",
-                "Exon7_pos681",
-                "Exon7_pos745",
-                "Exon7_pos820",
-                "Exon7_pos1054",
-                "Exon7_pos1061",
+                "Exon7_pos93",
+                "Exon7_pos165",
+                "Exon7_pos272",
+                "Exon7_pos307",
+                "Exon7_pos371",
+                "Exon7_pos446",
+                "Exon7_pos680",
+                "Exon7_pos687",
             ]
 
-            # Calculate merge ranges dynamically
-            column_start = 2  # C is column 2 (0-indexed)
+            column_start = 2
             merge_ranges = []
 
             for header in header_columns:
                 start_col = column_start
-                end_col = start_col + 9  # Each header spans 10 columns
+                end_col = start_col + 9  # Each main header spans 10 columns
 
-                # Convert to Excel column letters
                 start_letter = xl_col_to_name(start_col)
                 end_letter = xl_col_to_name(end_col)
 
                 merge_ranges.append((f"{start_letter}1:{end_letter}1", header))
                 column_start = end_col + 1
 
-            # Calculate where the Result columns start
             result_start = xl_col_to_name(column_start)
-            result_end = xl_col_to_name(column_start + 3)  # 4 result columns
+            result_end = xl_col_to_name(column_start + 3)
 
             # Merge header ranges
             worksheet.merge_range("A1:B1", "Sample", header_format)
@@ -1636,7 +1490,6 @@ class ABOReportParser:
             for merge_range in merge_ranges:
                 worksheet.merge_range(merge_range[0], merge_range[1], header_format)
 
-            # Write column headers
             for col in range(num_cols):
                 cell_value = final_df.columns[col]
                 if not pd.isna(cell_value):
@@ -1650,13 +1503,10 @@ class ABOReportParser:
 
             traceback.print_exc()
 
-        ## Creating Final Export file
-        # Initialize df_for_lis_soft DataFrame
         self.df_for_lis_soft = pd.DataFrame()
         self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
         self.df_for_lis_soft["Shipment Date"] = ""
 
-        # Only process if "Genotype" column exists and all values are not 'Unknown' or blank
         if (
             "Genotype" in final_df.columns
             and not final_df["Genotype"].isnull().all()
@@ -1680,14 +1530,10 @@ class ABOReportParser:
         self.df_for_lis_soft["Blood Type"] = final_df["Phenotype"]
         self.df_for_lis_soft["ABORH Comments"] = ""
 
-        # Handle columns based on index type
         if isinstance(final_df.columns, pd.MultiIndex):
-            # Multi-level index case
             reads_df = final_df.loc[:, (slice(None), "#Reads")]
-            # Compute the average of the '#Reads' columns
             self.df_for_lis_soft["#Reads"] = reads_df.mean(axis=1)
         else:
-            # Single-level index case
             reads_columns = [col for col in final_df.columns if "#Reads" in str(col)]
             if reads_columns:
                 self.df_for_lis_soft["#Reads"] = final_df[reads_columns].mean(axis=1)
@@ -1696,7 +1542,9 @@ class ABOReportParser:
 
         self.df_for_lis_soft.drop_duplicates(inplace=True)
         self.df_for_lis_soft.to_csv("./final_export.csv", index=False, encoding="utf-8")
-        print("Final export file created successfully.")
+        print(
+            f"LIS export file created successfully with {len(self.df_for_lis_soft)} samples"
+        )
 
     def run(self):
         """
@@ -1711,7 +1559,6 @@ class ABOReportParser:
         print("-" * 336)
         self.save_results_to_file(final_df)
 
-        # Print summary of failed samples
         if self.failed_samples:
             print("\n\nFailed Samples Summary:")
             print("-" * 80)
@@ -1724,7 +1571,6 @@ class ABOReportParser:
 
 
 if __name__ == "__main__":
-    # Check command-line arguments
     if len(sys.argv) != 2:
         print("\nUsage: python ABOReportParser.py <input_directory>\n")
         sys.exit(1)
@@ -1732,5 +1578,3 @@ if __name__ == "__main__":
     parser = ABOReportParser(input_directory)
     parser.run()
     print("All done!\n")
-
-sys.exit(0)

@@ -15,6 +15,12 @@ process MPILEUP_NUCL_FREQ {
         'https://depot.galaxyproject.org/singularity/python:3.9--1' :
         'quay.io/biocontainers/python:3.9--1' }"
 
+    /*
+    changes to python script not processed properly on re-run
+    Disable caching for the process to repeat every time
+    */
+    // cache false 
+
     input:
     tuple val(meta), path(pileup)
     tuple val(meta1), path(fasta)
