@@ -484,24 +484,24 @@ class ABOReportParser:
                 return "A1 or A3"
             elif t >= 80:
                 return "A2"
-            elif 20 < c < 80 and 20 < t < 80:
-                return "A"
+            # elif 20 < c < 80 and 20 < t < 80:
+            #     return "A"
 
         elif pos == 29:  # c.268
             if t >= 80:
                 return "A1 or A3"
             elif c >= 80:
                 return "A2"
-            elif 20 < t < 80 and 20 < c < 80:
-                return "A"
+            # elif 20 < t < 80 and 20 < c < 80:
+            #     return "A"
 
         elif pos == 58:  # c.297
             if a >= 80:
                 return "A1 or A3"
             elif g >= 80:
                 return "A2"
-            elif 20 < a < 80 and 20 < g < 80:
-                return "A"
+            # elif 20 < a < 80 and 20 < g < 80:
+            #     return "A"
 
         return ""
 
@@ -702,43 +702,43 @@ class ABOReportParser:
                 return "A1"
             elif t >= 80:
                 return "A2 or A3"
-            elif 20 < c < 80 and 20 < t < 80:
-                return "A"
+            # elif 20 < c < 80 and 20 < t < 80:
+            #     return "A"
         elif pos == 165:  # genomic pos 539
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
-            elif 20 < c < 80 and 20 < t < 80:
-                return "A"
+            # elif 20 < c < 80 and 20 < t < 80:
+            #     return "A"
         elif pos == 272:  # genomic pos 646
             if t >= 80:
                 return "A1"
             elif a >= 80:
                 return "A2"
-            elif 20 < t < 80 and 20 < a < 80:
-                return "A1 or A2"
+            # elif 20 < t < 80 and 20 < a < 80:
+            #     return "A1 or A2"
         elif pos == 307:  # genomic pos 681
             if g >= 80:
                 return "A1 or A2"
             elif a >= 80:
                 return "A3"
-            elif 20 < g < 80 and 20 < a < 80:
-                return "A"
+            # elif 20 < g < 80 and 20 < a < 80:
+            #     return "A"
         elif pos == 371:  # genomic pos 745
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
-            elif 20 < c < 80 and 20 < t < 80:
-                return "A"
+            # elif 20 < c < 80 and 20 < t < 80:
+            #     return "A"
         elif pos == 446:  # genomic pos 820
             if a >= 80:
                 return "A1 or A2"
             elif c >= 80:
                 return "A3"
-            elif 20 < a < 80 and 20 < c < 80:
-                return "A"
+            # elif 20 < a < 80 and 20 < c < 80:
+            #     return "A"
         elif pos == 680:  # genomic pos 1054
             if g >= 80:
                 return "A1 or A3"
@@ -751,8 +751,8 @@ class ABOReportParser:
                 return "A1"
             elif dele >= 80:  # Deletion indicates A2 or A3 subtypes
                 return "A2 or A3"
-            elif 20 < c < 80 and 20 < dele < 80:
-                return "A"
+            # elif 20 < c < 80 and 20 < dele < 80:
+            #     return "A"
 
         return ""
 
@@ -1114,9 +1114,9 @@ class ABOReportParser:
 
             if read_counts:
                 min_reads = min(read_counts)
-                if min_reads < 20:
+                if min_reads <= 20:
                     Reliability = "Very Low(\u226420 reads)"
-                elif min_reads < 40:
+                elif 20 < min_reads <= 40:
                     Reliability = "Low (\u226440 reads)"
                 elif min_reads >= 500:
                     Reliability = "Robust(\u2265500 reads)"
@@ -1395,7 +1395,7 @@ class ABOReportParser:
                     f"{col_letter}3:{col_letter}{num_rows + 2}",
                     {
                         "type": "cell",
-                        "criteria": "<",
+                        "criteria": "<=",
                         "value": 20,
                         "format": red_bg_format,
                     },
@@ -1403,12 +1403,12 @@ class ABOReportParser:
 
                 # Low reads (21-49) - orange background
                 worksheet.conditional_format(
-                    f"{col_letter}3:{col_letter}{num_rows + 2}",  # Changed to start at row 3
+                    f"{col_letter}3:{col_letter}{num_rows + 2}",
                     {
                         "type": "cell",
                         "criteria": "between",
-                        "minimum": 20,
-                        "maximum": 39,
+                        "minimum": 21,
+                        "maximum": 40,
                         "format": orange_bg_format,
                     },
                 )
@@ -1431,7 +1431,7 @@ class ABOReportParser:
                     f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",  # Changed to start at row 3
                     {
                         "type": "formula",
-                        "criteria": f'=${reliability_col}3="Low (\u226450 reads)"',  # Changed to reference row 3
+                        "criteria": f'=${reliability_col}3="Low (\u226440 reads)"',  # Changed to reference row 3
                         "format": orange_bg_format,
                     },
                 )
