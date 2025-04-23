@@ -14,7 +14,7 @@ __credits__ = [
     "Fredrick Mobegi",
     "Benedict Matern",
     "Mathijs Groeneweg",
-    "Claude 3.7 Sonnet Thinking (rewrite to add A1/A2/A3 subtypes)",
+    "Claude 3.7 Sonnet Thinking (for rewrite to add ABO*A1/2/3 subtypes)",
 ]
 __license__ = "GPL"
 __version__ = "0.2.0"
@@ -23,8 +23,25 @@ __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Development"
 
 """
-A script to collate all ABO phenotype results from each sample into an 
-Excel worksheet and a CSV for export to LIS soft.
+This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
+
+nf-core/abotyper is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This pipeline is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with nf-core/abotyper. If not, see <http://www.gnu.org/licenses/>.
+
+
+This class collates all ABO phenotype results from each sample into an a general table 
+and generates an Excel worksheet and a CSV file for export to LIS soft or 
+other general purpose lab management systems.
 """
 
 print(
@@ -73,9 +90,6 @@ class ABOReportParser:
         exon7_446 = ["Exon7_pos446"] * 10  # c.820G>A
         exon7_680 = ["Exon7_pos680"] * 10  # c.1054C>T
         exon7_687 = ["Exon7_pos687"] * 10  # c.1061delC
-
-        # Ensure all arrays have the same length
-        max_len = 10  # All arrays are initialized with 10 elements
 
         header_cols = (
             ["", ""]
@@ -484,170 +498,26 @@ class ABOReportParser:
                 return "A1 or A3"
             elif t >= 80:
                 return "A2"
-            # elif 20 < c < 80 and 20 < t < 80:
-            #     return "A"
+            elif 20 < c < 80 and 20 < t < 80:
+                return "A"
 
         elif pos == 29:  # c.268
             if t >= 80:
                 return "A1 or A3"
             elif c >= 80:
                 return "A2"
-            # elif 20 < t < 80 and 20 < c < 80:
-            #     return "A"
+            elif 20 < t < 80 and 20 < c < 80:
+                return "A"
 
         elif pos == 58:  # c.297
             if a >= 80:
                 return "A1 or A3"
             elif g >= 80:
                 return "A2"
-            # elif 20 < a < 80 and 20 < g < 80:
-            #     return "A"
+            elif 20 < a < 80 and 20 < g < 80:
+                return "A"
 
         return ""
-
-    def add_phenotype_genotype(self, df):
-        """
-        Determine and add phenotype and genotype information based on all marker positions.
-
-        Args:
-            df: DataFrame containing all the position data
-
-        Returns:
-            Updated DataFrame with added phenotype and genotype columns
-        """
-        try:
-            positions = {
-                "exon6_22": (
-                    df.loc[0, ("Exon6_pos22", "Type")]
-                    if ("Exon6_pos22", "Type") in df.columns
-                    else ""
-                ),
-                "exon6_27": (
-                    df.loc[0, ("Exon6_pos27", "Type")]
-                    if ("Exon6_pos27", "Type") in df.columns
-                    else ""
-                ),
-                "exon6_29": (
-                    df.loc[0, ("Exon6_pos29", "Type")]
-                    if ("Exon6_pos29", "Type") in df.columns
-                    else ""
-                ),
-                "exon6_58": (
-                    df.loc[0, ("Exon6_pos58", "Type")]
-                    if ("Exon6_pos58", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_422": (
-                    df.loc[0, ("Exon7_pos422", "Type")]
-                    if ("Exon7_pos422", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_428": (
-                    df.loc[0, ("Exon7_pos428", "Type")]
-                    if ("Exon7_pos428", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_429": (
-                    df.loc[0, ("Exon7_pos429", "Type")]
-                    if ("Exon7_pos429", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_431": (
-                    df.loc[0, ("Exon7_pos431", "Type")]
-                    if ("Exon7_pos431", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_93": (  # pos467
-                    df.loc[0, ("Exon7_pos93", "Type")]
-                    if ("Exon7_pos93", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_165": (  # pos539
-                    df.loc[0, ("Exon7_pos165", "Type")]
-                    if ("Exon7_pos165", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_272": (  # pos646
-                    df.loc[0, ("Exon7_pos272", "Type")]
-                    if ("Exon7_pos272", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_307": (  # pos681
-                    df.loc[0, ("Exon7_pos307", "Type")]
-                    if ("Exon7_pos307", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_371": (  # pos745
-                    df.loc[0, ("Exon7_pos371", "Type")]
-                    if ("Exon7_pos371", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_446": (  # pos820
-                    df.loc[0, ("Exon7_pos446", "Type")]
-                    if ("Exon7_pos446", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_680": (  # pos1054
-                    df.loc[0, ("Exon7_pos680", "Type")]
-                    if ("Exon7_pos680", "Type") in df.columns
-                    else ""
-                ),
-                "exon7_687": (  # pos1061
-                    df.loc[0, ("Exon7_pos687", "Type")]
-                    if ("Exon7_pos687", "Type") in df.columns
-                    else ""
-                ),
-            }
-
-            read_counts = {
-                "exon6_22": (
-                    df.loc[0, ("Exon6_pos22", "#Reads")]
-                    if ("Exon6_pos22", "#Reads") in df.columns
-                    else 0
-                ),
-                "pos422": (
-                    df.loc[0, ("Exon7_pos422", "#Reads")]
-                    if ("Exon7_pos422", "#Reads") in df.columns
-                    else 0
-                ),
-                "pos428": (
-                    df.loc[0, ("Exon7_pos428", "#Reads")]
-                    if ("Exon7_pos428", "#Reads") in df.columns
-                    else 0
-                ),
-                "pos429": (
-                    df.loc[0, ("Exon7_pos429", "#Reads")]
-                    if ("Exon7_pos429", "#Reads") in df.columns
-                    else 0
-                ),
-                "pos431": (
-                    df.loc[0, ("Exon7_pos431", "#Reads")]
-                    if ("Exon7_pos431", "#Reads") in df.columns
-                    else 0
-                ),
-            }
-
-            result = {
-                "phenotype": "Unknown",
-                "genotype": "Unknown",
-                "extended_genotype": "Unknown",
-                "reliability": "Unknown",
-            }
-
-            df.loc[0, ("", "Phenotype")] = result["phenotype"]
-            df.loc[0, ("", "Genotype")] = result["genotype"]
-            df.loc[0, ("", "ExtendedGenotype")] = result["extended_genotype"]
-            df.loc[0, ("", "Reliability")] = result["reliability"]
-
-            return df
-
-        except Exception as e:
-            print(f"Error in add_phenotype_genotype: {str(e)}")
-            df.loc[0, ("", "Phenotype")] = "Error"
-            df.loc[0, ("", "Genotype")] = "Error"
-            df.loc[0, ("", "ExtendedGenotype")] = "Error"
-            df.loc[0, ("", "Reliability")] = "Error processing"
-            return df
 
     def get_type(self, pos, a, g, c, t, dele):
         """
@@ -669,13 +539,13 @@ class ABOReportParser:
             elif 15 < a < 80 and 15 < c < 80:
                 return "(A or O) and B"
         elif pos == 428:
-            if g >= 80:
+            if g >= 70:
                 return "O and (A or B)"
-            elif a >= 80:
+            elif a >= 70:
                 return "O2"
             elif abs(g - a) <= 20:
                 return "O2 and (O or A or B)"
-            elif 15 < g < 80 and 15 < a < 80:
+            elif 15 < g < 70 and 15 < a < 70:
                 return "O2 and (O or A or B)"
         elif pos == 429:
             if g >= 80:
@@ -693,7 +563,7 @@ class ABOReportParser:
                 return "O3"
             elif abs(t - g) <= 20:
                 return "O3 and (O or A or B)"
-            elif 20 < t < 80 and 20 < g < 80:
+            elif 15 < t < 80 and 15 < g < 80:
                 return "O3 and (O or A or B)"
 
         # A subtype positions
@@ -796,11 +666,11 @@ class ABOReportParser:
             ## OA COMBINATIONS ---------------------------------------------------------------------------
             ## combination 1 | AO1 --
             if (
-                type_exon6 == "O1 and (A or B or O)"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "O1 and (A or B or O)")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "A"
                 Genotype = "AO"
@@ -808,23 +678,24 @@ class ABOReportParser:
 
             ## combination 2 | AO2 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O2 and (O or A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O2 and (O or A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "A"
                 Genotype = "AO"
                 ExtendedGenotype = "AO2"
+                # Reliability = 'Enter-manually'
 
             ## combination 3 | AO3 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O3 and (O or A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O3 and (O or A or B)")
             ):
                 Phenotype = "A"
                 Genotype = "AO"
@@ -833,35 +704,37 @@ class ABOReportParser:
             ## OB COMBINATIONS ---------------------------------------------------------------------------
             ## combination 4 | BO1 --
             elif (
-                type_exon6 == "O1 and (A or B or O)"
-                and type_exon7_422 == "B"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "B"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "O1 and (A or B or O)")
+                and (type_exon7_422 == "(A or O) and B")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "(A or O) and B")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "B"
                 Genotype = "BO"
                 ExtendedGenotype = "BO1"
+                # Reliability = 'Enter-manually'
 
-            ## combination 5 | BO2 --
+            ## combination 5 | O2B --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "B"
-                and type_exon7_428 == "O2 and (O or A or B)"
-                and type_exon7_429 == "B"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "(A or O) and B")
+                and (type_exon7_428 == "O2 and (O or A or B)")
+                and (type_exon7_429 == "(A or O) and B")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "B"
                 Genotype = "BO"
-                ExtendedGenotype = "BO2"
+                ExtendedGenotype = "O2B"
+                # Reliability = 'Enter-manually'
 
-            ## combination 6 | BO3 --
+            ## combination 6 | AO3 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "B"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "B"
-                and type_exon7_431 == "O3 and (O or A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "(A or O) and B")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "(A or O) and B")
+                and (type_exon7_431 == "O3 and (O or A or B)")
             ):
                 Phenotype = "B"
                 Genotype = "BO"
@@ -870,11 +743,11 @@ class ABOReportParser:
             ## OO COMBINATIONS  ---------------------------------------------------------------------------
             ## combination 7 | O1O2 --
             elif (
-                type_exon6 == "O1"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O2"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "O1 and (A or B or O)")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O2 and (O or A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
@@ -882,23 +755,24 @@ class ABOReportParser:
 
             ## combination 8 | O1O3 --
             elif (
-                type_exon6 == "O1"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O3"
+                (type_exon6 == "O1 and (A or B or O)")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O3 and (O or A or B)")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
                 ExtendedGenotype = "O1O3"
+                # Reliability = 'Enter-manually'
 
             ## combination 9 | O2O3 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O2"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O3"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O2 and (O or A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O3 and (O or A or B)")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
@@ -906,35 +780,37 @@ class ABOReportParser:
 
             ## combination 10 | O1O1 --
             elif (
-                type_exon6 == "O1"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "O1")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
                 ExtendedGenotype = "O1O1"
+                # Reliability = 'Enter-manually'
 
             ## combination 11 | O2O2 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O2"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O2")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
                 ExtendedGenotype = "O2O2"
-
+                # Reliability = 'Enter-manually'
+                #
             ## combination 12 | O3O3 --
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O3"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O3")
             ):
                 Phenotype = "O"
                 Genotype = "OO"
@@ -942,160 +818,41 @@ class ABOReportParser:
 
             ## combination 13 | AA ---------------------------------------------------------------------------
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "A or O"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "A or O"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "A or O")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "A or O")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "A"
                 Genotype = "AA"
                 ExtendedGenotype = "AA"
 
-                # PART 2: ABO*A SUBTYPING - ONLY APPLY FOR AA GENOTYPE FOR NOW
-                # TODO Explore A subtypes in AO blood types
-                try:
-                    a1_evidence = 0
-                    a2_evidence = 0
-                    a3_evidence = 0
-
-                    if type_exon6_27 == "A1 or A3":
-                        a1_evidence += 1
-                    if type_exon6_27 == "A2":
-                        a2_evidence += 1
-
-                    if type_exon6_29 == "A1 or A3":
-                        a1_evidence += 1
-                    if type_exon6_29 == "A2":
-                        a2_evidence += 1
-
-                    if type_exon6_58 == "A1 or A3":
-                        a1_evidence += 1
-                    if type_exon6_58 == "A2":
-                        a2_evidence += 1
-
-                    if type_exon7_93 == "A1":
-                        a1_evidence += 2
-                    if type_exon7_93 == "A2 or A3":
-                        a2_evidence += 1
-                        a3_evidence += 1
-
-                    if type_exon7_165 == "A1 or A2":
-                        a1_evidence += 1
-                        a2_evidence += 1
-                    if type_exon7_165 == "A3":
-                        a3_evidence += 2
-
-                    if type_exon7_272 == "A1":
-                        a1_evidence += 2
-                    if type_exon7_272 == "A2":
-                        a2_evidence += 2
-
-                    if type_exon7_307 == "A1 or A2":
-                        a1_evidence += 1
-                        a2_evidence += 1
-                    if type_exon7_307 == "A3":
-                        a3_evidence += 2
-
-                    if type_exon7_371 == "A1 or A2":
-                        a1_evidence += 1
-                        a2_evidence += 1
-                    if type_exon7_371 == "A3":
-                        a3_evidence += 2
-
-                    if type_exon7_446 == "A1 or A2":
-                        a1_evidence += 1
-                        a2_evidence += 1
-                    if type_exon7_446 == "A3":
-                        a3_evidence += 2
-
-                    if type_exon7_680 == "A1 or A3":
-                        a1_evidence += 1
-                        a3_evidence += 1
-                    if type_exon7_680 == "A2":
-                        a2_evidence += 2
-
-                    if type_exon7_687 == "A1":
-                        a1_evidence += 3
-                    if type_exon7_687 == "A2 or A3":
-                        a2_evidence += 2
-                        a3_evidence += 2
-
-                    heterozygous = False
-                    if (
-                        "and" in str(type_exon7_93)
-                        or "and" in str(type_exon7_165)
-                        or "and" in str(type_exon7_272)
-                        or "and" in str(type_exon7_307)
-                        or "and" in str(type_exon7_371)
-                        or "and" in str(type_exon7_446)
-                        or "and" in str(type_exon7_680)
-                        or "and" in str(type_exon7_687)
-                    ):
-                        heterozygous = True
-
-                    if heterozygous:
-                        scores = [
-                            (a1_evidence, "A1"),
-                            (a2_evidence, "A2"),
-                            (a3_evidence, "A3"),
-                        ]
-                        scores.sort(reverse=True)
-
-                        if scores[0][0] > 0 and scores[1][0] > 0:
-                            ExtendedGenotype = f"{scores[0][1]}{scores[1][1]}"
-                        else:
-                            ExtendedGenotype = f"{scores[0][1]}{scores[0][1]}"
-                    else:
-                        if a1_evidence > a2_evidence and a1_evidence > a3_evidence:
-                            ExtendedGenotype = "A1A1"
-                        elif a2_evidence > a1_evidence and a2_evidence > a3_evidence:
-                            ExtendedGenotype = "A2A2"
-                        elif a3_evidence > a1_evidence and a3_evidence > a2_evidence:
-                            ExtendedGenotype = "A3A3"
-                        else:
-                            ExtendedGenotype = "A1A1"
-                except Exception as e:
-                    print(f"Error in A subtype determination: {str(e)}")
-                    print(
-                        f"Unable to determine A subtypes, defaulting to base genotype 'AA'"
-                    )
-                    ExtendedGenotype = "AA"
-
-                    try:
-                        print(
-                            f"Position data that caused error - Exon6_27: {type_exon6_27}, Exon6_29: {type_exon6_29}"
-                        )
-                        print(
-                            f"Exon7_93: {type_exon7_93}, Exon7_165: {type_exon7_165}, Exon7_687: {type_exon7_687}"
-                        )
-                    except:
-                        pass
-
             ## combination 14 | BB ---------------------------------------------------------------------------
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "B"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "B"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "B")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "B")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "B"
                 Genotype = "BB"
                 ExtendedGenotype = "BB"
-                # B subtyping removed as requested
 
             ## combination 15 | AB ---------------------------------------------------------------------------
             elif (
-                type_exon6 == "A or B or O"
-                and type_exon7_422 == "(A or O) and B"
-                and type_exon7_428 == "O and (A or B)"
-                and type_exon7_429 == "(A or O) and B"
-                and type_exon7_431 == "O and (A or B)"
+                (type_exon6 == "A or B or O")
+                and (type_exon7_422 == "(A or O) and B")
+                and (type_exon7_428 == "O and (A or B)")
+                and (type_exon7_429 == "(A or O) and B")
+                and (type_exon7_431 == "O and (A or B)")
             ):
                 Phenotype = "AB"
                 Genotype = "AB"
                 ExtendedGenotype = "AB"
+
+            ## TODO extend to capture ABO*A subtypes (A1, A2, and A3)
 
             ## UNKNOWN None of the above --------------------------------------------------------------------
             else:

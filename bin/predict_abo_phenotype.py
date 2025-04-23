@@ -145,7 +145,7 @@ def read_nucleotide_frequencies(input_file):
 def read_coverage_file(coverage_file):
     """
     Read coverage information from coverage statistics file.
-    Returns a dictionary with numreads and covbases if found, otherwise empty dict.
+    Returns a dictionary with numreads and coverage if found, otherwise empty dict.
     """
 
     print(
@@ -167,21 +167,21 @@ def read_coverage_file(coverage_file):
         print(f"Found {len(df)} data rows with columns: {list(df.columns)}")
 
         numreads_col = None
-        covbases_col = None
+        coverage_col = None
 
         for col in df.columns:
             if "numreads" in col.lower():
                 numreads_col = col
-            elif "covbases" in col.lower():
-                covbases_col = col
+            elif "coverage" in col.lower():
+                coverage_col = col
 
-        if numreads_col and covbases_col:
+        if numreads_col and coverage_col:
             numreads = int(df.iloc[0][numreads_col])
-            covbases = int(df.iloc[0][covbases_col])
+            coverage = int(df.iloc[0][coverage_col])
 
-            coverage_info = {"numreads": numreads, "covbases": covbases}
+            coverage_info = {"numreads": numreads, "covbases": coverage}
 
-            print(f"Extracted coverage info: numreads={numreads}, covbases={covbases}")
+            print(f"Extracted coverage info: numreads={numreads}, coverage={coverage}")
             return coverage_info
         else:
             print(f"Required columns not found. Available columns: {list(df.columns)}")

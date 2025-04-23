@@ -6,7 +6,34 @@ import sys
 import os
 
 
-def parse_mpileup_line(line):
+def create_zero_stats(pos, ref_base):
+    """Create a stats dictionary with zero values."""
+    return {
+        "pos": pos,
+        "ref_base": ref_base,
+        "match_percent": 0,
+        "mismatch_percent": 0,
+        "insertion_percent": 0,
+        "deletion_percent": 0,
+        "A_percent": 0,
+        "G_percent": 0,
+        "C_percent": 0,
+        "T_percent": 0,
+        "depth": 0,
+    }
+
+
+def write_stats(output_file, stats):
+    """Write statistics to the output file."""
+    output_file.write(
+        f"{stats['pos']}\t{stats['ref_base']}\t{stats['match_percent']}\t"
+        f"{stats['mismatch_percent']}\t{stats['insertion_percent']}\t{stats['deletion_percent']}\t"
+        f"{stats['A_percent']}\t{stats['G_percent']}\t{stats['C_percent']}\t{stats['T_percent']}\t"
+        f"{stats['depth']}\n"
+    )
+
+
+def parse_mpileup_line(line, exon_info=None, total_rows=0):
     """Parse a single line from a mpileup file and calculate nucleotide statistics."""
     try:
         fields = line.strip().split("\t")
@@ -67,18 +94,56 @@ def parse_mpileup_line(line):
                 i += 1
 
         total_events = matches + mismatches + insertions + deletions
+        total_nucleotides = matches + mismatches  # Sum of just ATGC counts
 
         if total_events == 0:
             return create_zero_stats(pos, ref_base)
 
-        def calc_percent(count):
-            return int((count / total_events) * 100)
-
-        base_percentages = {
-            base: calc_percent(count) for base, count in base_counts.items()
-        }
-        insertion_percent = calc_percent(insertions)
-        deletion_percent = calc_percent(deletions)
+        # Determine if we should include insertions and deletions in the calculation
+        include_indels = True
+        is_exon6 = exon_info == "exon6"
+        
+        if is_exon6 and coverage < 200 and pos != 22:
+            include_indels = False
+        elif total_rows > 140 and coverage < 200:
+            # Only include indels at key diagnostic positions
+            if pos not in [431, 687]:
+                include_indels = False
+        
+        # When we're ignoring indels, we need to ensure A+T+G+C = 100%
+        if include_indels:
+            # Using all events as denominator
+            denominator = total_events
+            
+            # Calculate percentages for bases and indels
+            base_percentages = {
+                base: int((count / denominator) * 100) for base, count in base_counts.items()
+            }
+            insertion_percent = int((insertions / denominator) * 100)
+            deletion_percent = int((deletions / denominator) * 100)
+        else:
+            # When ignoring indels, use only ATGC counts as denominator
+            denominator = total_nucleotides
+            
+            if denominator == 0:
+                return create_zero_stats(pos, ref_base)
+                
+            # Calculate percentages for bases only - should sum to 100%
+            base_percentages = {
+                base: int((count / denominator) * 100) for base, count in base_counts.items()
+            }
+            
+            # Force sum of ATGC to be 100% by adjusting the reference base
+            # This handles any rounding issues
+            atgc_sum = sum(base_percentages.values())
+            if atgc_sum != 100 and atgc_sum > 0:
+                # Adjust the reference base percentage to make sum exactly 100%
+                diff = 100 - atgc_sum
+                base_percentages[ref_base] += diff
+            
+            # Set indel percentages to zero when ignoring them
+            insertion_percent = 0
+            deletion_percent = 0
 
         match_percent = base_percentages[ref_base]
         mismatch_percent = sum(
@@ -102,112 +167,137 @@ def parse_mpileup_line(line):
         print(f"Error processing line: {line.strip()}", file=sys.stderr)
         print(f"Exception: {str(e)}", file=sys.stderr)
         return None
+    
+    
+def process_mpileup_file(input_file, output_file, summary_file=None):
+    """Process an mpileup file and output nucleotide statistics."""
+    # Check if input file exists
+    if not os.path.exists(input_file):
+        print(f"Error: Input file '{input_file}' does not exist", file=sys.stderr)
+        return False
 
+    # Check if output directory exists
+    output_dir = os.path.dirname(output_file)
+    if output_dir and not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir)
+        except OSError as e:
+            print(f"Error creating output directory: {str(e)}", file=sys.stderr)
+            return False
 
-def create_zero_stats(pos, ref_base):
-    """Create a stats dictionary with zero values."""
-    return {
-        "pos": pos,
-        "ref_base": ref_base,
-        "match_percent": 0,
-        "mismatch_percent": 0,
-        "insertion_percent": 0,
-        "deletion_percent": 0,
-        "A_percent": 0,
-        "G_percent": 0,
-        "C_percent": 0,
-        "T_percent": 0,
-        "depth": 0,
-    }
-
-
-def process_mpileup(mpileup_file, output_file):
-    """Process a mpileup file and output nucleotide statistics."""
+    # Process the file
     try:
-        with open(output_file, "w") as out_f:
-            out_f.write(
-                "Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\t"
-                "Insertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth\n"
-            )
-
-            open_func = gzip.open if mpileup_file.endswith(".gz") else open
-            mode = "rt" if mpileup_file.endswith(".gz") else "r"
-
-            with open_func(mpileup_file, mode) as f:
-                for line_num, line in enumerate(f, 1):
-                    try:
-                        stats = parse_mpileup_line(line)
+        # First pass: determine reference length and total rows
+        unique_positions = set()
+        total_rows = 0
+        
+        if input_file.endswith('.gz'):
+            with gzip.open(input_file, 'rt') as f:
+                for line in f:
+                    total_rows += 1
+                    fields = line.strip().split("\t")
+                    if len(fields) >= 2:
+                        try:
+                            unique_positions.add(int(fields[1]))
+                        except ValueError:
+                            print(f"Warning: Invalid position value in line: {line.strip()}", file=sys.stderr)
+        else:
+            with open(input_file, 'r') as f:
+                for line in f:
+                    total_rows += 1
+                    fields = line.strip().split("\t")
+                    if len(fields) >= 2:
+                        try:
+                            unique_positions.add(int(fields[1]))
+                        except ValueError:
+                            print(f"Warning: Invalid position value in line: {line.strip()}", file=sys.stderr)
+        
+        # Determine exon type based on reference length
+        ref_length = len(unique_positions)
+        exon_info = None
+        if 130 <= ref_length <= 140:
+            exon_info = "exon6"
+        elif 800 <= ref_length <= 830:
+            exon_info = "exon7"
+            
+        # Second pass: process the file with exon info
+        with open(output_file, "w") as out:
+            out.write("Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\tInsertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth\n")
+            
+            if input_file.endswith('.gz'):
+                with gzip.open(input_file, 'rt') as f:
+                    for line in f:
+                        stats = parse_mpileup_line(line, exon_info, total_rows)
                         if stats:
-                            out_f.write(
-                                f"{stats['pos']}\t{stats['ref_base']}\t"
-                                f"{stats['match_percent']}\t{stats['mismatch_percent']}\t"
-                                f"{stats['insertion_percent']}\t{stats['deletion_percent']}\t"
-                                f"{stats['A_percent']}\t{stats['G_percent']}\t{stats['C_percent']}\t{stats['T_percent']}\t"
-                                f"{stats['depth']}\n"
-                            )
-                    except Exception as e:
-                        print(f"Error on line {line_num}: {str(e)}", file=sys.stderr)
-                        continue
+                            write_stats(out, stats)
+            else:
+                with open(input_file, 'r') as f:
+                    for line in f:
+                        stats = parse_mpileup_line(line, exon_info, total_rows)
+                        if stats:
+                            write_stats(out, stats)
+
+        if summary_file:
+            generate_summary(output_file, summary_file)
+        
+        return True
+    except IOError as e:
+        print(f"I/O error processing file: {str(e)}", file=sys.stderr)
+        return False
     except Exception as e:
         print(f"Error processing file: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+        return False
 
 
 def generate_summary(stats_file, summary_file, threshold=10):
+    """Generate a summary of polymorphic positions."""
     try:
         with open(stats_file, "r") as stats, open(summary_file, "w") as summary:
-            next(stats)
-
+            try:
+                next(stats)  # Skip header
+            except StopIteration:
+                print(f"Warning: Stats file {stats_file} appears to be empty", file=sys.stderr)
+                return False
+                
             for line in stats:
-                fields = line.strip().split("\t")
-                pos, ref = fields[0], fields[1]
-                match_percent = int(fields[2])
-                mismatch_percent = int(fields[3])
-                ins_percent, del_percent = int(fields[4]), int(fields[5])
-                a_percent, g_percent, c_percent, t_percent = map(int, fields[6:10])
-                depth = int(fields[10])
+                try:
+                    fields = line.strip().split("\t")
+                    pos, ref = fields[0], fields[1]
+                    match_percent = int(fields[2])
+                    mismatch_percent = int(fields[3])
+                    ins_percent, del_percent = int(fields[4]), int(fields[5])
+                    a_percent, g_percent, c_percent, t_percent = map(int, fields[6:10])
+                    depth = int(fields[10])
 
-                if (
-                    mismatch_percent >= threshold
-                    or ins_percent >= threshold
-                    or del_percent >= threshold
-                ):
-                    summary.write(f"(1-based) Position:{pos}, Reference Base={ref}\n")
-                    summary.write(f"Aligned Read Count:{depth}\n")
-                    summary.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
-                    summary.write(
-                        f"{match_percent}\t{mismatch_percent}\t{ins_percent}\t{del_percent}\t"
-                        f"{a_percent}\t{g_percent}\t{c_percent}\t{t_percent}\t\n"
-                    )
-
-                    context = get_sequence_context(stats_file, int(pos))
-                    summary.write(f"{context}\n\n")
-
+                    if (
+                        mismatch_percent >= threshold
+                        or ins_percent >= threshold
+                        or del_percent >= threshold
+                    ):
+                        summary.write(f"(1-based) Position:{pos}, Reference Base={ref}\n")
+                        summary.write(f"Aligned Read Count:{depth}\n")
+                        summary.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
+                        summary.write(
+                            f"{match_percent}\t{mismatch_percent}\t{ins_percent}\t{del_percent}\t"
+                            f"{a_percent}\t{g_percent}\t{c_percent}\t{t_percent}\n\n"
+                        )
+                except (IndexError, ValueError) as e:
+                    print(f"Error processing line in stats file: {line.strip()}", file=sys.stderr)
+                    print(f"Exception: {str(e)}", file=sys.stderr)
+                    continue
+        return True
+    except IOError as e:
+        print(f"I/O error generating summary: {str(e)}", file=sys.stderr)
+        return False
     except Exception as e:
         print(f"Error generating summary: {str(e)}", file=sys.stderr)
-        sys.exit(1)
-
-
-def get_sequence_context(stats_file, pos, window=10):
-    context = ["N"] * (2 * window + 1)
-    with open(stats_file, "r") as stats:
-        next(stats)
-        for line in stats:
-            fields = line.strip().split("\t")
-            current_pos = int(fields[0])
-            if abs(current_pos - pos) <= window:
-                context[current_pos - pos + window] = fields[1]
-
-    center_index = window
-    before = "".join(context[:center_index])
-    center = context[center_index]
-    after = "".join(context[center_index + 1 :])
-    return f"{before} {center} {after}"
+        return False
 
 
 def main():
+    """Parse command line arguments and process mpileup file."""
     parser = argparse.ArgumentParser(
-        description="Analyze mpileup file for nucleotide statistics."
+        description="Calculate nucleotide statistics from mpileup format"
     )
     parser.add_argument(
         "-i",
@@ -234,13 +324,15 @@ def main():
 
     args = parser.parse_args()
 
-    process_mpileup(args.input, args.output)
-
-    print(f"Nucleotide stats written to: {args.output}")
-
-    if args.summary:
-        generate_summary(args.output, args.summary, args.threshold)
-        print(f"SNP summary written to: {args.summary}")
+    success = process_mpileup_file(args.input, args.output, args.summary)
+    
+    if success:
+        print(f"Nucleotide stats written to: {args.output}")
+        
+        if args.summary:
+            print(f"SNP summary written to: {args.summary}")
+    else:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
