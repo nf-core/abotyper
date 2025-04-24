@@ -6,11 +6,11 @@
   </picture>
 </h1>
 
-[![GitHub Actions CI Status](https://github.com/nf-core/abotyper/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/abotyper/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/linting.yml)
+<!-- [![GitHub Actions CI Status](https://github.com/nf-core/abotyper/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/ci.yml)
+[![GitHub Actions Linting Status](https://github.com/nf-core/abotyper/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/linting.yml) -->
 [![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/abotyper/results)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
-[![Cite with Zenodo](http://img.shields.io/badge/DOI-XXXXX/zenodo.XXXXX)](https://doi.org/XXXXXX)
+<!-- [![Cite with Zenodo](http://img.shields.io/badge/DOI-XXXXX/zenodo.XXXXX)](https://doi.org/XXXXXX) -->
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
@@ -209,8 +209,9 @@ Maintenance and future developements will be led by Fredrick Mobegi.
 
 # Acknowledgements
 
-|      [![WA Health\|PathWest](docs/images/pathwest.png)](https://pathwest.health.wa.gov.au/)      |            [![UWA Sch. Biomed. Sci.](docs/images/uwa.png)](https://www.uwa.edu.au/schools/biomedical-sciences)             |
-| :-----------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------: |
+|      [![WA Health\|PathWest](docs/images/pathwest.png)](https://pathwest.health.wa.gov.au/)                    |
+|   [![UWA Sch. Biomed. Sci.](docs/images/uwa.png)](https://www.uwa.edu.au/schools/biomedical-sciences)             |
+| :-----------------------------------------------------------------------------------------------: |
 
 # Contributions and Support
 
