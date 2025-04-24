@@ -26,7 +26,8 @@
 
 # ABO blood typing using Oxford Nanopore MinION sequencing
 
-nf-core/abotyper is a bioinformatics pipeline that analyses data obtained from Third Generation Sequencing of the ABO gene to deduce the ABO blood type of the sample. It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related Single nucleotide variants.
+nf-core/abotyper is a bioinformatics pipeline that analyses data obtained from Third Generation Sequencing of the `Homo sapiens ABO, alpha 1-3-N-acetylgalactosaminyltransferase and alpha 1-3-galactosyltransferase` (ABO) gene to deduce the ABO blood type.<br/>
+It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related Single nucleotide variants (SVNs).
 
 ![nf-core/abotyper metro map](docs/images/nf-core-abotyper-metro-map.jpg)
 
@@ -38,10 +39,8 @@ ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
 
 Exon 7 CDS reference sequence was truncated at 817 bp as this captures the targeted SNVs within the exon and UTR's
 
-Additional reading material on ABO [here](https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/).
-
-
-SNVs relevant to ABO blood group genotyping are documented [here](https://bloodgroupdatabase.org/groups/details/?group_name=ABO)
+If you would like to get up to speed with ABO genotyping, there is detailed reading material [here](https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/).
+All SNVs relevant to ABO blood group genotyping have also been documented extensively [here](https://bloodgroupdatabase.org/groups/details/?group_name=ABO)
 
 # Core dependencies
 
