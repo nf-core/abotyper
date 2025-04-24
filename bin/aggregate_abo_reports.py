@@ -22,34 +22,32 @@ __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Development"
 
-"""
-This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
-
-nf-core/abotyper is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This pipeline is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with nf-core/abotyper. If not, see <http://www.gnu.org/licenses/>.
-
-
-This class collates all ABO phenotype results from each sample into an a general table 
-and generates an Excel worksheet and a CSV file for export to LIS soft or 
-other general purpose lab management systems.
-"""
-
 print(
     "\033[92m\n ********* Started combining samples to single file ********* \033[0m\n"
 )
 
 
 class ABOReportParser:
+    """
+    This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
+
+    nf-core/abotyper is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This pipeline is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with nf-core/abotyper. If not, see <http://www.gnu.org/licenses/>.
+
+    This class collates all ABO phenotype results from each sample into an a general table
+    and generates an Excel worksheet and a CSV file for export to LIS soft or
+    other general purpose lab management systems.
+    """
 
     def __init__(self, input_dir):
         """
@@ -499,7 +497,7 @@ class ABOReportParser:
             elif t >= 80:
                 return "A2"
             elif 20 < c < 80 and 20 < t < 80:
-                return "A"
+                return "A or B or O"
 
         elif pos == 29:  # c.268
             if t >= 80:
@@ -507,7 +505,7 @@ class ABOReportParser:
             elif c >= 80:
                 return "A2"
             elif 20 < t < 80 and 20 < c < 80:
-                return "A"
+                return "A or B or O"
 
         elif pos == 58:  # c.297
             if a >= 80:
@@ -515,7 +513,7 @@ class ABOReportParser:
             elif g >= 80:
                 return "A2"
             elif 20 < a < 80 and 20 < g < 80:
-                return "A"
+                return "A or B or O"
 
         return ""
 
@@ -572,57 +570,57 @@ class ABOReportParser:
                 return "A1"
             elif t >= 80:
                 return "A2 or A3"
-            # elif 20 < c < 80 and 20 < t < 80:
-            #     return "A"
+            elif 20 < c < 80 and 20 < t < 80:
+                return "A or B or O"
         elif pos == 165:  # genomic pos 539
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
-            # elif 20 < c < 80 and 20 < t < 80:
-            #     return "A"
+            elif 20 < c < 80 and 20 < t < 80:
+                return "A or B or O"
         elif pos == 272:  # genomic pos 646
             if t >= 80:
                 return "A1"
             elif a >= 80:
                 return "A2"
-            # elif 20 < t < 80 and 20 < a < 80:
-            #     return "A1 or A2"
+            elif 20 < t < 80 and 20 < a < 80:
+                return "A1 or A2"
         elif pos == 307:  # genomic pos 681
             if g >= 80:
                 return "A1 or A2"
             elif a >= 80:
                 return "A3"
-            # elif 20 < g < 80 and 20 < a < 80:
-            #     return "A"
+            elif 20 < g < 80 and 20 < a < 80:
+                return "A or B or O"
         elif pos == 371:  # genomic pos 745
             if c >= 80:
                 return "A1 or A2"
             elif t >= 80:
                 return "A3"
-            # elif 20 < c < 80 and 20 < t < 80:
-            #     return "A"
+            elif 20 < c < 80 and 20 < t < 80:
+                return "A or B or O"
         elif pos == 446:  # genomic pos 820
             if a >= 80:
                 return "A1 or A2"
             elif c >= 80:
                 return "A3"
-            # elif 20 < a < 80 and 20 < c < 80:
-            #     return "A"
+            elif 20 < a < 80 and 20 < c < 80:
+                return "A or B or O"
         elif pos == 680:  # genomic pos 1054
             if g >= 80:
                 return "A1 or A3"
             elif a >= 80:
                 return "A2"
             elif 20 < g < 80 and 20 < a < 80:
-                return "A"
+                return "A or B or O"
         elif pos == 687:  # genomic pos 1061 /A3
             if c >= 80:
                 return "A1"
             elif dele >= 80:  # Deletion indicates A2 or A3 subtypes
                 return "A2 or A3"
-            # elif 20 < c < 80 and 20 < dele < 80:
-            #     return "A"
+            elif 20 < c < 80 and 20 < dele < 80:
+                return "A or B or O"
 
         return ""
 

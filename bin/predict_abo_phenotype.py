@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 
 import argparse
 import datetime
@@ -28,9 +30,24 @@ __status__ = "Development"
 
 
 """
-A script to extract variants relevant for determining ABO phenotypes from SAMtools pileup results.
-"""
+This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
 
+nf-core/abotyper is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This pipeline is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with nf-core/abotyper. If not, see <http://www.gnu.org/licenses/>.
+
+This class extract variants relevant for determining ABO phenotypes from SAMtools pileup summary file generated
+by SAMtoolsPileupStats (stats_from_pileup.py).
+"""
 
 print("=" * 80)
 print(f"ABO Blood Type Prediction Script - Started at {datetime.datetime.now()}")
@@ -498,7 +515,10 @@ def main():
         help="Input samtools mpileup nucleotide variants metrics",
     )
     parser.add_argument(
-        "-o", "--output", required=True, help="Output filename for ABO phenotype report"
+        "-o",
+        "--output",
+        required=True,
+        help="Output filename for ABO phenotype report",
     )
     parser.add_argument(
         "-c", "--coverage", help="Input samtools coverage statistics file"

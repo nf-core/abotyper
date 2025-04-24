@@ -6,7 +6,7 @@ process GETABOSNPS {
     changes to python script not processed properly on re-run
     Disable caching for the process to repeat every time
     */
-    cache false  
+    // cache false  
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

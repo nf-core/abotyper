@@ -13,39 +13,31 @@ process ABOSNPS2PHENO {
     changes to python script not processed properly on re-run
     Disable caching for the process to repeat every time
     */
-    cache false
+    // cache false
     
     input:
-    tuple path(sample_dir), val(metas), path(files)
+    path(samples_dir)
+    path(per_sample_processing)
 
     output:
-    path "*.txt", emit: text_files
-    path "*.xlsx", emit: excel_files
-    path "*.csv", emit: csv_files
-    path "*.log", emit: log_files
-    path "final_export.csv", emit: final_export
-    path "versions.yml", emit: versions
+    path "ABO_result.txt"        , emit: txt
+    path "ABO_result.xlsx"       , emit: xls
+    path "ABO_results.log"       , emit: log
+    path "final_export.csv"      , emit: csv
+    path "versions.yml"          , emit: versions
 
     script:
-    def sample_id = sample_dir.name
     """
-    mkdir -p ${sample_id}/exon6 ${sample_id}/exon7
-    
-    for i in {0..1}; do
-        if [[ "\${metas[\$i].exon}" == "exon6" ]]; then
-            cp ${files[i]} ${sample_id}/exon6/${sample_id}.ABOPhenotype.txt
-        elif [[ "\${metas[\$i].exon}" == "exon7" ]]; then
-            cp ${files[i]} ${sample_id}/exon7/${sample_id}.ABOPhenotype.txt
-        fi
-    done
-
     python3 $projectDir/bin/aggregate_abo_reports.py \\
-        ${sample_id} 2>&1 | tee ABO_results.log
+        per_sample_processing 2>&1 | tee ABO_results.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        xlsxwriter: \$(python -c "import xlsxwriter; print(xlsxwriter.__version__)")
+        openpyxl: \$(python -c "import openpyxl; print(openpyxl.__version__)")
     END_VERSIONS
     """
 
@@ -53,11 +45,16 @@ process ABOSNPS2PHENO {
     """
     touch final_export.csv
     touch ABO_results.log
+    touch ABO_result.xlsx
+    touch ABO_result.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        xlsxwriter: \$(python -c "import xlsxwriter; print(xlsxwriter.__version__)")
+        openpyxl: \$(python -c "import openpyxl; print(openpyxl.__version__)")
     END_VERSIONS
     """
 }

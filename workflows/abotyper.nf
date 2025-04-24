@@ -16,13 +16,9 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { AGGREGATE_REPORTS           } from '../modules/local/aggregatereports/main'
 include { MINIMAP2_ALIGN_READS        } from '../subworkflows/local/minimap_align_exons/main'
 include { PREDICTABOPHENOTYPE         } from '../subworkflows/local/predictabophenotype/main'
 include { VARIANTS_QUANTIFICATION     } from '../subworkflows/local/variant_calling_mpileup/main'
-
-/*
-
 
 
 /*
@@ -95,7 +91,6 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.exon7cov
     )
     ch_versions = ch_versions.mix(PREDICTABOPHENOTYPE.out.versions.first())
-    
     
     //
     // Collate and save software versions
