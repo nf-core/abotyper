@@ -210,8 +210,8 @@ Maintenance and future developements will be led by Fredrick Mobegi.
 # Acknowledgements
 
 <p float="center">
-  <img src = "docs/images/pathwest_logo.png", width="400"/>
-  <img src = "docs/images/uwa_logo.png", width="400">
+  <img src = "docs/images/pathwest_logo.png", width="400", height="90"/>
+  <img src = "docs/images/uwa_logo.png", width="400", height="90">
 </p>
 
 # Contributions and Support
