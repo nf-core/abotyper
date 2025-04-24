@@ -209,9 +209,10 @@ Maintenance and future developements will be led by Fredrick Mobegi.
 
 # Acknowledgements
 
-[![WA Health\|PathWest](docs/images/pathwest.png)](https://pathwest.health.wa.gov.au/)<br/>
-[![UWA Sch. Biomed. Sci.](docs/images/uwa.png)](https://www.uwa.edu.au/schools/biomedical-sciences)<br/>
-
+<p float="center">
+  <img src = (docs/images/pathwest.png)](https://pathwest.health.wa.gov.au/) width="100"/>
+  <img src = (docs/images/uwa.png)](https://www.uwa.edu.au/schools/biomedical-sciences) width="100">
+</p>
 
 # Contributions and Support
 
