@@ -222,7 +222,13 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 # Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use nf-core/abotyper for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+If you use nf-core/abotyper for your analysis, please cite it using the following publication:
+
+> **Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing.**
+>
+> Fredrick M. Mobegi, Samuel Bruce, Naser El-Lagta, Felipe Ayora, Benedict M. Matern, Mathijs Groeneweg, Lloyd J. D'Orsogna & Dianne De Santis.
+>
+>_Int. J. Mol. Sci._ 2025 Jun 06. doi: [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443).
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
