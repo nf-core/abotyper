@@ -1,4 +1,7 @@
+# macOS system files
 .DS_Store
+
+# MultiQC volatile outputs
 multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt
 multiqc/multiqc_data/multiqc.parquet
 multiqc/multiqc_data/multiqc.log
@@ -8,5 +11,31 @@ multiqc/multiqc_data/multiqc_software_versions.txt
 multiqc/multiqc_data/llms-full.txt
 multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
 multiqc/multiqc_report.html
+
+# FastQC outputs (volatile)
 fastqc/*_fastqc.{html,zip}
+
+# Pipeline info (time-stamped and environment-specific)
 pipeline_info/*.{html,json,txt,yml}
+
+# Additional abotyper-specific volatile files
+per_sample_processing/**/exon*/alignment/*.bam.bai
+per_sample_processing/**/exon*/alignment/*.flagstat
+per_sample_processing/**/exon*/alignment/*.stats
+per_sample_processing/**/exon*/alignment/*.coverage.txt
+
+# Log files
+*.log
+**/*.log
+
+# Temporary and work files
+work/
+.nextflow*
+*.tmp
+*.temp
+
+# BAM index files (generated automatically)
+*.bai
+
+# Any timestamp-containing files
+*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]*

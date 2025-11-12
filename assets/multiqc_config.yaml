@@ -1,0 +1,80 @@
+title: "Molecular ABO typing"
+subtitle: "Genotyping and phenotyping of ABO blood groups using Oxford Nanopore MinION sequencing.<br>"
+
+custom_logo: "pathwest_logo.png"
+custom_logo_url: "https://www.pathwest.health.wa.gov.au/Our-Services/Clinical-Services/Immunology"
+custom_logo_title: "Department of Clinical Immunology, PathWest Laboratory Medicine WA, Fiona Stanley Hospital Network, Murdoch WA 6150, Australia"
+
+report_header_info:
+  - Contact E-mail: "fredrick.mobegi@health.wa.gov.au"
+  - Application Type: "Amplicon sequencing"
+  - Project Type: "ABO genotyping"
+  - Sequencing Platform: "Oxford Nanopore GridION"
+  - Sequencing Setup: "MinION Flow Cell, Nanopore Chemistry R10.4.1"
+  - Publication: >
+      Mobegi FM, Bruce S, El-Lagta N, Ayora F, Matern BM, Groeneweg M, D'Orsogna LJ, De Santis D.
+      Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing.
+      Int J Mol Sci. 2025 Jun 6;26(12):5443.
+  - DOI: >
+      [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443)
+  - PMID: >
+      [40564908](https://pubmed.ncbi.nlm.nih.gov/40564908)
+  - PMCID: >
+      [PMC12192586](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12192586)
+
+# Sample name handling - FIXED: Use dictionary format instead of list
+sample_names_replace:
+  "_exon6": " (Exon 6)"
+  "_exon7": " (Exon 7)"
+
+# Sample names to ignore during processing
+sample_names_ignore:
+  - "_exon6"
+  - "_exon7"
+
+# Report section order
+report_section_order:
+  software_versions:
+    order: -1000
+
+# Run only these modules
+run_modules:
+  - software_versions
+  - fastqc
+  - samtools
+
+# Order of modules
+module_order:
+  - fastqc:
+      name: "FastQC"
+      comment: "This section aggregates quality check reports generated using fastqc for each sample reads."
+      path_filters:
+        - "*_fastqc.zip"
+  - samtools:
+      name: "Samtools Coverage"
+      comment: "This section summarises coverage metrics for alignments."
+      path_filters:
+        - "*.coverage.txt"
+
+# File name cleaning
+extra_fn_clean_exts:
+  - "_val"
+  - "_fastqc"
+
+# Table column visibility
+table_columns_visible:
+  fastqc:
+    percent_duplicates: false
+  samtools:
+    coverage: true
+    mean_coverage: true
+    coverage_1x: true
+
+# General settings
+skip_generalstats: false
+disable_version_detection: true
+profile_runtime: true
+
+# File patterns to ignore
+ignore:
+  - "versions.yml"

@@ -1,0 +1,211 @@
+nextflow_process {
+
+    name "Test Process GETABOSNPS"
+    script "../main.nf"
+    process "GETABOSNPS"
+
+    tag "getabosnps"
+    tag "abotyper"
+    tag "abo_blood_typing"
+    tag "snp_extraction"
+
+    test("Should extract ABO SNPs from exon6 alignment statistics") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSPOS_barcode01', exon:'exon6', sample_type:'patient' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.snps.size() == 1 },
+                { assert process.out.snps.get(0).get(0).id == 'NGSPOS_barcode01' },
+                { assert process.out.snps.get(0).get(0).exon == 'exon6' },
+                { assert path(process.out.snps.get(0).get(1)).name == 'NGSPOS_barcode01.ABO_SNPs.tsv' },
+                { assert path(process.out.versions.get(0)).text.contains("python:") },
+                { assert path(process.out.versions.get(0)).text.contains("${task.process}") }
+            )
+        }
+    }
+
+    test("Should extract ABO SNPs from exon7 alignment statistics") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSNEG_barcode12', exon:'exon7', sample_type:'control' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.snps.get(0).get(0).exon == 'exon7' },
+                { assert path(process.out.snps.get(0).get(1)).name == 'NGSNEG_barcode12.ABO_SNPs.tsv' },
+                { assert path(process.out.snps.get(0).get(1)).exists() },
+                { assert path(process.out.snps.get(0).get(1)).text.length() > 0 } // Should contain SNP data
+            )
+        }
+    }
+
+    test("Should handle complex ABO sample naming patterns") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'IMM-45-44874_barcode25',
+                        exon:'exon6',
+                        sample_type:'patient',
+                        expected_phenotype:'AB'
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.snps.get(0).get(0).id == 'IMM-45-44874_barcode25' },
+                { assert process.out.snps.get(0).get(0).expected_phenotype == 'AB' },
+                { assert path(process.out.snps.get(0).get(1)).name.startsWith('IMM-45-44874_barcode25') },
+                { assert path(process.out.snps.get(0).get(1)).name.endsWith('.ABO_SNPs.tsv') }
+            )
+        }
+    }
+
+    test("Should validate ABO SNP extraction output content") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'BTGSPOS_barcode19', exon:'exon6', coverage:'high' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // Validate SNP file structure for ABO analysis
+                {
+                    def snpContent = path(process.out.snps.get(0).get(1)).text
+                    assert snpContent.contains("Position") || snpContent.contains("SNP") || snpContent.contains("Allele")
+                },
+                // Ensure versions capture all required tools
+                {
+                    def versionsContent = path(process.out.versions.get(0)).text
+                    assert versionsContent.contains("python:")
+                    assert versionsContent.contains("pandas:") || versionsContent.contains("biopython:")
+                }
+            )
+        }
+    }
+
+    test("Should handle low coverage samples gracefully") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'INGSPOS_barcode01', exon:'exon7', coverage:'low', quality:'poor' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.snps.size() == 1 },
+                { assert process.out.versions.size() == 1 },
+                // Even with low coverage, files should be created
+                { assert path(process.out.snps.get(0).get(1)).exists() },
+                // Metadata should be preserved
+                { assert process.out.snps.get(0).get(0).coverage == 'low' },
+                { assert process.out.snps.get(0).get(0).quality == 'poor' }
+            )
+        }
+    }
+
+    test("Should work correctly in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'STUB_barcode99', exon:'exon6', test_mode:'stub' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.snps.get(0).get(0).id == 'STUB_barcode99' },
+                { assert path(process.out.snps.get(0).get(1)).exists() },
+                { assert path(process.out.snps.get(0).get(1)).name == 'STUB_barcode99.ABO_SNPs.tsv' },
+                { assert process.out.versions },
+                { assert path(process.out.versions.get(0)).text.contains("python:") }
+            )
+        }
+    }
+
+    test("Should preserve comprehensive metadata through ABO workflow") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'Sample1-2024-12345_barcode22',
+                        exon:'exon6',
+                        sample_type:'patient',
+                        expected_phenotype:'A',
+                        sequencing_platform:'nanopore',
+                        coverage_depth:150,
+                        quality_score:35
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_alignment_stats.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // Verify all metadata is preserved
+                { assert process.out.snps.get(0).get(0).id == 'Sample1-2024-12345_barcode22' },
+                { assert process.out.snps.get(0).get(0).exon == 'exon6' },
+                { assert process.out.snps.get(0).get(0).sample_type == 'patient' },
+                { assert process.out.snps.get(0).get(0).expected_phenotype == 'A' },
+                { assert process.out.snps.get(0).get(0).sequencing_platform == 'nanopore' },
+                { assert process.out.snps.get(0).get(0).coverage_depth == 150 },
+                { assert process.out.snps.get(0).get(0).quality_score == 35 }
+            )
+        }
+    }
+}

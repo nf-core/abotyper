@@ -63,7 +63,19 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
+                    "fa_icon": "far fa-file-code",
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/ABO_Database.fasta"
+                },
+                "fai": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fai$",
+                    "description": "Path to FASTA index file.",
+                    "help_text": "This parameter specifies the path to the FASTA index file corresponding to the reference genome.",
+                    "fa_icon": "fas fa-list",
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/ABO_Database.fasta.fai"
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -79,6 +91,75 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
+                }
+            }
+        },
+        "abo_specific_options": {
+            "title": "ABO-specific reference files",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "ABO gene-specific reference files and configuration options.",
+            "properties": {
+                "exon6fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to ABO exon 6 FASTA reference file.",
+                    "help_text": "This parameter specifies the path to the FASTA file containing the ABO exon 6 reference sequence.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "exon7fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to ABO exon 7 FASTA reference file.",
+                    "help_text": "This parameter specifies the path to the FASTA file containing the ABO exon 7 reference sequence.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "exon6fai": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fai$",
+                    "description": "Path to ABO exon 6 FASTA index file.",
+                    "help_text": "This parameter specifies the path to the index file for the ABO exon 6 FASTA reference.",
+                    "fa_icon": "fas fa-list"
+                },
+                "exon7fai": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fai$",
+                    "description": "Path to ABO exon 7 FASTA index file.",
+                    "help_text": "This parameter specifies the path to the index file for the ABO exon 7 FASTA reference.",
+                    "fa_icon": "fas fa-list"
+                },
+                "logo": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to custom logo file.",
+                    "help_text": "This parameter specifies the path to a custom logo file for reports and documentation.",
+                    "fa_icon": "fas fa-image"
+                },
+                "renaming_file": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to file containing sample renaming information.",
+                    "help_text": "A tab-delimited file with sequencingID and sampleName columns used to rename samples during ABO processing. If not provided, original sample names will be used.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "skip_renaming": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Skip sample renaming process.",
+                    "help_text": "When set to true, samples will keep their original names from the input files. When false, the pipeline will attempt to rename samples using the renaming_file parameter for ABO analysis.",
+                    "fa_icon": "fas fa-toggle-on"
                 }
             }
         },
@@ -198,7 +279,8 @@
                     "type": "string",
                     "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
                     "fa_icon": "fas fa-image",
-                    "hidden": true
+                    "hidden": true,
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/pathwest_logo.png"
                 },
                 "multiqc_methods_description": {
                     "type": "string",
@@ -246,6 +328,9 @@
         },
         {
             "$ref": "#/$defs/reference_genome_options"
+        },
+        {
+            "$ref": "#/$defs/abo_specific_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

@@ -1,0 +1,60 @@
+// nf-core subworkflows test minimap_align_exons
+nextflow_workflow {
+
+    name "Test Subworkflow MINIMAP2_ALIGN_READS"
+    script "../main.nf"
+    workflow "MINIMAP2_ALIGN_READS"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/minimap_align_exons"
+    tag "minimap2"
+    tag "minimap2/align"
+    tag "samtools"
+    tag "samtools/coverage"
+    tag "samtools/flagstat"
+    tag "samtools/stats"
+
+
+    test("abo_exon_alignment - fastq - single_end") {
+
+        when {
+            workflow {
+                """
+                // Test inputs matching the actual workflow requirements
+                // ch_combined_input: FASTQ files with exon metadata
+                input[0] = [
+                    [ id:'test_sample', single_end:true, exon:'exon6' ], // meta map with exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true)
+                ]
+                // ch_combined_fasta: FASTA reference files with exon metadata
+                input[1] = [
+                    [ id:'exon6_ref', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ]
+                // ch_combined_fai: FASTA index files with exon metadata
+                input[2] = [
+                    [ id:'exon6_ref', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() },
+                // Verify all expected outputs are present
+                { assert workflow.out.bam },
+                { assert workflow.out.bai },
+                { assert workflow.out.coverage },
+                { assert workflow.out.flagstat },
+                { assert workflow.out.stats },
+                { assert workflow.out.fasta },
+                { assert workflow.out.fai },
+                { assert workflow.out.versions }
+            )
+        }
+    }
+}

@@ -1,0 +1,252 @@
+
+nextflow_process {
+
+    name "Test Process ABOSNPS2PHENO"
+    script "../main.nf"
+    process "ABOSNPS2PHENO"
+
+    tag "abosnps2pheno"
+    tag "abotyper"
+    tag "abo_blood_typing"
+    tag "phenotype_prediction"
+
+    test("Should work correctly in stub mode for phenotype prediction") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSPOS_barcode01', exon:'exon6', sample_type:'patient' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.phenotype.size() == 1 },
+                { assert process.out.phenotype.get(0).get(0).id == 'NGSPOS_barcode01' },
+                { assert process.out.phenotype.get(0).get(0).exon == 'exon6' },
+                { assert path(process.out.phenotype.get(0).get(1)).name == 'NGSPOS_barcode01.ABOPhenotype.txt' },
+                { assert path(process.out.log.get(0)).name == 'NGSPOS_barcode01.log.txt' },
+                { assert process.out.versions },
+                { assert path(process.out.versions.get(0)).text.contains("python:") }
+            )
+        }
+    }
+
+    test("Should handle complex ABO sample naming in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'IMM-45-44874_barcode25',
+                        exon:'exon6',
+                        sample_type:'patient',
+                        expected_phenotype:'AB'
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.phenotype.get(0).get(0).id == 'IMM-45-44874_barcode25' },
+                { assert process.out.phenotype.get(0).get(0).expected_phenotype == 'AB' },
+                { assert path(process.out.phenotype.get(0).get(1)).name.startsWith('IMM-45-44874_barcode25') },
+                { assert path(process.out.phenotype.get(0).get(1)).name.endsWith('.ABOPhenotype.txt') },
+                { assert path(process.out.log.get(0)).name.startsWith('IMM-45-44874_barcode25') },
+                { assert path(process.out.log.get(0)).name.endsWith('.log.txt') }
+            )
+        }
+    }
+
+    test("Should handle exon7 samples in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSNEG_barcode12', exon:'exon7', sample_type:'control' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.phenotype.get(0).get(0).exon == 'exon7' },
+                { assert process.out.phenotype.get(0).get(0).sample_type == 'control' },
+                { assert path(process.out.phenotype.get(0).get(1)).name == 'NGSNEG_barcode12.ABOPhenotype.txt' },
+                { assert path(process.out.log.get(0)).name == 'NGSNEG_barcode12.log.txt' },
+                { assert path(process.out.phenotype.get(0).get(1)).exists() },
+                { assert path(process.out.log.get(0)).exists() }
+            )
+        }
+    }
+
+    test("Should preserve comprehensive metadata in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'Sample1-2024-12345_barcode22',
+                        exon:'exon6',
+                        sample_type:'patient',
+                        expected_phenotype:'A',
+                        sequencing_platform:'nanopore',
+                        coverage_depth:150,
+                        quality_score:35,
+                        snp_count:12
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // Verify all metadata is preserved
+                { assert process.out.phenotype.get(0).get(0).id == 'Sample1-2024-12345_barcode22' },
+                { assert process.out.phenotype.get(0).get(0).exon == 'exon6' },
+                { assert process.out.phenotype.get(0).get(0).sample_type == 'patient' },
+                { assert process.out.phenotype.get(0).get(0).expected_phenotype == 'A' },
+                { assert process.out.phenotype.get(0).get(0).sequencing_platform == 'nanopore' },
+                { assert process.out.phenotype.get(0).get(0).coverage_depth == 150 },
+                { assert process.out.phenotype.get(0).get(0).quality_score == 35 },
+                { assert process.out.phenotype.get(0).get(0).snp_count == 12 },
+                // Verify output files are created with correct naming
+                { assert path(process.out.phenotype.get(0).get(1)).name.contains('Sample1-2024-12345_barcode22') },
+                { assert path(process.out.log.get(0)).name.contains('Sample1-2024-12345_barcode22') }
+            )
+        }
+    }
+
+    test("Should handle ambiguous samples gracefully in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'INGSPOS_barcode01',
+                        exon:'exon7',
+                        coverage:'low',
+                        quality:'ambiguous',
+                        expected_phenotype:'unknown'
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.phenotype.size() == 1 },
+                { assert process.out.log.size() == 1 },
+                { assert process.out.versions.size() == 1 },
+                // Even with ambiguous data, files should be created in stub mode
+                { assert path(process.out.phenotype.get(0).get(1)).exists() },
+                { assert path(process.out.log.get(0)).exists() },
+                // Metadata should be preserved
+                { assert process.out.phenotype.get(0).get(0).coverage == 'low' },
+                { assert process.out.phenotype.get(0).get(0).quality == 'ambiguous' },
+                { assert process.out.phenotype.get(0).get(0).expected_phenotype == 'unknown' }
+            )
+        }
+    }
+
+    test("Should validate stub mode versions capture") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'VERSION_TEST_barcode99', exon:'exon6', test_mode:'stub' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.versions },
+                // Validate that versions are captured correctly in stub mode
+                {
+                    def versionsContent = path(process.out.versions.get(0)).text
+                    assert versionsContent.contains("python:")
+                    assert versionsContent.contains("pandas:") || versionsContent.contains("xlsxwriter:")
+                },
+                // Validate process name is captured in versions
+                { assert path(process.out.versions.get(0)).text.contains("${task.process}") ||
+                         path(process.out.versions.get(0)).text.contains("ABOSNPS2PHENO") }
+            )
+        }
+    }
+
+    test("Should handle multiple blood group prediction scenarios in stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'MULTITYPE_barcode88',
+                        exon:'exon6',
+                        sample_type:'research',
+                        expected_phenotype:'mixed',
+                        analysis_type:'comprehensive'
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/tsv/test_abo_snps.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.phenotype.get(0).get(0).id == 'MULTITYPE_barcode88' },
+                { assert process.out.phenotype.get(0).get(0).expected_phenotype == 'mixed' },
+                { assert process.out.phenotype.get(0).get(0).analysis_type == 'comprehensive' },
+                // Validate that complex phenotype predictions are handled in stub mode
+                { assert path(process.out.phenotype.get(0).get(1)).exists() },
+                { assert path(process.out.log.get(0)).exists() },
+                // Verify file naming follows expected patterns
+                { assert path(process.out.phenotype.get(0).get(1)).name.startsWith('MULTITYPE_barcode88') },
+                { assert path(process.out.log.get(0)).name.startsWith('MULTITYPE_barcode88') }
+            )
+        }
+    }
+}

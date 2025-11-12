@@ -1,0 +1,238 @@
+
+nextflow_process {
+
+    name "Test Process MPILEUP_NUCL_FREQ"
+    script "../main.nf"
+    process "MPILEUP_NUCL_FREQ"
+
+    tag "mpileup_nucl_freq"
+    tag "abotyper"
+    tag "abo_blood_typing"
+    tag "nucleotide_frequency"
+
+    test("Should process ABO exon6 pileup data correctly") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSPOS_barcode01', exon:'exon6' ], // ABO-specific sample naming
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_exon6_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv.size() == 1 },
+                { assert process.out.tsv.get(0).get(0).id == 'NGSPOS_barcode01' },
+                { assert path(process.out.tsv.get(0).get(1)).name == 'NGSPOS_barcode01.AlignmentStatistics.tsv' },
+                { assert path(process.out.txt.get(0)).name == 'ABOReadPolymorphisms.txt' },
+                { assert path(process.out.versions.get(0)).text.contains("python:") },
+                { assert path(process.out.versions.get(0)).text.contains("${task.process}") }
+            )
+        }
+    }
+
+    test("Should process ABO exon7 pileup data correctly") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'NGSNEG_barcode12', exon:'exon7' ], // Different barcode for exon7
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_exon7_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv.get(0).get(0).exon == 'exon7' },
+                { assert path(process.out.tsv.get(0).get(1)).name == 'NGSNEG_barcode12.AlignmentStatistics.tsv' },
+                { assert path(process.out.txt.get(0)).exists() },
+                { assert path(process.out.txt.get(0)).text.length() > 0 } // Should contain polymorphism data
+            )
+        }
+    }
+
+    test("Should handle different ABO sample naming patterns") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'IMM-45-44874_barcode25', sample_type:'control' ], // Complex naming pattern
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv.get(0).get(0).id == 'IMM-45-44874_barcode25' },
+                { assert path(process.out.tsv.get(0).get(1)).name.startsWith('IMM-45-44874_barcode25') },
+                { assert path(process.out.tsv.get(0).get(1)).name.endsWith('.AlignmentStatistics.tsv') }
+            )
+        }
+    }
+
+    test("Should validate ABO-specific output content structure") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'INGSPOS_barcode01', blood_group:'unknown' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // Validate TSV structure for ABO analysis
+                {
+                    def tsvContent = path(process.out.tsv.get(0).get(1)).text
+                    assert tsvContent.contains("Position") || tsvContent.contains("Nucleotide") || tsvContent.contains("Frequency")
+                },
+                // Validate ABOReadPolymorphisms.txt for ABO-specific SNVs
+                {
+                    def polyContent = path(process.out.txt.get(0)).text
+                    assert polyContent.length() > 0 // Should contain polymorphism data
+                },
+                // Ensure versions capture all required tools for ABO pipeline
+                {
+                    def versionsContent = path(process.out.versions.get(0)).text
+                    assert versionsContent.contains("python:")
+                    assert versionsContent.contains("gzip:")
+                    assert versionsContent.contains("re:")
+                }
+            )
+        }
+    }
+
+    test("Should handle edge case with minimal pileup data") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'BTGSPOS_barcode19', coverage:'low' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv.size() == 1 },
+                { assert process.out.txt.size() == 1 },
+                { assert process.out.versions.size() == 1 },
+                // Even with low coverage, files should be created
+                { assert path(process.out.tsv.get(0).get(1)).exists() },
+                { assert path(process.out.txt.get(0)).exists() }
+            )
+        }
+    }
+
+    test("Should work correctly in stub mode for ABO pipeline testing") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'STUB_barcode99', test_mode:'stub' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv.get(0).get(0).id == 'STUB_barcode99' },
+                { assert path(process.out.tsv.get(0).get(1)).exists() },
+                { assert path(process.out.tsv.get(0).get(1)).name == 'STUB_barcode99.AlignmentStatistics.tsv' },
+                // In stub mode, versions should still be captured
+                { assert process.out.versions },
+                { assert path(process.out.versions.get(0)).text.contains("python:") }
+            )
+        }
+    }
+
+    test("Should preserve metadata through ABO workflow") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id:'Sample1-2024-12345_barcode22',
+                        exon:'exon6',
+                        sample_type:'patient',
+                        expected_phenotype:'A',
+                        sequencing_platform:'nanopore'
+                    ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/illumina/mpileup/test.mpileup.gz")
+                ]
+                input[1] = [
+                    [ id:'abo_exon6_ref' ],
+                    file("${params.modules_testdata_base_path}/genomics/homo_sapiens/genome/genome.fasta")
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // Verify all metadata is preserved
+                { assert process.out.tsv.get(0).get(0).id == 'Sample1-2024-12345_barcode22' },
+                { assert process.out.tsv.get(0).get(0).exon == 'exon6' },
+                { assert process.out.tsv.get(0).get(0).sample_type == 'patient' },
+                { assert process.out.tsv.get(0).get(0).expected_phenotype == 'A' },
+                { assert process.out.tsv.get(0).get(0).sequencing_platform == 'nanopore' },
+                // Verify output file naming follows ABO conventions
+                { assert path(process.out.tsv.get(0).get(1)).name.contains('Sample1-2024-12345_barcode22') }
+            )
+        }
+    }
+}

@@ -26,10 +26,21 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+// params.fai        = getGenomeAttribute('fai') // moved from global aligning to exon-based logic
+// params.fasta      = getGenomeAttribute('fasta') // The database options remain muted as they're required for A1/A2 differentiation in the future implementation
+params.exon6fai   = getGenomeAttribute('exon6fai')
+params.exon6fasta = getGenomeAttribute('exon6fasta')
+params.exon7fai   = getGenomeAttribute('exon7fai')
+params.exon7fasta = getGenomeAttribute('exon7fasta')
+params.logo       = getGenomeAttribute('logo')
+
+// fai               = params.fai        ? Channel.fromPath(params.fai).map { it -> [[id: it.baseName], it] }                       : Channel.empty() //moved from global aligning to exon-based logic
+// fasta             = params.fasta      ? Channel.fromPath(params.fasta).map { it -> [[id: it.baseName], it] }                     : Channel.empty() //moved from global aligning to exon-based logic
+exon6fai          = params.exon6fai   ? Channel.fromPath(params.exon6fai).map { it -> [[id: it.baseName, exon: 'exon6'], it] }   : Channel.empty()
+exon6fasta        = params.exon6fasta ? Channel.fromPath(params.exon6fasta).map { it -> [[id: it.baseName, exon: 'exon6'], it] } : Channel.empty()
+exon7fai          = params.exon7fai   ? Channel.fromPath(params.exon7fai).map { it -> [[id: it.baseName, exon: 'exon7'], it] }   : Channel.empty()
+exon7fasta        = params.exon7fasta ? Channel.fromPath(params.exon7fasta).map { it -> [[id: it.baseName, exon: 'exon7'], it] } : Channel.empty()
+logo              = params.logo       ? Channel.fromPath(params.logo).collect()                                                  : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,9 +48,6 @@ params.fasta = getGenomeAttribute('fasta')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// WORKFLOW: Run main analysis pipeline depending on type of input
-//
 workflow NFCORE_ABOTYPER {
 
     take:
@@ -47,15 +55,19 @@ workflow NFCORE_ABOTYPER {
 
     main:
 
-    //
-    // WORKFLOW: Run pipeline
-    //
     ABOTYPER (
-        samplesheet
+        samplesheet,
+        exon6fai,
+        exon6fasta,
+        exon7fai,
+        exon7fasta,
+        logo
     )
+
     emit:
-    multiqc_report = ABOTYPER.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ABOTYPER.out.multiqc_report
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW

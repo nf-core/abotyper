@@ -1,0 +1,6 @@
+name: snps2pheno
+channels:
+  - conda-forge
+dependencies:
+  - pandas=2.3.1
+  - xlsxwriter=3.2.5

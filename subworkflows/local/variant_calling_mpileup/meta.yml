@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "VARIANTS_QUANTIFICATION"
+description: Performs variant calling using samtools mpileup and calculates nucleotide frequencies at specified positions. Uses metadata-driven approach to match BAM files with BED intervals and reference sequences.
+keywords:
+  - variant-calling
+  - mpileup
+  - nucleotide-frequency
+  - samtools
+  - abo
+  - exons
+components:
+  - samtools/mpileup
+  - mpileup/nucl/freq
+input:
+  - ch_bam:
+      type: channel
+      description: |
+        Channel containing BAM files with exon metadata
+        Structure: [ val(meta), path(bam) ]
+      pattern: "*.bam"
+  - ch_bai:
+      type: channel
+      description: |
+        Channel containing BAM index files with exon metadata
+        Structure: [ val(meta), path(bai) ]
+      pattern: "*.bai"
+  - ch_fasta:
+      type: channel
+      description: |
+        Channel containing FASTA reference files with exon metadata
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,fa,fas}"
+  - ch_fai:
+      type: channel
+      description: |
+        Channel containing FASTA index files with exon metadata
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
+  - ch_bed:
+      type: channel
+      description: |
+        Channel containing BED interval files with exon metadata
+        Structure: [ val(meta), path(bed) ]
+      pattern: "*.bed"
+output:
+  - metrics:
+      type: file
+      description: |
+        Channel containing nucleotide frequency metrics in TSV format
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*.tsv"
+  - versions:
+      type: file
+      description: |
+        File containing software versions
+        Structure: [ path(versions.yml) ]
+      pattern: "versions.yml"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

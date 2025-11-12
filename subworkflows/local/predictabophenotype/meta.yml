@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "PREDICTABOPHENOTYPE"
+description: Predicts ABO phenotype by combining variant frequency data with BAM coverage, extracting SNPs, and mapping them to phenotypes. Uses metadata-driven joining and structured per-sample output.
+keywords:
+  - abo-typing
+  - phenotype-prediction
+  - snp-analysis
+  - variant-frequency
+  - coverage-analysis
+components:
+  - abosnps2pheno
+  - getabosnps
+input:
+  - ch_variants_freq:
+      type: channel
+      description: |
+        Channel containing variant frequency files with exon metadata
+        Structure: [ val(meta), path(freq) ]
+      pattern: "*.{tsv,txt}"
+  - ch_bam_coverage:
+      type: channel
+      description: |
+        Channel containing BAM coverage files with exon metadata
+        Structure: [ val(meta), path(cov) ]
+      pattern: "*.{txt,tsv}"
+output:
+  - versions:
+      type: file
+      description: |
+        File containing software versions
+        Structure: [ path(versions.yml) ]
+      pattern: "versions.yml"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

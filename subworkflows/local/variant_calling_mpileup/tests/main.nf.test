@@ -1,0 +1,57 @@
+// nf-core subworkflows test variant_calling_mpileup
+nextflow_workflow {
+
+    name "Test Subworkflow VARIANTS_QUANTIFICATION"
+    script "../main.nf"
+    workflow "VARIANTS_QUANTIFICATION"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/variant_calling_mpileup"
+    tag "samtools"
+    tag "samtools/mpileup"
+    tag "mpileup/nucl/freq"
+
+    test("abo_variant_calling - bam - sarscov2_test_data") {
+
+        when {
+            workflow {
+                """
+                // Complete test inputs for VARIANTS_QUANTIFICATION workflow
+                // ch_bam: BAM files with exon metadata
+                input[0] = [
+                    [ id:'test_sample', single_end:true, exon:'exon6' ], // meta map with exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ]
+                // ch_bai: BAM index files with exon metadata
+                input[1] = [
+                    [ id:'test_sample', single_end:true, exon:'exon6' ], // meta map with exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true)
+                ]
+                // ch_fasta: FASTA reference files with exon metadata
+                input[2] = [
+                    [ id:'exon6_ref', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ]
+                // ch_fai: FASTA index files with exon metadata
+                input[3] = [
+                    [ id:'exon6_ref', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true)
+                ]
+                // ch_bed: BED interval files with exon metadata
+                input[4] = [
+                    [ id:'exon6_intervals', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/bed/test.bed', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() },
+            )
+        }
+    }
+}

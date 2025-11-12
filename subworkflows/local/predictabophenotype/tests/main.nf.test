@@ -1,0 +1,41 @@
+// nf-core subworkflows test predictabophenotype
+nextflow_workflow {
+
+    name "Test Subworkflow PREDICTABOPHENOTYPE"
+    script "../main.nf"
+    workflow "PREDICTABOPHENOTYPE"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/predictabophenotype"
+    tag "getabosnps"
+    tag "abosnps2pheno"
+
+    test("abo_phenotype_prediction - freq_cov - test_data") {
+
+        when {
+            workflow {
+                """
+                // Complete test inputs for PREDICTABOPHENOTYPE workflow
+                // ch_variants_freq: Variant frequency files with exon metadata
+                input[0] = [
+                    [ id:'test_sample', exon:'exon6' ], // meta map with exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/vcf/test.vcf.gz', checkIfExists: true)
+                ]
+                // ch_bam_coverage: BAM coverage files with exon metadata
+                input[1] = [
+                    [ id:'test_sample', exon:'exon6' ], // meta map with matching exon metadata
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() },
+            )
+        }
+    }
+}

@@ -1,0 +1,84 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABOSNPS2PHENO
+description: Aggregate ABO SNP results from multiple samples and generate comprehensive phenotype reports
+keywords:
+  - abo
+  - blood typing
+  - phenotype
+  - aggregation
+  - reporting
+  - snp analysis
+  - genotyping
+  - excel
+  - csv
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      tool_dev_url: https://github.com/python/cpython
+      licence: ["Python Software Foundation License"]
+  - pandas:
+      description: Powerful data structures for data analysis, time series, and statistics
+      homepage: https://pandas.pydata.org/
+      documentation: https://pandas.pydata.org/docs/
+      tool_dev_url: https://github.com/pandas-dev/pandas
+      licence: ["BSD-3-Clause"]
+  - numpy:
+      description: Fundamental package for scientific computing with Python
+      homepage: https://numpy.org/
+      documentation: https://numpy.org/doc/
+      tool_dev_url: https://github.com/numpy/numpy
+      licence: ["BSD-3-Clause"]
+  - xlsxwriter:
+      description: Python module for creating Excel XLSX files
+      homepage: https://xlsxwriter.readthedocs.io/
+      documentation: https://xlsxwriter.readthedocs.io/
+      tool_dev_url: https://github.com/jmcnamara/XlsxWriter
+      licence: ["BSD-2-Clause"]
+  - openpyxl:
+      description: Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files
+      homepage: https://openpyxl.readthedocs.io/
+      documentation: https://openpyxl.readthedocs.io/
+      tool_dev_url: https://foss.heptapod.net/openpyxl/openpyxl
+      licence: ["MIT"]
+
+input:
+  - samples_dir:
+      type: directory
+      description: Directory containing processed sample results with ABO phenotype predictions
+      pattern: "*/"
+      required: true
+  - per_sample_processing:
+      type: directory
+      description: Root directory containing per-sample processing results organized by sample ID and exon
+      pattern: "per_sample_processing/"
+      required: true
+
+output:
+  - txt:
+      type: file
+      description: Text file containing aggregated ABO phenotype results in human-readable format
+      pattern: "ABO_result.txt"
+  - xls:
+      type: file
+      description: Excel file containing comprehensive ABO phenotype results with formatting
+      pattern: "ABO_result.xlsx"
+  - log:
+      type: file
+      description: Log file containing processing information, warnings, and errors from aggregation
+      pattern: "ABO_results.log"
+  - csv:
+      type: file
+      description: CSV file containing final exported ABO results suitable for downstream analysis
+      pattern: "final_export.csv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
