@@ -1,5 +1,14 @@
-lint: {}
-nf_core_version: 3.5.1
+lint:
+  files_unchanged:
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/linting.yml
+  nextflow_config:
+    - config_defaults:
+        - params.fasta
+        - params.fai
+        - params.multiqc_logo
+  nf_test_content: false
+nf_core_version: 4.0.0
 repository_type: pipeline
 template:
   author: "@fmobegi"
@@ -10,4 +19,4 @@ template:
   name: abotyper
   org: nf-core
   outdir: .
-  version: 1.0.0dev
+  version: 1.1.0
