@@ -24,9 +24,10 @@ process ABO_SNPS2PHENO {
     tuple val("${task.process}"), val('xlsxwriter'), eval('python -c "import xlsxwriter; print(xlsxwriter.__version__)"'), emit: versions_xlsxwriter, topic: versions
 
     script:
+    def args = task.ext.args ?: ''
     """
     aggregate_abo_reports.py \\
-        per_sample_processing 2>&1 | tee ABO_results.log
+        per_sample_processing ${args} 2>&1 | tee ABO_results.log
     """
 
     stub:

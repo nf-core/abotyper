@@ -12,8 +12,8 @@ include { ABO_SNPS2PHENO } from '../../../modules/local/abo/snps2pheno/main'
 
 workflow PREDICTABOPHENOTYPE {
     take:
-    ch_variants_freq // channel: [ val(meta), [ freq ] ] - with exon metadata
-    ch_bam_coverage  // channel: [ val(meta), [ cov ] ] - with exon metadata
+    ch_variants_freq // channel: [ val(meta), [ freq ] ]
+    ch_bam_coverage  // channel: [ val(meta), [ cov ] ]
     ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from HAPLOSCAN
 
     main:
@@ -21,9 +21,6 @@ workflow PREDICTABOPHENOTYPE {
     // JOIN: Variant frequency with BAM coverage
     ch_combined_input = ch_variants_freq
         .join(ch_bam_coverage)
-        .map { meta, freq, cov ->
-            [meta, freq, cov, meta.exon]
-        }
 
     /*
     MODULE: ABO_GETABOSNPS
@@ -32,24 +29,26 @@ workflow PREDICTABOPHENOTYPE {
         ch_combined_input
     )
 
-    // PREP: Organize SNP reports AND Haplotypes.tsv by sample and exon
+    // PREP: Organize SNP reports AND Haplotypes.tsv by sample, single
+    // "combined" folder per sample (single-reference mode -- one report
+    // covers every exon section).
     ch_snp_reports = ABO_GETABOSNPS.out.phenotype
         .map { meta, file ->
-            [meta.id, [exon: meta.exon, file: file, type: 'phenotype']]
+            [meta.id, [file: file, type: 'phenotype']]
         }
         .mix(
             ch_haplotypes.map { meta, file ->
-                [meta.id, [exon: meta.exon, file: file, type: 'haplotype']]
+                [meta.id, [file: file, type: 'haplotype']]
             }
         )
         .groupTuple()
         .map { id, files ->
             def sample_dir = file("${params.outdir}/per_sample_processing/${id}")
             sample_dir.mkdirs()
+            def combined_dir = sample_dir.resolve('combined')
+            combined_dir.mkdirs()
             files.each {
-                def exon_dir = sample_dir.resolve(it.exon)
-                exon_dir.mkdirs()
-                it.file.copyTo(exon_dir.resolve(it.file.name))
+                it.file.copyTo(combined_dir.resolve(it.file.name))
             }
             return sample_dir
         }

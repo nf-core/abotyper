@@ -15,7 +15,6 @@ include { methodsDescriptionText  } from '../subworkflows/local/utils_nfcore_abo
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MAKEINDEX               } from '../modules/local/makeindex'
 include { MINIMAP2_ALIGN_READS    } from '../subworkflows/local/minimap_align_exons'
 include { PREDICTABOPHENOTYPE     } from '../subworkflows/local/predictabophenotype'
 // include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variant_calling_mpileup'
@@ -30,39 +29,14 @@ include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variant_calling_
 workflow ABOTYPER {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-    exon6fai // channel: fasta from params.exon6fai
-    exon6fasta // channel: fasta from params.exon6fasta
-    exon7fai // channel: fasta from params.exon7fai
-    exon7fasta // channel: fasta from params.exon7fasta
+    abo_reference_fai // channel: fai from params.abo_reference_fai
+    abo_reference_fasta // channel: fasta from params.abo_reference_fasta
     logo // channel: png from params.logo (custom pathwest logo)
 
     main:
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
-
-    // Prepare sample channels with exon metadata for mapping to each reference
-    ch_exon6_samples = ch_samplesheet.map { meta, fastq ->
-        def new_meta = meta + [exon: 'exon6']
-        [new_meta, fastq]
-    }
-
-    ch_exon7_samples = ch_samplesheet.map { meta, fastq ->
-        def new_meta = meta + [exon: 'exon7']
-        [new_meta, fastq]
-    }
-
-    ch_combined_input = ch_exon6_samples.mix(ch_exon7_samples)
-    ch_combined_fasta = exon6fasta.mix(exon7fasta)
-    ch_combined_fai = exon6fai.mix(exon7fai)
-
-    /*
-    MODULE: MAKEINDEX
-    */
-    MAKEINDEX(
-        exon6fai,
-        exon7fai,
-    )
 
     /*
     MODULE: FASTQC
@@ -76,9 +50,9 @@ workflow ABOTYPER {
     SUBWORKFLOW: MINIMAP2_ALIGN_READS
     */
     MINIMAP2_ALIGN_READS(
-        ch_combined_input,
-        ch_combined_fasta,
-        ch_combined_fai,
+        ch_samplesheet,
+        abo_reference_fasta,
+        abo_reference_fai,
     )
 
     /*
@@ -89,7 +63,6 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.bai,
         MINIMAP2_ALIGN_READS.out.fasta,
         MINIMAP2_ALIGN_READS.out.fai,
-        MAKEINDEX.out.exon6bed.mix(MAKEINDEX.out.exon7bed),
     )
 
     /*

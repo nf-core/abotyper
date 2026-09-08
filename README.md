@@ -29,32 +29,26 @@ It takes a samplesheet and FASTQ files as input, performs quality control (QC), 
 
 ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
 
-- [ABO Exon 6](https://www.ncbi.nlm.nih.gov/nuccore/NG_006669.2?from=22673&to=22807&report=fasta)
-- [ABO Exon 7](https://www.ncbi.nlm.nih.gov/nuccore/NG_006669.2?from=23860&to=29951&report=fasta)
+- [ABO RefSeqGene (NG_006669.2)](https://www.ncbi.nlm.nih.gov/nuccore/NG_006669.2) - single combined reference used for alignment
 - [dbMHC and IHWG data](https://ftp.ncbi.nlm.nih.gov/pub/mhc/mhc/Final%20Archive/)
-  <!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-       workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
-  <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
 ## Pipeline steps
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/get_started/environment_setup/overview) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/get_started/run-your-first-pipeline) with `-profile test` before running the workflow on actual data.
 
-1. **Reference indexing** - Convert FASTA index files (FAI) to BED format for ABO exon 6 and 7 regions ([`MAKEINDEX`](modules/local/makeindex/))
-2. **Read quality control** - Quality assessment of input FASTQ files using FastQC ([`FASTQC`](modules/nf-core/fastqc/))
-3. **Read alignment** - Align reads to ABO exon reference sequences using Minimap2 with metadata-driven exon mapping ([`MINIMAP2_ALIGN`](modules/nf-core/minimap2/align/))
-4. **Alignment statistics** - Generate comprehensive alignment metrics including coverage, flagstat, and detailed statistics:
+1. **Read quality control** - Quality assessment of input FASTQ files using FastQC ([`FASTQC`](modules/nf-core/fastqc/))
+2. **Read alignment** - Align reads to a single combined ABO reference (NG_006669.2) using Minimap2 ([`MINIMAP2_ALIGN`](modules/nf-core/minimap2/align/))
+3. **Alignment statistics** - Generate comprehensive alignment metrics including coverage, flagstat, and detailed statistics:
    - Coverage analysis ([`SAMTOOLS_COVERAGE`](modules/nf-core/samtools/coverage/))
    - Flagstat metrics ([`SAMTOOLS_FLAGSTAT`](modules/nf-core/samtools/flagstat/))
    - Detailed statistics ([`SAMTOOLS_STATS`](modules/nf-core/samtools/stats/))
-5. **Variant calling** - Generate pileup files for variant detection at polymorphic positions ([`SAMTOOLS_MPILEUP`](modules/nf-core/samtools/mpileup/))
-6. **Nucleotide frequency analysis** - Calculate nucleotide frequencies at ABO-relevant polymorphic positions ([`MPILEUP_NUCL_FREQ`](modules/local/mpileupstats/))
-7. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants from frequency data ([`GETABOSNPS`](modules/local/abo/abosnps/))
-8. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP patterns across exons ([`ABOSNPS2PHENO`](modules/local/abo/snps2pheno/))
-9. **Quality control reporting** - Compile comprehensive QC report with alignment and variant metrics ([`MULTIQC`](modules/nf-core/multiqc/))
+4. **Variant quantification** - Compute per-position allele frequencies and per-read haplotypes directly from the BAM file in a single pass ([`HAPLOSCAN`](modules/local/haploscan/))
+5. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABO_GETABOSNPS`](modules/local/abo/getabosnps/))
+6. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns ([`ABO_SNPS2PHENO`](modules/local/abo/snps2pheno/))
+7. **Quality control reporting** - Compile comprehensive QC report with alignment and variant metrics ([`MULTIQC`](modules/nf-core/multiqc/))
 
-Exon 7 CDS reference sequence was truncated at 817 bp as this captures the targeted SNVs within the exon and UTR's
+The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO reference. Variant marker positions and coordinate calibration are defined in `assets/refs/abo_variant_panel.yaml` (see [`bin/README.md`](bin/README.md) for details).
 
 ## Summary of tools and version used in the pipeline
 
@@ -117,7 +111,7 @@ While we recommend using the above naming convention for optimal compatibility, 
 - **Ion Torrent** (currently undergoing testing)
 - **Illumina** (currently undergoing testing)
 
-The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions for accurate genotyping.
+The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping.
 
 ## Running `nf-core/abotyper`
 
@@ -145,7 +139,7 @@ This option is controlled by the parameter `$params.skip_renaming` and can be ov
 
 ## Output
 
-For each sample and each of exon6 and exon7, the pipeline will generate `BAM` files, `BAM metrics`, and `PILEUP` results.
+For each sample, the pipeline aligns reads once against a single combined ABO reference (NG_006669.2, spanning exons 2-7) and generates `BAM` files, `BAM metrics`, and per-position variant statistics.
 
 The output directory generated by this `Nextflow` pipeline will look something like this:
 
@@ -156,33 +150,19 @@ OUTDIR/
 ├── ABO_result.xlsx
 ├── final_export.csv
 ├── per_sample_processing
-│   ├── SAMPLE1_barcode01
-│   │   ├── exon6
-│   │   │   ├── ABOReadPolymorphisms.txt
-│   │   │   ├── alignment
-│   │   │   │   ├── SAMPLE1_barcode01.bam
-│   │   │   │   ├── SAMPLE1_barcode01.bam.bai
-│   │   │   │   ├── SAMPLE1_barcode01.coverage.txt
-│   │   │   │   ├── SAMPLE1_barcode01.flagstat
-│   │   │   │   └── SAMPLE1_barcode01.stats
-│   │   │   ├── SAMPLE1_barcode01.ABOPhenotype.txt
-│   │   │   ├── SAMPLE1_barcode01.AlignmentStatistics.tsv
-│   │   │   ├── SAMPLE1_barcode01.log.txt
-│   │   │   └── mpileup
-│   │   │       └── SAMPLE1_barcode01.mpileup.gz
-│   │   └── exon7
-│   │       ├── ABOReadPolymorphisms.txt
-│   │       ├── alignment
-│   │       │   ├── SAMPLE1_barcode01.bam
-│   │       │   ├── SAMPLE1_barcode01.bam.bai
-│   │       │   ├── SAMPLE1_barcode01.coverage.txt
-│   │       │   ├── SAMPLE1_barcode01.flagstat
-│   │       │   └── SAMPLE1_barcode01.stats
-│   │       ├── SAMPLE1_barcode01.ABOPhenotype.txt
-│   │       ├── SAMPLE1_barcode01.AlignmentStatistics.tsv
-│   │       ├── SAMPLE1_barcode01.log.txt
-│   │       └── mpileup
-│   │           └── SAMPLE1_barcode01.mpileup.gz
+│   └── SAMPLE1_barcode01
+│       └── combined
+│           ├── ABOReadPolymorphisms.txt
+│           ├── alignment
+│           │   ├── SAMPLE1_barcode01.bam
+│           │   ├── SAMPLE1_barcode01.bam.bai
+│           │   ├── SAMPLE1_barcode01.coverage.txt
+│           │   ├── SAMPLE1_barcode01.flagstat
+│           │   └── SAMPLE1_barcode01.stats
+│           ├── SAMPLE1_barcode01.ABOPhenotype.txt
+│           ├── SAMPLE1_barcode01.AlignmentStatistics.tsv
+│           ├── SAMPLE1_barcode01.Haplotypes.tsv
+│           └── SAMPLE1_barcode01.log.txt
 ├── pipeline_info
 │   ├── execution_report_DATETIME.html
 │   ├── execution_timeline_DATETIME.html
@@ -194,7 +174,7 @@ OUTDIR/
     ├── fastqc
     │   ├── SAMPLE1_barcode01_fastqc.html
     │   ├── SAMPLE1_barcode01_fastqc.zip
-    └multiqc
+    └── multiqc
         ├── multiqc_data
         ├── multiqc_plots
         │   ├── pdf

@@ -36,7 +36,8 @@ process MPILEUPSTATS {
     stats_from_pileup.py \\
         -i ${pileup} \\
         -o ${prefix}.AlignmentStatistics.tsv \\
-        -s ABOReadPolymorphisms.txt
+        -s ABOReadPolymorphisms.txt \\
+        ${args}
     """
 
     stub:

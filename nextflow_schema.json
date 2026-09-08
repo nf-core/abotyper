@@ -99,44 +99,24 @@
             "fa_icon": "fas fa-dna",
             "description": "ABO gene-specific reference files and configuration options.",
             "properties": {
-                "exon6fasta": {
+                "abo_reference_fasta": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to ABO exon 6 FASTA reference file.",
-                    "help_text": "This parameter specifies the path to the FASTA file containing the ABO exon 6 reference sequence.",
+                    "description": "Path to the single combined ABO reference FASTA spanning the amplicon region(s) of interest.",
+                    "help_text": "Path to the combined ABO reference FASTA (e.g. exon2-7 long-read amplicon or the full RefSeqGene) used for alignment and variant calling in single-reference mode. Replaces the separate exon6fasta/exon7fasta references used by the legacy dual-mini-amplicon topology.",
                     "fa_icon": "far fa-file-code"
                 },
-                "exon7fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to ABO exon 7 FASTA reference file.",
-                    "help_text": "This parameter specifies the path to the FASTA file containing the ABO exon 7 reference sequence.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "exon6fai": {
+                "abo_reference_fai": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fai$",
-                    "description": "Path to ABO exon 6 FASTA index file.",
-                    "help_text": "This parameter specifies the path to the index file for the ABO exon 6 FASTA reference.",
-                    "fa_icon": "fas fa-list"
-                },
-                "exon7fai": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fai$",
-                    "description": "Path to ABO exon 7 FASTA index file.",
-                    "help_text": "This parameter specifies the path to the index file for the ABO exon 7 FASTA reference.",
+                    "description": "Path to the FASTA index file for abo_reference_fasta.",
+                    "help_text": "This parameter specifies the path to the index file for the combined ABO reference FASTA.",
                     "fa_icon": "fas fa-list"
                 },
                 "logo": {
@@ -159,6 +139,17 @@
                     "description": "Skip sample renaming process.",
                     "help_text": "When set to true, samples will keep their original names from the input files. When false, the pipeline will attempt to rename samples using the renaming_file parameter for ABO analysis.",
                     "fa_icon": "fas fa-toggle-on"
+                },
+                "abo_panel": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.(yaml|yml|json|csv|tsv)$",
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/abo_variant_panel.yaml",
+                    "description": "Path to the ABO diagnostic variant panel (.yaml/.yml/.json/.csv/.tsv).",
+                    "help_text": "Defines the diagnostic variant positions, calling thresholds, and ISBT allele associations used by the HAPLOSCAN, ABO_GETABOSNPS and ABO_SNPS2PHENO modules. Positions are given as ng006669_2_pos (verified against NG_006669.2, the default abo_reference_fasta) alongside legacy_exon6_pos/legacy_exon7_pos for backward compatibility. Run bin/calibrate_panel_positions.py to populate amplicon_pos if a different combined reference FASTA is used instead.",
+                    "fa_icon": "fas fa-table"
                 }
             }
         },
