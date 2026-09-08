@@ -2,113 +2,101 @@
 # -*- coding: utf-8 -*-
 
 """
-pysam_haploscan.py — Read-level haplotype scanning for ABO amplicons
+pysam_haploscan.py — Read-level haplotype scanning for ABO amplicons (v2.0.0)
 
-Replaces the two-step  samtools mpileup → stats_from_pileup.py  pipeline with a
-single pysam-based pass that works directly on aligned ONT reads.
+CHANGES IN v2.0.0
+------------------
+  - Diagnostic/indel positions are now loaded from an external variant panel
+    (--panel, default abo_variant_panel.yaml) via abo_panel.py, instead of
+    the hardcoded HAPLOTYPE_POSITIONS / INDEL_DIAGNOSTIC dicts.
+  - Supports the COMBINED single ~6.7 kb long-read amplicon spanning exons
+    2-7 (Goebel/Wu primers; Mobegi et al. 2025, IJMS 26(12):5443) as the
+    default reference mode: the whole reference is treated as one unit and
+    every calibrated panel position (any exon) is scored directly by its
+    amplicon_pos, with no length-based exon-type guessing at all.
+  - The old length-based ExonType detection (EXON6_LENGTH_RANGE /
+    EXON7_LENGTH_RANGE) is kept ONLY as a --legacy fallback for analysing
+    v1.x-style separate short exon6-only / exon7-only mini-amplicon BAMs,
+    where panel positions are resolved via legacy_exon6_pos/legacy_exon7_pos
+    instead of amplicon_pos.
+  - Because a single ONT read can now span every diagnostic position from
+    exon 2 through the 3' UTR, compute_read_haplotypes() reports ONE
+    haplotype string per read covering ALL calibrated positions (not just
+    one exon's worth) -- this removes the old "cross-amplicon phasing
+    requires a post-processing step" limitation entirely: full-length cis
+    confirmation is now available directly from Haplotypes.tsv.
 
 Outputs
 -------
 {prefix}.AlignmentStatistics.tsv
-    Identical column layout to stats_from_pileup.py — all downstream scripts
-    (aggregate_abo_reports.py, predict_abo_phenotype.py) are unchanged.
+    Same column layout as stats_from_pileup.py / v1.x -- downstream scripts
+    (aggregate_abo_reports.py, predict_abo_phenotype.py) are unchanged in
+    format, only richer in content (more positions, spanning more exons).
 
 {prefix}.Haplotypes.tsv
-    Per-read haplotype table.  Each row records which diagnostic positions on
-    that read carry a non-reference allele.  Because an ONT read can span an
-    entire amplicon, two variants on the same row are CONFIRMED on the same
-    molecule — enabling phasing without any wet-lab changes.
+    Per-read haplotype table. In combined mode this spans every calibrated
+    diagnostic position on the reference (potentially exon2 through exon7);
+    in --legacy mode it is scoped to whichever mini-amplicon (exon6/exon7)
+    the read came from, as in v1.x.
 
 ABOReadPolymorphisms.txt
-    Same polymorphic-position summary as before.
-
-Phasing note
-------------
-c.297G (exon6 pos58) and c.1061del (exon7 pos685) lie on DIFFERENT amplicons
-and therefore different BAM files.  Within-amplicon phasing (e.g. confirming
-c.1032A + c.1061del on the same exon7 read) is fully supported here.
-Cross-amplicon phasing requires a post-processing step that correlates exon6
-and exon7 haplotype tables by read name (reads that span both amplicons).
+    Same polymorphic-position summary format as before.
 
 Usage
 -----
-    pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix
-    pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix -s ABOReadPolymorphisms.txt -v
+    # Combined single-amplicon mode (default; requires a calibrated panel --
+    # i.e. amplicon_pos populated via calibrate_panel_positions.py)
+    pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix \\
+        --panel abo_variant_panel.yaml
+
+    # Legacy dual mini-amplicon mode (v1.x behaviour, exon6-only or
+    # exon7-only reference/BAM, resolved via legacy_exonN_pos)
+    pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix --legacy
 """
 
 import argparse
 import logging
 import sys
 from dataclasses import dataclass, field
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import pysam
 
+from abo_panel import load_panel, Panel, VariantMarker
+
 __author__ = "Fredrick Mobegi"
 __copyright__ = (
-    "Copyright 2024, ABO blood group typing using third-generation sequencing (TGS) technology"
+    "Copyright 2024-2025, ABO blood group typing using third-generation sequencing (TGS) technology"
 )
-__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg"]
+__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg",
+               "Claude Sonnet 5 (v2.0.0 rewrite for panel-driven / combined amplicon)"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
 
 
 # ---------------------------------------------------------------------------
-# Exon classification
+# Legacy exon classification (used only in --legacy mode)
 # ---------------------------------------------------------------------------
 
+from enum import Enum
+
+
 class ExonType(Enum):
-    EXON6   = "exon6"
-    EXON7   = "exon7"
+    EXON6 = "Exon 6"
+    EXON7 = "Exon 7"
+    COMBINED = "combined"
     UNKNOWN = "unknown"
 
 
-EXON6_LENGTH_RANGE = (130, 140)
-EXON7_LENGTH_RANGE = (800, 830)
-
-
-def determine_exon_type(ref_length: int) -> ExonType:
-    if EXON6_LENGTH_RANGE[0] <= ref_length <= EXON6_LENGTH_RANGE[1]:
-        return ExonType.EXON6
-    if EXON7_LENGTH_RANGE[0] <= ref_length <= EXON7_LENGTH_RANGE[1]:
-        return ExonType.EXON7
-    return ExonType.UNKNOWN
-
-
-# ---------------------------------------------------------------------------
-# Diagnostic positions  (1-based, relative to each trimmed amplicon reference)
-# ---------------------------------------------------------------------------
-
-# Positions where an indel IS the diagnostic variant.
-# At these positions indel counts are included in the frequency denominator.
-# All other positions treat indels as noise and use ATGC-only denominator.
-INDEL_DIAGNOSTIC: Dict[ExonType, frozenset] = {
-    ExonType.EXON6: frozenset({22}),        # c.261delG  → O1 marker
-    ExonType.EXON7: frozenset({431, 685}),  # 431 = O/A boundary; 685 = c.1061delC → A2.01
-}
+LEGACY_EXON6_LENGTH_RANGE = (130, 140)
+LEGACY_EXON7_LENGTH_RANGE = (800, 830)
 
 # Mirror of stats_from_pileup.LOW_COVERAGE_THRESHOLD
 _LOW_COVERAGE_THRESHOLD = 200
-
-# All 25 diagnostic positions interrogated for haplotype tagging (1-based).
-# These match the positions used by aggregate_abo_reports.py / predict_abo_phenotype.py.
-HAPLOTYPE_POSITIONS: Dict[ExonType, frozenset] = {
-    ExonType.EXON6: frozenset({22, 27, 29, 58}),
-    ExonType.EXON7: frozenset({
-        93,                               # c.467 A1.02/A2 discriminator
-        152, 153, 165, 283, 329, 348,     # A2 subtype panel
-        368, 397, 404,                    # A2 subtype panel
-        422, 428, 429, 431,               # Primary typing positions
-        455, 533, 635, 658, 680,          # A2 subtype panel
-        685,                              # c.1059 (A2 panel)
-        687,                              # c.1061delC → A2.01 (KEY indel)
-    }),
-}
 
 NUCLEOTIDES = frozenset({"A", "G", "C", "T"})
 
@@ -117,6 +105,14 @@ TSV_HEADER = "\t".join([
     "Insertion_Percent", "Deletion_Percent", "A_Percent", "G_Percent",
     "C_Percent", "T_Percent", "Depth",
 ])
+
+
+def determine_legacy_exon_type(ref_length: int) -> ExonType:
+    if LEGACY_EXON6_LENGTH_RANGE[0] <= ref_length <= LEGACY_EXON6_LENGTH_RANGE[1]:
+        return ExonType.EXON6
+    if LEGACY_EXON7_LENGTH_RANGE[0] <= ref_length <= LEGACY_EXON7_LENGTH_RANGE[1]:
+        return ExonType.EXON7
+    return ExonType.UNKNOWN
 
 
 # ---------------------------------------------------------------------------
@@ -146,47 +142,84 @@ class ReadHaplotype:
     alleles:   Dict[int, str] = field(default_factory=dict)
 
     def to_string(self) -> str:
-        """Return e.g.  p22=del;p687=del  or  REF  for an all-reference read."""
         if not self.alleles:
             return "REF"
         return ";".join(f"p{pos}={allele}" for pos, allele in sorted(self.alleles.items()))
 
 
 # ---------------------------------------------------------------------------
-# Per-position frequency computation  (→ AlignmentStatistics.tsv)
+# Panel-driven position resolution
+# ---------------------------------------------------------------------------
+
+def resolve_positions(panel: Panel, legacy: bool, legacy_exon: Optional[ExonType] = None):
+    """
+    Return (diag_positions: frozenset[int], indel_positions: frozenset[int],
+    pos_to_ref_base: dict[int,str]) for the requested mode.
+
+    combined mode: every calibrated (amplicon_pos-populated) marker in the
+                   panel, across all exons -- a single continuous scan.
+    legacy mode:   markers whose exon matches legacy_exon, resolved via
+                   legacy_exon6_pos/legacy_exon7_pos.
+    """
+    diag = set()
+    indel = set()
+    ref_base_by_pos: Dict[int, str] = {}
+
+    if legacy:
+        exon_label = legacy_exon.value if legacy_exon else None
+        candidates = [m for m in panel.variants if m.exon == exon_label]
+        prefer = "legacy"
+    else:
+        candidates = panel.variants
+        prefer = "amplicon"
+
+    for m in candidates:
+        pos = m.resolved_position(prefer=prefer if not legacy else (
+            "legacy6" if legacy_exon == ExonType.EXON6 else "legacy7"
+        ))
+        if pos is None:
+            continue
+        diag.add(pos)
+        if m.variant_type in ("deletion", "insertion", "indel", "snp_or_indel", "dup_or_del"):
+            indel.add(pos)
+        if m.ref_base and m.ref_base not in ("REF", "ALT", ""):
+            ref_base_by_pos[pos] = m.ref_base
+
+    return frozenset(diag), frozenset(indel), ref_base_by_pos
+
+
+# ---------------------------------------------------------------------------
+# Per-position frequency computation (-> AlignmentStatistics.tsv)
 # ---------------------------------------------------------------------------
 
 def compute_position_stats(
     bam:              pysam.AlignmentFile,
     ref_name:         str,
     ref_seq:          str,
-    exon_type:        ExonType,
+    indel_positions:  frozenset,
     min_base_quality: int = 0,
     min_map_quality:  int = 0,
 ) -> List[PositionStats]:
     """
     Compute ATGC + indel frequencies at every reference position using the
-    pysam pileup engine.  Logic mirrors stats_from_pileup.py exactly so that
-    the TSV output is bit-for-bit compatible with the existing downstream code.
+    pysam pileup engine. Logic mirrors stats_from_pileup.py exactly so the
+    TSV output is bit-for-bit compatible with existing downstream code.
+    indel_positions (panel-resolved, absolute reference coordinates) replaces
+    the old per-ExonType INDEL_DIAGNOSTIC dict.
     """
-    ref_length      = len(ref_seq)
-    indel_positions = INDEL_DIAGNOSTIC.get(exon_type, frozenset())
+    ref_length = len(ref_seq)
     results: List[PositionStats] = []
 
     for col in bam.pileup(
-        ref_name,
-        0,
-        ref_length,
+        ref_name, 0, ref_length,
         min_base_quality=min_base_quality,
         min_mapping_quality=min_map_quality,
-        truncate=True,
-        ignore_overlaps=False,
-        stepper="nofilter",
+        truncate=True, ignore_overlaps=False, stepper="nofilter",
     ):
-        pos0     = col.reference_pos
-        pos1     = pos0 + 1                                   # 1-based
+        pos0 = col.reference_pos
+        pos1 = pos0 + 1
         ref_base = ref_seq[pos0].upper() if pos0 < ref_length else "N"
-        depth    = col.nsegments
+        depth = col.nsegments
 
         if depth == 0:
             results.append(PositionStats(pos=pos1, ref_base=ref_base))
@@ -205,86 +238,72 @@ def compute_position_stats(
                     base = pr.alignment.query_sequence[qpos].upper()
                     if base in NUCLEOTIDES:
                         counts[base] += 1
-                    # An insertion FOLLOWS this position in this read
                     if pr.indel > 0:
                         counts["ins"] += 1
 
-        # Mirror stats_from_pileup._should_include_indels():
-        # Always include at explicit diagnostic positions; for all other positions
-        # default to True unless coverage is low (same logic as original pipeline).
         if pos1 in indel_positions:
             include_indels = True
         elif depth < _LOW_COVERAGE_THRESHOLD:
-            # Low coverage: exclude indels for exon6 or long-reference exon7
-            # (mirrors stats_from_pileup: exon6 → False, total_rows > 140 → False)
-            include_indels = not (exon_type == ExonType.EXON6 or ref_length > 140)
+            # Conservative default for non-diagnostic positions at low
+            # coverage. With a single combined reference there is no
+            # meaningful "exon6 vs long exon7" distinction any more, so we
+            # apply one consistent rule: exclude indels for non-diagnostic
+            # positions when coverage is low, matching the original
+            # ExonType.EXON6 / long-exon7 behaviour.
+            include_indels = False
         else:
-            include_indels = True  # High coverage: always include (original default)
-        total_bases    = sum(counts[b] for b in NUCLEOTIDES)
-        total_all      = total_bases + counts["ins"] + counts["del"]
+            include_indels = True
+
+        total_bases = sum(counts[b] for b in NUCLEOTIDES)
+        total_all = total_bases + counts["ins"] + counts["del"]
 
         if include_indels:
-            denom     = total_all if total_all > 0 else 1
-            ins_pct   = int(counts["ins"] / denom * 100)
-            del_pct   = int(counts["del"] / denom * 100)
+            denom = total_all if total_all > 0 else 1
+            ins_pct = int(counts["ins"] / denom * 100)
+            del_pct = int(counts["del"] / denom * 100)
             base_pcts = {b: int(counts[b] / denom * 100) for b in NUCLEOTIDES}
         else:
-            denom     = total_bases if total_bases > 0 else 1
-            ins_pct   = 0
-            del_pct   = 0
+            denom = total_bases if total_bases > 0 else 1
+            ins_pct = 0
+            del_pct = 0
             base_pcts = {b: int(counts[b] / denom * 100) for b in NUCLEOTIDES}
-            # Normalise so ATGC sums exactly to 100 (same rounding fix as original)
             atgc_sum = sum(base_pcts.values())
             if atgc_sum != 100 and atgc_sum > 0:
                 base_pcts[ref_base] = base_pcts.get(ref_base, 0) + (100 - atgc_sum)
 
-        match_pct    = base_pcts.get(ref_base, 0)
+        match_pct = base_pcts.get(ref_base, 0)
         mismatch_pct = sum(v for k, v in base_pcts.items() if k != ref_base)
 
         results.append(PositionStats(
-            pos=pos1,
-            ref_base=ref_base,
-            depth=depth,
-            match_percent=match_pct,
-            mismatch_percent=mismatch_pct,
-            insertion_percent=ins_pct,
-            deletion_percent=del_pct,
-            A_percent=base_pcts.get("A", 0),
-            G_percent=base_pcts.get("G", 0),
-            C_percent=base_pcts.get("C", 0),
-            T_percent=base_pcts.get("T", 0),
+            pos=pos1, ref_base=ref_base, depth=depth,
+            match_percent=match_pct, mismatch_percent=mismatch_pct,
+            insertion_percent=ins_pct, deletion_percent=del_pct,
+            A_percent=base_pcts.get("A", 0), G_percent=base_pcts.get("G", 0),
+            C_percent=base_pcts.get("C", 0), T_percent=base_pcts.get("T", 0),
         ))
 
     return results
 
 
 # ---------------------------------------------------------------------------
-# Per-read haplotype computation  (→ Haplotypes.tsv)
+# Per-read haplotype computation (-> Haplotypes.tsv)
 # ---------------------------------------------------------------------------
 
 def compute_read_haplotypes(
     bam:             pysam.AlignmentFile,
     ref_name:        str,
     ref_seq:         str,
-    exon_type:       ExonType,
+    diag_positions:  frozenset,
+    indel_positions: frozenset,
+    exon_label:      str,
     min_map_quality: int = 0,
 ) -> List[ReadHaplotype]:
     """
     Iterate every primary aligned read and record which diagnostic positions
-    carry a non-reference allele.
-
-    For ONT amplicons the entire amplicon fits on a single read, so two
-    variants in the same row are CONFIRMED co-occurring on the same molecule.
-
-    Deletion at a diagnostic indel position  → allele recorded as "del"
-    Insertion following a diagnostic position → allele recorded as "ins"
-    SNP at any diagnostic SNP position        → allele recorded as the alt base
-    Reference base                            → position omitted from alleles dict
-    Position not covered by read              → position omitted from alleles dict
+    carry a non-reference allele. In combined mode diag_positions spans
+    every calibrated position gene-wide, so a single full-length ONT read
+    yields full cis-phase information across exons in one row.
     """
-    diag_positions  = HAPLOTYPE_POSITIONS.get(exon_type, frozenset())
-    indel_positions = INDEL_DIAGNOSTIC.get(exon_type, frozenset())
-
     if not diag_positions:
         return []
 
@@ -298,44 +317,35 @@ def compute_read_haplotypes(
         if read.cigartuples is None or read.query_sequence is None:
             continue
 
-        # Build ref_pos (0-based) → query_pos mapping from aligned pairs.
-        # query_pos is None where the read has a deletion spanning that ref pos.
         ref_to_qpos: Dict[int, Optional[int]] = {}
-        # Track ref positions followed by an insertion in this read
         ref_followed_by_ins: set = set()
 
         prev_rpos: Optional[int] = None
         for qpos, rpos in read.get_aligned_pairs(matches_only=False, with_seq=False):
             if rpos is not None:
-                ref_to_qpos[rpos] = qpos   # qpos is None ↔ deletion
+                ref_to_qpos[rpos] = qpos
                 prev_rpos = rpos
             elif qpos is not None and prev_rpos is not None:
-                # Insertion in the read (no ref position)
                 ref_followed_by_ins.add(prev_rpos)
 
         alleles: Dict[int, str] = {}
 
         for pos1 in diag_positions:
-            rpos0 = pos1 - 1   # 0-based ref coordinate
-
+            rpos0 = pos1 - 1
             if rpos0 not in ref_to_qpos:
-                continue    # read does not cover this position
+                continue
 
             qpos = ref_to_qpos[rpos0]
             ref_base = ref_seq[rpos0].upper() if rpos0 < len(ref_seq) else "N"
 
             if pos1 in indel_positions:
-                # Deletion spanning this position
                 if qpos is None:
                     alleles[pos1] = "del"
-                # Insertion following this position
                 elif rpos0 in ref_followed_by_ins:
                     alleles[pos1] = "ins"
-                # Reference base at indel position → no event (omit)
             else:
-                # SNP position
                 if qpos is None:
-                    alleles[pos1] = "del"   # unexpected deletion
+                    alleles[pos1] = "del"
                 else:
                     base = read.query_sequence[qpos].upper()
                     if base != ref_base and base in NUCLEOTIDES:
@@ -343,7 +353,7 @@ def compute_read_haplotypes(
 
         haplotypes.append(ReadHaplotype(
             read_name=read.query_name or "unknown",
-            exon=exon_type.value,
+            exon=exon_label,
             alleles=alleles,
         ))
 
@@ -355,33 +365,24 @@ def compute_read_haplotypes(
 # ---------------------------------------------------------------------------
 
 def analyse_cooccurrence(
-    haplotypes: List[ReadHaplotype],
-    pos_a: int,
-    allele_a: str,
-    pos_b: int,
-    allele_b: str,
-    logger: logging.Logger,
+    haplotypes: List[ReadHaplotype], pos_a: int, allele_a: str,
+    pos_b: int, allele_b: str, logger: logging.Logger,
 ) -> None:
-    """
-    Log how often two alleles co-occur on the same read.
-
-    Example: pos685=A + pos687=del → confirms c.1032A and c.1061del are on
-    the SAME molecule (same allele), ruling out trans configuration.
-
-    Cross-amplicon phasing (e.g. exon6 pos58 + exon7 pos687) requires merging
-    the two Haplotypes.tsv files by read name in a separate step.
-    """
-    reads_a  = sum(1 for h in haplotypes if h.alleles.get(pos_a) == allele_a)
-    reads_b  = sum(1 for h in haplotypes if h.alleles.get(pos_b) == allele_b)
+    """Log how often two alleles co-occur on the same read. With the
+    combined amplicon, pos_a and pos_b may legitimately be in different
+    exons -- full-length reads make this a true single-molecule phase
+    check rather than the within-exon-only check possible in v1.x."""
+    reads_a = sum(1 for h in haplotypes if h.alleles.get(pos_a) == allele_a)
+    reads_b = sum(1 for h in haplotypes if h.alleles.get(pos_b) == allele_b)
     reads_ab = sum(
         1 for h in haplotypes
         if h.alleles.get(pos_a) == allele_a and h.alleles.get(pos_b) == allele_b
     )
     total = len(haplotypes) or 1
-    pct   = 100.0 * reads_ab / total
+    pct = 100.0 * reads_ab / total
 
     logger.info(
-        f"Phasing  p{pos_a}={allele_a} ∩ p{pos_b}={allele_b}: "
+        f"Phasing  p{pos_a}={allele_a} \u2229 p{pos_b}={allele_b}: "
         f"{reads_a} reads carry p{pos_a}={allele_a}, "
         f"{reads_b} carry p{pos_b}={allele_b}, "
         f"{reads_ab} carry BOTH ({pct:.1f}% of all reads)"
@@ -390,19 +391,13 @@ def analyse_cooccurrence(
     if reads_a > 0:
         frac = reads_ab / reads_a
         if frac >= 0.8:
-            logger.info(
-                f"  → PHASED: {100*frac:.0f}% of p{pos_a}={allele_a} reads "
-                f"also carry p{pos_b}={allele_b}  (same allele confirmed)"
-            )
+            logger.info(f"  -> PHASED: {100*frac:.0f}% of p{pos_a}={allele_a} reads "
+                        f"also carry p{pos_b}={allele_b}  (same allele confirmed)")
         elif frac <= 0.2:
-            logger.info(
-                f"  → TRANS: only {100*frac:.0f}% of p{pos_a}={allele_a} reads "
-                f"carry p{pos_b}={allele_b}  (likely on different alleles)"
-            )
+            logger.info(f"  -> TRANS: only {100*frac:.0f}% of p{pos_a}={allele_a} reads "
+                        f"carry p{pos_b}={allele_b}  (likely on different alleles)")
         else:
-            logger.warning(
-                f"  → AMBIGUOUS: {100*frac:.0f}% co-occurrence — manual review recommended"
-            )
+            logger.warning(f"  -> AMBIGUOUS: {100*frac:.0f}% co-occurrence — manual review recommended")
 
 
 # ---------------------------------------------------------------------------
@@ -434,21 +429,14 @@ def write_haplotypes_tsv(haplotypes: List[ReadHaplotype], path: Path) -> None:
             fh.write(f"{h.read_name}\t{h.exon}\t{var_pos}\t{h.to_string()}\n")
 
 
-def write_summary(
-    stats: List[PositionStats],
-    path: Path,
-    threshold: int = 10,
-) -> None:
+def write_summary(stats: List[PositionStats], path: Path, threshold: int = 10) -> None:
     """Write ABOReadPolymorphisms.txt in the same format as stats_from_pileup.py."""
     logger = logging.getLogger(__name__)
     polymorphic = 0
     with open(path, "w") as fh:
         for s in stats:
-            if (
-                s.mismatch_percent  >= threshold
-                or s.insertion_percent >= threshold
-                or s.deletion_percent  >= threshold
-            ):
+            if (s.mismatch_percent >= threshold or s.insertion_percent >= threshold
+                    or s.deletion_percent >= threshold):
                 fh.write(f"(1-based) Position:{s.pos}, Reference Base={s.ref_base}\n")
                 fh.write(f"Aligned Read Count:{s.depth}\n")
                 fh.write("Mat\tMis\tIns\tDel\tA\tG\tC\tT\n")
@@ -477,46 +465,58 @@ def setup_logging(verbose: bool) -> logging.Logger:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Read-level ABO haplotype scanner (replaces samtools mpileup + stats_from_pileup).\n"
-            "Produces identical AlignmentStatistics.tsv output PLUS a per-read Haplotypes.tsv."
+            "Read-level ABO haplotype scanner. Default mode targets the "
+            "combined exon2-7 long-read amplicon (Mobegi et al. 2025); pass "
+            "--legacy for v1.x-style separate exon6-only/exon7-only "
+            "mini-amplicon references."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s -b sample.bam -f reference.fasta -o sample_prefix
-  %(prog)s -b sample.bam -f reference.fasta -o sample_prefix -s ABOReadPolymorphisms.txt -v
+  %(prog)s -b sample.bam -f combined_reference.fasta -o sample_prefix \\
+      --panel abo_variant_panel.yaml
+  %(prog)s -b sample.bam -f exon7_reference.fasta -o sample_prefix --legacy -v
         """,
     )
-    parser.add_argument("-b", "--bam",      required=True,
-                        help="Sorted, indexed BAM file")
-    parser.add_argument("-f", "--fasta",    required=True,
-                        help="Reference FASTA (must have .fai index)")
-    parser.add_argument("-o", "--output",   required=True,
-                        help="Output prefix — produces <prefix>.AlignmentStatistics.tsv "
-                             "and <prefix>.Haplotypes.tsv")
-    parser.add_argument("-s", "--summary",  default="ABOReadPolymorphisms.txt",
-                        help="Polymorphic positions summary (default: ABOReadPolymorphisms.txt)")
+    parser.add_argument("-b", "--bam", required=True, help="Sorted, indexed BAM file")
+    parser.add_argument("-f", "--fasta", required=True, help="Reference FASTA (must have .fai index)")
+    parser.add_argument("-o", "--output", required=True,
+                         help="Output prefix -- produces <prefix>.AlignmentStatistics.tsv "
+                              "and <prefix>.Haplotypes.tsv")
+    parser.add_argument("--panel", default="abo_variant_panel.yaml",
+                         help="Path to the variant panel file (.yaml/.json/.csv/.tsv). Default: %(default)s")
+    parser.add_argument("--legacy", action="store_true",
+                         help="Use v1.x behaviour: treat the reference as a short "
+                              "exon6-only or exon7-only mini-amplicon, detected by "
+                              "length, and resolve panel positions via "
+                              "legacy_exon6_pos/legacy_exon7_pos instead of amplicon_pos.")
+    parser.add_argument("-s", "--summary", default="ABOReadPolymorphisms.txt",
+                         help="Polymorphic positions summary (default: %(default)s)")
     parser.add_argument("-t", "--threshold", type=int, default=10,
-                        help="Polymorphism threshold %% (default: 10)")
-    parser.add_argument("-q", "--min-mapq",  type=int, default=0,
-                        help="Minimum mapping quality (default: 0)")
+                         help="Polymorphism threshold %% (default: %(default)s)")
+    parser.add_argument("-q", "--min-mapq", type=int, default=0,
+                         help="Minimum mapping quality (default: %(default)s)")
     parser.add_argument("-Q", "--min-baseq", type=int, default=0,
-                        help="Minimum base quality for pileup (default: 0)")
-    parser.add_argument("-v", "--verbose",  action="store_true",
-                        help="Verbose logging")
+                         help="Minimum base quality for pileup (default: %(default)s)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose logging")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
-    args   = parser.parse_args()
+    args = parser.parse_args()
     logger = setup_logging(args.verbose)
 
-    bam_path      = Path(args.bam)
-    fasta_path    = Path(args.fasta)
-    prefix        = args.output
-    summary_path  = Path(args.summary)
-    stats_path    = Path(f"{prefix}.AlignmentStatistics.tsv")
-    haplo_path    = Path(f"{prefix}.Haplotypes.tsv")
+    try:
+        panel = load_panel(args.panel)
+    except Exception as exc:
+        logger.error(f"Cannot load variant panel '{args.panel}': {exc}")
+        return 1
 
-    # ── Load reference ──────────────────────────────────────────────────────
+    bam_path = Path(args.bam)
+    fasta_path = Path(args.fasta)
+    prefix = args.output
+    summary_path = Path(args.summary)
+    stats_path = Path(f"{prefix}.AlignmentStatistics.tsv")
+    haplo_path = Path(f"{prefix}.Haplotypes.tsv")
+
     try:
         with pysam.FastaFile(str(fasta_path)) as fa:
             ref_names = fa.references
@@ -524,16 +524,40 @@ Examples:
                 logger.error("No sequences found in reference FASTA")
                 return 1
             ref_name = ref_names[0]
-            ref_seq  = fa.fetch(ref_name).upper()
+            ref_seq = fa.fetch(ref_name).upper()
     except Exception as exc:
         logger.error(f"Cannot load reference FASTA: {exc}")
         return 1
 
     ref_length = len(ref_seq)
-    exon_type  = determine_exon_type(ref_length)
-    logger.info(f"Reference: {ref_name}  length={ref_length}  exon={exon_type.value}")
 
-    # ── Open BAM ────────────────────────────────────────────────────────────
+    if args.legacy:
+        legacy_exon = determine_legacy_exon_type(ref_length)
+        if legacy_exon == ExonType.UNKNOWN:
+            logger.error(
+                f"--legacy given but reference length {ref_length} matches "
+                f"neither the exon6 range {LEGACY_EXON6_LENGTH_RANGE} nor "
+                f"exon7 range {LEGACY_EXON7_LENGTH_RANGE}. If this is the "
+                f"new combined amplicon, drop --legacy."
+            )
+            return 1
+        exon_label = legacy_exon.value
+        diag_positions, indel_positions, _ = resolve_positions(panel, legacy=True, legacy_exon=legacy_exon)
+        logger.info(f"[legacy mode] Reference: {ref_name}  length={ref_length}  exon={exon_label}")
+    else:
+        exon_label = "combined"
+        diag_positions, indel_positions, _ = resolve_positions(panel, legacy=False)
+        logger.info(f"[combined mode] Reference: {ref_name}  length={ref_length}")
+        if not diag_positions:
+            logger.warning(
+                "No calibrated (amplicon_pos-populated) panel positions found. "
+                "Run calibrate_panel_positions.py against this reference FASTA "
+                "first, or use --legacy for a v1.x mini-amplicon reference."
+            )
+
+    logger.info(f"Diagnostic positions loaded: {len(diag_positions)} "
+                f"({len(indel_positions)} indel-diagnostic)")
+
     try:
         bam = pysam.AlignmentFile(str(bam_path), "rb")
     except Exception as exc:
@@ -541,46 +565,53 @@ Examples:
         return 1
 
     try:
-        # ── 1. Per-position frequencies ─────────────────────────────────────
-        logger.info("Computing per-position allele frequencies …")
+        logger.info("Computing per-position allele frequencies ...")
         stats = compute_position_stats(
-            bam, ref_name, ref_seq, exon_type,
-            min_base_quality=args.min_baseq,
-            min_map_quality=args.min_mapq,
+            bam, ref_name, ref_seq, indel_positions,
+            min_base_quality=args.min_baseq, min_map_quality=args.min_mapq,
         )
         write_stats_tsv(stats, stats_path)
-        logger.info(f"✓  AlignmentStatistics  → {stats_path}")
+        logger.info(f"[OK]  AlignmentStatistics  -> {stats_path}")
 
         write_summary(stats, summary_path, threshold=args.threshold)
-        logger.info(f"✓  Polymorphisms summary → {summary_path}")
+        logger.info(f"[OK]  Polymorphisms summary -> {summary_path}")
 
-        # ── 2. Per-read haplotypes ───────────────────────────────────────────
-        logger.info("Computing per-read haplotypes …")
+        logger.info("Computing per-read haplotypes ...")
         haplotypes = compute_read_haplotypes(
-            bam, ref_name, ref_seq, exon_type,
+            bam, ref_name, ref_seq, diag_positions, indel_positions, exon_label,
             min_map_quality=args.min_mapq,
         )
         write_haplotypes_tsv(haplotypes, haplo_path)
-        logger.info(f"✓  Haplotypes            → {haplo_path}  ({len(haplotypes)} reads)")
+        logger.info(f"[OK]  Haplotypes            -> {haplo_path}  ({len(haplotypes)} reads)")
 
-        # ── 3. Within-amplicon phasing checks ────────────────────────────────
-        if haplotypes and exon_type == ExonType.EXON7:
-            # c.1032G>A (pos685) + c.1061del (pos687) — both on exon7
-            analyse_cooccurrence(haplotypes, 685, "A",   687, "del", logger)
-            # c.907A (pos422 area — note: check actual position) + c.1061del
-            analyse_cooccurrence(haplotypes, 422, "A",   687, "del", logger)
-
-        if haplotypes and exon_type == ExonType.EXON6:
-            # c.261del (pos22) — O1 marker; confirm it is homozygous or het
-            dels  = sum(1 for h in haplotypes if "del" in h.alleles.get(22, ""))
-            total = len(haplotypes) or 1
+        if haplotypes and not args.legacy:
             logger.info(
-                f"Exon6 pos22 deletion: {dels}/{total} reads "
-                f"({100*dels/total:.1f}%)  — "
-                + ("homozygous O1" if dels/total > 0.8 else
-                   "heterozygous O1/non-O1" if dels/total > 0.2 else
-                   "non-O1")
+                "Combined-amplicon mode: every read above spans all "
+                "calibrated diagnostic positions gene-wide, so "
+                "Haplotypes.tsv already gives full-length cis phasing "
+                "without any cross-amplicon post-processing step."
             )
+        elif haplotypes and exon_label == "Exon 7":
+            a2_marker = panel.get("a1_a2_1061del")
+            a1032_marker = panel.get("a2p_1032_a201")
+            if a2_marker and a1032_marker:
+                p1 = a2_marker.resolved_position(prefer="legacy7")
+                p2 = a1032_marker.resolved_position(prefer="legacy7")
+                if p1 and p2:
+                    analyse_cooccurrence(haplotypes, p2, "A", p1, "del", logger)
+        elif haplotypes and exon_label == "Exon 6":
+            o1_marker = panel.get("o1_marker")
+            pos = o1_marker.resolved_position(prefer="legacy6") if o1_marker else None
+            if pos:
+                dels = sum(1 for h in haplotypes if "del" in h.alleles.get(pos, ""))
+                total = len(haplotypes) or 1
+                logger.info(
+                    f"Exon6 pos{pos} deletion: {dels}/{total} reads "
+                    f"({100*dels/total:.1f}%)  — "
+                    + ("homozygous O1" if dels/total > 0.8 else
+                       "heterozygous O1/non-O1" if dels/total > 0.2 else
+                       "non-O1")
+                )
 
     finally:
         bam.close()

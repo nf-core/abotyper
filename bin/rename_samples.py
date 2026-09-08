@@ -37,10 +37,18 @@ __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg"]
 __license__ = "GPL"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
+
+# v1.1.1 note: no functional changes. This script operates on
+# final_export.csv's flat columns (Sample ID, Genotype, #Reads, ...) which
+# are unaffected by the v2.0.0 panel-driven refactor of the other four
+# pipeline scripts -- aggregate_abo_reports.py still emits the same
+# final_export.csv column names regardless of how many diagnostic
+# positions the panel now covers. Bumped for release-tracking consistency
+# with the rest of the v2.0.0 bundle only.
 
 
 class SampleRenamer:

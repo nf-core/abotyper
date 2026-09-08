@@ -8,7 +8,7 @@ process ABO_GETABOSNPS {
         : 'community.wave.seqera.io/library/json5_pandas_python:e3184b0698afebbd'}"
 
     input:
-    tuple val(meta), path(variants_freq), path(coverage), val(exon_n)
+    tuple val(meta), path(variants_freq), path(coverage)
 
     output:
     tuple val(meta), path("*.ABOPhenotype.txt"), emit: phenotype
@@ -26,7 +26,7 @@ process ABO_GETABOSNPS {
         -i ${variants_freq} \\
         -o ${prefix}.ABOPhenotype.txt \\
         -c ${coverage} \\
-        -e ${exon_n} \\
+        ${args} \\
         2>&1 | tee ${prefix}.log.txt
     """
 
