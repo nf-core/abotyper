@@ -1,67 +1,112 @@
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-name: "samtools_mpileupcustom"
-## TODO nf-core: Add a description of the module and list keywords
-description: write your description here
+name: "mpileupstats"
+description: Process mpileup data to extract nucleotide frequencies and polymorphisms for ABO blood group analysis
 keywords:
-  - sort
-  - example
-  - genomics
+  - nucleotide frequency
+  - polymorphisms
+  - ABO blood typing
+  - mpileup analysis
+  - variant analysis
+  - python
 tools:
-  - "samtools":
-      ## TODO nf-core: Add a description and other details for the software below
-      description: "Tools for dealing with SAM, BAM and CRAM files"
-      homepage: "None"
-      documentation: "None"
-      tool_dev_url: "None"
-      doi: ""
-      licence: ['MIT']
-      identifier: biotools:samtools
+  - python:
+      description: Python programming language
+      homepage: "https://www.python.org/"
+      documentation: "https://docs.python.org/"
+      tool_dev_url: "https://github.com/python/cpython"
+      licence: ["Python Software Foundation License"]
+      identifier: biotools:python
+  - stats_from_pileup.py:
+      description: Custom Python script for extracting nucleotide statistics from mpileup data
+      homepage: ""
+      documentation: ""
+      tool_dev_url: ""
+      licence: [""]
 
-## TODO nf-core: Add a description of all of the variables used as input
 input:
-  # Only when we have meta
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
-          e.g. `[ id:'sample1', single_end:false ]`
-  
-  ## TODO nf-core: Delete / customise this example input
-    - bam:
+          e.g. [ id:'sample1', exon:'exon6', sample_type:'patient' ]
+    - pileup:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Input mpileup file (compressed or uncompressed)
+        pattern: "*.{pileup,pileup.gz}"
         ontologies:
-          - edam: "http://edamontology.org/format_25722"
-          - edam: "http://edamontology.org/format_2573"
-          - edam: "http://edamontology.org/format_3462"
-          
-
-## TODO nf-core: Add a description of all of the variables used as output
-output:
-  - bam:
-  #Only when we have meta
-    - meta:
+          - edam:format_3003
+  - - meta1:
         type: map
         description: |
-          Groovy Map containing sample information
-          e.g. `[ id:'sample1', single_end:false ]`
-  ## TODO nf-core: Delete / customise this example output
-    - "*.bam":
+          Groovy Map containing reference information
+          e.g. [ id:'reference' ]
+    - fasta:
         type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
+        description: Reference FASTA file (used for context, may not be directly processed)
+        pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
         ontologies:
-          - edam: "http://edamontology.org/format_25722"
-          - edam: "http://edamontology.org/format_2573"
-          - edam: "http://edamontology.org/format_3462"
-          
-  - versions:
-    - "versions.yml":
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
+          - edam:format_1929
+
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'sample1', exon:'exon6', sample_type:'patient' ]
+      - "*.AlignmentStatistics.tsv":
+          type: file
+          description: Tab-separated file containing alignment statistics and nucleotide frequencies per position
+          pattern: "*.AlignmentStatistics.tsv"
+          ontologies:
+            - edam:format_3475
+  txt:
+    - - "ABOReadPolymorphisms.txt":
+          type: file
+          description: Text file containing ABO-specific polymorphisms extracted from the pileup data
+          pattern: "ABOReadPolymorphisms.txt"
+          ontologies:
+            - edam:format_2330
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+  versions_re:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - re:
+          type: string
+          description: Name of the Python module
+      - python3 -c "import re; print(re.__version__)":
+          type: eval
+          description: The expression to obtain the version of the re module
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - re:
+          type: string
+          description: Name of the Python module
+      - python3 -c "import re; print(re.__version__)":
+          type: eval
+          description: The expression to obtain the version of the re module
 
 authors:
   - "@fmobegi"

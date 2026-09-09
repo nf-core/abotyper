@@ -1,30 +1,44 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
-name: "minimap_align_exons"
-## TODO nf-core: Add a description of the subworkflow and list keywords
-description: Sort SAM/BAM/CRAM file
+name: "MINIMAP2_ALIGN_READS"
+description: Aligns each sample to two exon references using Minimap2, then runs Samtools coverage, flagstat, and stats. Uses a pure metadata-driven approach with no aliasing or premature splitting.
 keywords:
-  - sort
-  - bam
-  - sam
-  - cram
-## TODO nf-core: Add a list of the modules and/or subworkflows used in the subworkflow
+  - alignment
+  - minimap2
+  - samtools
+  - coverage
+  - flagstat
+  - stats
+  - exons
+  - abo
 components:
-  - samtools/sort
-  - samtools/index
-## TODO nf-core: List all of the channels used as input with a description and their structure
+  - minimap2/align
+  - samtools/coverage
+  - samtools/flagstat
+  - samtools/stats
 input:
-  - ch_bam:
-      type: file
+  - ch_combined_input:
+      type: channel
       description: |
-        The input channel containing the BAM/CRAM/SAM files
-        Structure: [ val(meta), path(bam) ]
-      pattern: "*.{bam/cram/sam}"
-## TODO nf-core: List all of the channels used as output with a descriptions and their structure
+        Channel containing FASTQ files with exon metadata
+        Structure: [ val(meta), path(fastq) ]
+      pattern: "*.{fastq,fastq.gz,fq,fq.gz}"
+  - ch_combined_fasta:
+      type: channel
+      description: |
+        Channel containing FASTA reference files with exon metadata
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,fa,fas}"
+  - ch_combined_fai:
+      type: channel
+      description: |
+        Channel containing FASTA index files with exon metadata
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
 output:
   - bam:
       type: file
       description: |
-        Channel containing BAM files
+        Channel containing BAM files from minimap2 alignment
         Structure: [ val(meta), path(bam) ]
       pattern: "*.bam"
   - bai:
@@ -33,12 +47,36 @@ output:
         Channel containing indexed BAM (BAI) files
         Structure: [ val(meta), path(bai) ]
       pattern: "*.bai"
-  - csi:
+  - coverage:
       type: file
       description: |
-        Channel containing CSI files
-        Structure: [ val(meta), path(csi) ]
-      pattern: "*.csi"
+        Channel containing samtools coverage output files
+        Structure: [ val(meta), path(coverage) ]
+      pattern: "*.txt"
+  - flagstat:
+      type: file
+      description: |
+        Channel containing samtools flagstat output files
+        Structure: [ val(meta), path(flagstat) ]
+      pattern: "*.flagstat"
+  - stats:
+      type: file
+      description: |
+        Channel containing samtools stats output files
+        Structure: [ val(meta), path(stats) ]
+      pattern: "*.stats"
+  - fasta:
+      type: file
+      description: |
+        Channel containing FASTA reference files with exon metadata
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,fa,fas}"
+  - fai:
+      type: file
+      description: |
+        Channel containing FASTA index files with exon metadata
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
   - versions:
       type: file
       description: |

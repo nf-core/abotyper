@@ -1,4 +1,6 @@
-# nf-core/abotyper: Citations
+## [nf-core/abotyper](https://pubmed.ncbi.nlm.nih.gov/40564908/)
+
+> Mobegi FM, Bruce S, El-Lagta N, Ayora F, Matern BM, Groeneweg M, D'Orsogna LJ, De Santis D. Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing. Int J Mol Sci. 2025;26(12):5443. doi: 10.3390/ijms26125443. PubMed PMID: 40564908.
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

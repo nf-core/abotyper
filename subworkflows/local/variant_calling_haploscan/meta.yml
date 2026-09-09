@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "VARIANTS_QUANTIFICATION"
+description: |
+  Drop-in replacement for variant_calling_mpileup. Uses HAPLOSCAN (pysam_haploscan.py)
+  to perform a single-pass scan of aligned BAM files, computing per-position allele
+  frequencies AND per-read haplotype tables simultaneously. Channel matching logic
+  handles the metadata quirks present in the pipeline (FAI id has .fasta suffix;
+  BAM carries ref_id) identically to the mpileup subworkflow it replaces.
+keywords:
+  - abo
+  - blood typing
+  - variant calling
+  - haplotype phasing
+  - allele frequency
+  - pysam
+  - bam
+components:
+  - haploscan
+input:
+  - ch_bam:
+      type: channel
+      description: |
+        Channel containing aligned BAM files with sample and exon metadata.
+        Structure: [ val(meta), path(*.bam) ]
+      pattern: "*.bam"
+  - ch_bai:
+      type: channel
+      description: |
+        Channel containing BAM index files with sample and exon metadata.
+        Structure: [ val(meta), path(*.bai) ]
+      pattern: "*.bai"
+  - ch_fasta:
+      type: channel
+      description: |
+        Channel containing reference FASTA files with exon metadata.
+        The metadata id does NOT carry the .fasta suffix.
+        Structure: [ val(meta), path(*.fasta) ]
+      pattern: "*.fasta"
+  - ch_fai:
+      type: channel
+      description: |
+        Channel containing FASTA index files with exon metadata.
+        The metadata id carries the .fasta suffix (handled internally via .replace).
+        Structure: [ val(meta), path(*.fasta.fai) ]
+      pattern: "*.fasta.fai"
+  - ch_bed:
+      type: channel
+      description: |
+        Channel containing BED region files with exon metadata.
+        Accepted for interface compatibility but not forwarded to HAPLOSCAN.
+        Structure: [ val(meta), path(*.bed) ]
+      pattern: "*.bed"
+output:
+  - metrics:
+      type: file
+      description: |
+        Per-position allele frequency / alignment statistics table produced by
+        pysam_haploscan.py for each sample–exon combination.
+        Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
+      pattern: "*.AlignmentStatistics.tsv"
+  - haplotypes:
+      type: file
+      description: |
+        Per-read haplotype table produced by pysam_haploscan.py for each
+        sample–exon combination. Consumed by PREDICTABOPHENOTYPE to compute
+        PhaseConfidence scores and detect Bw/B(A) subtypes.
+        Structure: [ val(meta), path(*.Haplotypes.tsv) ]
+      pattern: "*.Haplotypes.tsv"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

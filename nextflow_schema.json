@@ -55,16 +55,6 @@
                     "fa_icon": "fas fa-book",
                     "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
                 "igenomes_ignore": {
                     "type": "boolean",
                     "description": "Do not load the iGenomes reference config.",
@@ -74,11 +64,70 @@
                 },
                 "igenomes_base": {
                     "type": "string",
-                    "format": "directory-path",
                     "description": "The base path to the igenomes reference files",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
+                }
+            }
+        },
+        "abo_specific_options": {
+            "title": "ABO-specific reference files",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "ABO gene-specific reference files and configuration options.",
+            "properties": {
+                "abo_reference_fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to the single combined ABO reference FASTA spanning the amplicon region(s) of interest.",
+                    "help_text": "Path to the combined ABO reference FASTA (e.g. exon2-7 long-read amplicon or the full RefSeqGene) used for alignment and variant calling in single-reference mode. Replaces the separate exon6fasta/exon7fasta references used by the legacy dual-mini-amplicon topology.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "abo_reference_fai": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fai$",
+                    "description": "Path to the FASTA index file for abo_reference_fasta.",
+                    "help_text": "This parameter specifies the path to the index file for the combined ABO reference FASTA.",
+                    "fa_icon": "fas fa-list"
+                },
+                "logo": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to custom logo file.",
+                    "help_text": "This parameter specifies the path to a custom logo file for reports and documentation.",
+                    "fa_icon": "fas fa-image"
+                },
+                "renaming_file": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to file containing sample renaming information.",
+                    "help_text": "A tab-delimited file with sequencingID and sampleName columns used to rename samples during ABO processing. If not provided, original sample names will be used.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "skip_renaming": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Skip sample renaming process.",
+                    "help_text": "When set to true, samples will keep their original names from the input files. When false, the pipeline will attempt to rename samples using the renaming_file parameter for ABO analysis.",
+                    "fa_icon": "fas fa-toggle-on"
+                },
+                "abo_panel": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.(yaml|yml|json|csv|tsv)$",
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/abo_variant_panel.yaml",
+                    "description": "Path to the ABO diagnostic variant panel (.yaml/.yml/.json/.csv/.tsv).",
+                    "help_text": "Defines the diagnostic variant positions, calling thresholds, and ISBT allele associations used by the HAPLOSCAN, ABO_GETABOSNPS and ABO_SNPS2PHENO modules. Positions are given as ng006669_2_pos (verified against NG_006669.2, the default abo_reference_fasta) alongside legacy_exon6_pos/legacy_exon7_pos for backward compatibility. Run bin/calibrate_panel_positions.py to populate amplicon_pos if a different combined reference FASTA is used instead.",
+                    "fa_icon": "fas fa-table"
                 }
             }
         },
@@ -180,13 +229,6 @@
                     "fa_icon": "fas fa-palette",
                     "hidden": true
                 },
-                "hook_url": {
-                    "type": "string",
-                    "description": "Incoming hook URL for messaging service",
-                    "fa_icon": "fas fa-people-group",
-                    "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
-                    "hidden": true
-                },
                 "multiqc_config": {
                     "type": "string",
                     "format": "file-path",
@@ -198,7 +240,8 @@
                     "type": "string",
                     "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
                     "fa_icon": "fas fa-image",
-                    "hidden": true
+                    "hidden": true,
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/pathwest_logo.png"
                 },
                 "multiqc_methods_description": {
                     "type": "string",
@@ -218,6 +261,24 @@
                     "description": "Base URL or local path to location of pipeline test dataset files",
                     "default": "https://raw.githubusercontent.com/nf-core/test-datasets/",
                     "hidden": true
+                },
+                "trace_report_suffix": {
+                    "type": "string",
+                    "fa_icon": "far calendar",
+                    "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
+                    "hidden": true
+                },
+                "help": {
+                    "type": ["boolean", "string"],
+                    "description": "Display the help message."
+                },
+                "help_full": {
+                    "type": "boolean",
+                    "description": "Display the full detailed help message."
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
         }
@@ -230,30 +291,13 @@
             "$ref": "#/$defs/reference_genome_options"
         },
         {
+            "$ref": "#/$defs/abo_specific_options"
+        },
+        {
             "$ref": "#/$defs/institutional_config_options"
         },
         {
             "$ref": "#/$defs/generic_options"
         }
-    ],
-    "properties": {
-        "exon6fasta": {
-            "type": "string"
-        },
-        "exon7fasta": {
-            "type": "string"
-        },
-        "logo": {
-            "type": "string"
-        },
-        "fai": {
-            "type": "string"
-        },
-        "exon6fai": {
-            "type": "string"
-        },
-        "exon7fai": {
-            "type": "string"
-        }
-    }
+    ]
 }

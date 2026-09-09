@@ -1,107 +1,77 @@
-include { MINIMAP2_ALIGN    as MINIMAP2_ALIGN_EXON6      } from '../../../modules/nf-core/minimap2/align/main'
-include { MINIMAP2_ALIGN    as MINIMAP2_ALIGN_EXON7      } from '../../../modules/nf-core/minimap2/align/main'
-include { SAMTOOLS_COVERAGE as SAMTOOLS_COVERAGE_EXON6   } from '../../../modules/nf-core/samtools/coverage/main'
-include { SAMTOOLS_COVERAGE as SAMTOOLS_COVERAGE_EXON7   } from '../../../modules/nf-core/samtools/coverage/main'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_EXON6   } from '../../../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_FLAGSTAT as SAMTOOLS_FLAGSTAT_EXON7   } from '../../../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_STATS as SAMTOOLS_STATS_EXON6         } from '../../../modules/nf-core/samtools/stats/main'
-include { SAMTOOLS_STATS as SAMTOOLS_STATS_EXON7         } from '../../../modules/nf-core/samtools/stats/main'
+/*
+ * Subworkflow: minimap_align_exons
+ * Description: Aligns each sample against the single combined ABO reference
+ * using Minimap2, then runs Samtools coverage, flagstat, and stats.
+ * Single-reference mode: every sample is aligned exactly once, no
+ * per-exon metadata matching required.
+ */
+
+include { MINIMAP2_ALIGN    } from '../../../modules/nf-core/minimap2/align'
+include { SAMTOOLS_COVERAGE } from '../../../modules/nf-core/samtools/coverage'
+include { SAMTOOLS_FLAGSTAT } from '../../../modules/nf-core/samtools/flagstat'
+include { SAMTOOLS_STATS    } from '../../../modules/nf-core/samtools/stats'
 
 workflow MINIMAP2_ALIGN_READS {
-
     take:
-    ch_samplesheet  // channel: [ val(meta), [ fastq ] ]
-    ch_exon6fai     // channel: [ val(meta), [ fai ] ]
-    ch_exon6fasta   // channel: [ val(meta), [ fasta ] ]
-    ch_exon7fai     // channel: [ val(meta), [ fai ] ]
-    ch_exon7fasta   // channel: [ val(meta), [ fasta ] ]
+    ch_samplesheet     // channel: [ val(meta), [ fastq ] ]
+    ch_reference_fasta // channel: [ val(meta1), path(fasta) ]
+    ch_reference_fai   // channel: [ val(meta1), path(fai) ]
 
     main:
 
-    ch_versions = Channel.empty()
+    // Value channels: single reference reused for every sample
+    def ch_ref_fasta = ch_reference_fasta.first()
 
-    // 
-    // MODULE: Minimap2/align
-    // 
-    MINIMAP2_ALIGN_EXON6 (
+    // Reference tuple [meta, fasta, fai] for coverage/stats,
+    // pinned as a value channel with .first
+    def ch_ref_bundle = ch_reference_fasta
+        .combine(ch_reference_fai)
+        .map { meta_fa, fa, meta_fai, fai -> [ [id: 'ABO_REF'], fa, fai ] }
+        .first()
+
+    //
+    // MODULE: MINIMAP2_ALIGN
+    //
+    MINIMAP2_ALIGN(
         ch_samplesheet,
-        ch_exon6fasta,
-        bam_format="bam",
-        bam_index_extension="bai",
-        cigar_paf_format=false,
-        cigar_bam=false
+        ch_ref_fasta,
+        "bam",
+        "bai",
+        false,
+        false,
     )
-    ch_versions = ch_versions.mix(MINIMAP2_ALIGN_EXON6.out.versions.first())
 
-    MINIMAP2_ALIGN_EXON7 (
-        ch_samplesheet,
-        ch_exon7fasta,
-        bam_format="bam",
-        bam_index_extension="bai",
-        cigar_paf_format=false,
-        cigar_bam=false
-    )
-    ch_versions = ch_versions.mix(MINIMAP2_ALIGN_EXON7.out.versions.first())
+    ch_bam_bai = MINIMAP2_ALIGN.out.bam.join(MINIMAP2_ALIGN.out.index, by: 0)
 
     //
-    // MODULE: Samtools/coverage 
-    // 
-    SAMTOOLS_COVERAGE_EXON6 (
-        MINIMAP2_ALIGN_EXON6.out.bam
-            .join(MINIMAP2_ALIGN_EXON6.out.index),
-        ch_exon6fasta,
-        ch_exon6fai
+    // MODULE: SAMTOOLS_COVERAGE
+    //
+    SAMTOOLS_COVERAGE(
+        ch_bam_bai,
+        ch_ref_bundle,
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE_EXON6.out.versions.first())
-
-    SAMTOOLS_COVERAGE_EXON7 (
-        MINIMAP2_ALIGN_EXON7.out.bam
-            .join(MINIMAP2_ALIGN_EXON7.out.index),
-        ch_exon7fasta,
-        ch_exon7fai
-    )
-    ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE_EXON7.out.versions.first())
 
     //
-    // MODULE: Samtools/flagstat 
-    // 
-    SAMTOOLS_FLAGSTAT_EXON6 (
-        MINIMAP2_ALIGN_EXON6.out.bam
-            .join(MINIMAP2_ALIGN_EXON6.out.index)
+    // MODULE: SAMTOOLS_FLAGSTAT
+    //
+    SAMTOOLS_FLAGSTAT(
+        ch_bam_bai
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_EXON6.out.versions.first())
-
-    SAMTOOLS_FLAGSTAT_EXON7 (
-        MINIMAP2_ALIGN_EXON7.out.bam
-            .join(MINIMAP2_ALIGN_EXON7.out.index)
-    )
-    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT_EXON7.out.versions.first())
 
     //
-    // MODULE: Samtools/stats 
-    // 
-    SAMTOOLS_STATS_EXON6 (
-        MINIMAP2_ALIGN_EXON6.out.bam
-            .join(MINIMAP2_ALIGN_EXON6.out.index),
-        ch_exon6fasta
+    // MODULE: SAMTOOLS_STATS
+    //
+    SAMTOOLS_STATS(
+        ch_bam_bai,
+        ch_ref_bundle,
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_STATS_EXON6.out.versions.first())
-
-    SAMTOOLS_STATS_EXON7 (
-        MINIMAP2_ALIGN_EXON7.out.bam
-            .join(MINIMAP2_ALIGN_EXON7.out.index),
-        ch_exon7fasta
-    )
-    ch_versions = ch_versions.mix(SAMTOOLS_STATS_EXON7.out.versions.first())
 
     emit:
-    exon6bam      = MINIMAP2_ALIGN_EXON6.out.bam           // channel: [ val(meta), [ bam ] ]
-    exon6bai      = MINIMAP2_ALIGN_EXON6.out.index         // channel: [ val(meta), [ bai ] ]
-    exon6cov      = SAMTOOLS_COVERAGE_EXON6.out.coverage   // channel: [ val(meta), [ txt ] ]
-    exon7bam      = MINIMAP2_ALIGN_EXON7.out.bam           // channel: [ val(meta), [ bam ] ]
-    exon7bai      = MINIMAP2_ALIGN_EXON7.out.index         // channel: [ val(meta), [ bai ] ]
-    exon7cov      = SAMTOOLS_COVERAGE_EXON7.out.coverage   // channel: [ val(meta), [ txt ] ]
-
-    versions      = ch_versions                            // channel: [ versions.yml ]
+    bam      = MINIMAP2_ALIGN.out.bam          // channel: [ val(meta), path(bam) ]
+    bai      = MINIMAP2_ALIGN.out.index        // channel: [ val(meta), path(bai) ]
+    coverage = SAMTOOLS_COVERAGE.out.coverage  // channel: [ val(meta), path(txt) ]
+    flagstat = SAMTOOLS_FLAGSTAT.out.flagstat  // channel: [ val(meta), path(flagstat) ]
+    stats    = SAMTOOLS_STATS.out.stats        // channel: [ val(meta), path(stats) ]
+    fasta    = ch_reference_fasta              // channel: [ val(meta1), path(fasta) ]
+    fai      = ch_reference_fai                // channel: [ val(meta1), path(fai) ]
 }
-
