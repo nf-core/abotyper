@@ -1,0 +1,237 @@
+nextflow_process {
+
+    name "Test Process HAPLOSCAN"
+    script "../main.nf"
+    process "HAPLOSCAN"
+
+    tag "modules"
+    tag "modules_local"
+    tag "haploscan"
+    tag "abotyper"
+
+    test("abotyper - ABO_AA_barcode01 - exon6") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon6', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
+                { assert process.out.haplotypes[0][1] ==~ ".*/ABO_AA_barcode01.Haplotypes.tsv" },
+                { assert process.out.txt[0] ==~ ".*/ABOReadPolymorphisms.txt" },
+                { assert path(process.out.tsv[0][1]).exists() },
+                { assert path(process.out.haplotypes[0][1]).exists() },
+                { assert path(process.out.txt[0]).exists() },
+                { assert path(process.out.tsv[0][1]).text.size() > 0 },
+                { assert path(process.out.haplotypes[0][1]).text.size() > 0 },
+                { assert path(process.out.tsv[0][1]).text.contains("\t") },
+                { assert process.out.tsv[0][0].id == 'ABO_AA_barcode01' },
+                { assert process.out.tsv[0][0].exon == 'exon6' },
+                { assert snapshot(
+                    path(process.out.tsv[0][1]).readLines()[0..2],
+                    file(process.out.txt[0]).name,
+                    process.out.versions
+                ).match("ABO_AA_barcode01_exon6") }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AA_barcode01 - exon7") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon7/alignment/ABO_AA_barcode01.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon7/alignment/ABO_AA_barcode01.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon7', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
+                { assert process.out.haplotypes[0][1] ==~ ".*/ABO_AA_barcode01.Haplotypes.tsv" },
+                { assert process.out.txt[0] ==~ ".*/ABOReadPolymorphisms.txt" },
+                { assert path(process.out.tsv[0][1]).exists() },
+                { assert path(process.out.haplotypes[0][1]).exists() },
+                { assert path(process.out.txt[0]).exists() },
+                { assert path(process.out.tsv[0][1]).text.size() > 0 },
+                { assert path(process.out.haplotypes[0][1]).text.size() > 0 },
+                { assert path(process.out.tsv[0][1]).text.contains("\t") },
+                { assert process.out.tsv[0][0].id == 'ABO_AA_barcode01' },
+                { assert process.out.tsv[0][0].exon == 'exon7' },
+                { assert snapshot(
+                    path(process.out.tsv[0][1]).readLines()[0..2],
+                    file(process.out.txt[0]).name,
+                    process.out.versions
+                ).match("ABO_AA_barcode01_exon7") }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AB_barcode02 - exon6") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AB_barcode02', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon6/alignment/ABO_AB_barcode02.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon6/alignment/ABO_AB_barcode02.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon6', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AB_barcode02.AlignmentStatistics.tsv" },
+                { assert process.out.haplotypes[0][1] ==~ ".*/ABO_AB_barcode02.Haplotypes.tsv" },
+                { assert process.out.txt[0] ==~ ".*/ABOReadPolymorphisms.txt" },
+                { assert path(process.out.tsv[0][1]).exists() },
+                { assert path(process.out.haplotypes[0][1]).exists() },
+                { assert path(process.out.txt[0]).exists() },
+                { assert path(process.out.tsv[0][1]).text.size() > 0 },
+                { assert path(process.out.haplotypes[0][1]).text.size() > 0 },
+                { assert path(process.out.tsv[0][1]).text.contains("\t") },
+                { assert process.out.tsv[0][0].id == 'ABO_AB_barcode02' },
+                { assert process.out.tsv[0][0].exon == 'exon6' },
+                { assert snapshot(
+                    path(process.out.tsv[0][1]).readLines()[0..2],
+                    file(process.out.txt[0]).name,
+                    process.out.versions
+                ).match("ABO_AB_barcode02_exon6") }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AB_barcode02 - exon7") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AB_barcode02', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon7', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AB_barcode02.AlignmentStatistics.tsv" },
+                { assert process.out.haplotypes[0][1] ==~ ".*/ABO_AB_barcode02.Haplotypes.tsv" },
+                { assert process.out.txt[0] ==~ ".*/ABOReadPolymorphisms.txt" },
+                { assert path(process.out.tsv[0][1]).exists() },
+                { assert path(process.out.haplotypes[0][1]).exists() },
+                { assert path(process.out.txt[0]).exists() },
+                { assert path(process.out.tsv[0][1]).text.size() > 0 },
+                { assert path(process.out.haplotypes[0][1]).text.size() > 0 },
+                { assert path(process.out.tsv[0][1]).text.contains("\t") },
+                { assert process.out.tsv[0][0].id == 'ABO_AB_barcode02' },
+                { assert process.out.tsv[0][0].exon == 'exon7' },
+                { assert snapshot(
+                    path(process.out.tsv[0][1]).readLines()[0..2],
+                    file(process.out.txt[0]).name,
+                    process.out.versions
+                ).match("ABO_AB_barcode02_exon7") }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AA_barcode01 - exon6 - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon6', exon:'exon6' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon6.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AB_barcode02 - exon7 - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AB_barcode02', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.bam', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.bam.bai', checkIfExists: true)
+                ]
+                input[1] = [
+                    [ id:'A1_01_01_1_reference_Exon7', exon:'exon7' ],
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/refs/A1_01_01_1_reference_Exon7.fasta.fai', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

@@ -15,7 +15,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ABOTYPER  } from './workflows/abotyper'
+include { ABOTYPER                } from './workflows/abotyper'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
@@ -26,23 +26,9 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-params.fai        = getGenomeAttribute('fai')
-params.fasta      = getGenomeAttribute('fasta')
-params.exon6fai   = getGenomeAttribute('exon6fai')
-params.exon6fasta = getGenomeAttribute('exon6fasta')
-params.exon7fai   = getGenomeAttribute('exon7fai')
-params.exon7fasta = getGenomeAttribute('exon7fasta')
-
-// We're considering a pathwest logo for multiqc reports - a little token for our hard work
-params.logo       = getGenomeAttribute('logo')
-
-fai               = params.fai      ? Channel.fromPath(params.fai).map { it -> [[id: it.baseName], it] }.collect()           : Channel.empty()
-fasta             = params.fasta      ? Channel.fromPath(params.fasta).map { it -> [[id: it.baseName], it] }.collect()       : Channel.empty()
-exon6fai          = params.exon6fai ? Channel.fromPath(params.exon6fai).map { it -> [[id: it.baseName], it] }.collect()      : Channel.empty()
-exon6fasta        = params.exon6fasta ? Channel.fromPath(params.exon6fasta).map { it -> [[id: it.baseName], it] }.collect()  : Channel.empty()
-exon7fai          = params.exon7fai ? Channel.fromPath(params.exon7fai).map { it -> [[id: it.baseName], it] }.collect()      : Channel.empty()
-exon7fasta        = params.exon7fasta ? Channel.fromPath(params.exon7fasta).map { it -> [[id: it.baseName], it] }.collect()  : Channel.empty()
-logo              = params.logo       ? Channel.fromPath(params.logo).collect()                                              : Channel.empty()
+params.abo_reference_fai   = getGenomeAttribute('abo_reference_fai') ?: params.abo_reference_fai
+params.abo_reference_fasta = getGenomeAttribute('abo_reference_fasta') ?: params.abo_reference_fasta
+params.logo                = getGenomeAttribute('logo') ?: params.logo
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,33 +36,28 @@ logo              = params.logo       ? Channel.fromPath(params.logo).collect() 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// WORKFLOW: Run main analysis pipeline depending on type of input
-//
 workflow NFCORE_ABOTYPER {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
     main:
+    abo_reference_fai   = params.abo_reference_fai ? Channel.fromPath(params.abo_reference_fai)
+        .map { it -> [[id: it.baseName], it] } : Channel.empty()
+    abo_reference_fasta = params.abo_reference_fasta ? Channel.fromPath(params.abo_reference_fasta)
+        .map { it -> [[id: it.baseName], it] } : Channel.empty()
+    logo = params.logo ? Channel.fromPath(params.logo).collect() : Channel.empty()
 
-    //
-    // WORKFLOW: Run pipeline
-    //
-    ABOTYPER (
+    ABOTYPER(
         samplesheet,
-        fai,
-        fasta,
-        exon6fai,
-        exon6fasta,
-        exon7fai,
-        exon7fasta,
+        abo_reference_fai,
+        abo_reference_fasta,
         logo
     )
-    
+
     emit:
-    multiqc_report = ABOTYPER.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ABOTYPER.out.multiqc_report
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -84,42 +65,37 @@ workflow NFCORE_ABOTYPER {
 */
 
 workflow {
-
-    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION(
         params.version,
         params.validate_params,
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_ABOTYPER (
+    NFCORE_ABOTYPER(
         PIPELINE_INITIALISATION.out.samplesheet
     )
+
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION (
+    PIPELINE_COMPLETION(
         params.email,
         params.email_on_fail,
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
         NFCORE_ABOTYPER.out.multiqc_report
     )
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/

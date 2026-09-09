@@ -1,62 +1,70 @@
-include { GETABOSNPS as SNPS_EXON6          } from '../../../modules/local/abo/abosnps/main'
-include { GETABOSNPS as SNPS_EXON7          } from '../../../modules/local/abo/abosnps/main'
-include { ABOSNPS2PHENO                     } from '../../../modules/local/abo/snps2pheno/main'
+/*
+  SUBWORKFLOW: PREDICTABOPHENOTYPE
+*/
+
+//  Description: Predicts ABO phenotype by combining variant frequency data
+//   with BAM coverage, extracting SNPs, and mapping them to phenotypes.
+//   Uses metadata-driven joining and structured per-sample output.
+
+
+include { ABO_GETABOSNPS } from '../../../modules/local/abo/getabosnps/main'
+include { ABO_SNPS2PHENO } from '../../../modules/local/abo/snps2pheno/main'
 
 workflow PREDICTABOPHENOTYPE {
-
     take:
-    ch_variants_freq_e6 // channel: [ val(meta), [ freq ] ]
-    ch_bam_coverage_e6  // channel: [ val(meta), [ cov ] ]
-    ch_variants_freq_e7 // channel: [ val(meta), [ freq ] ]
-    ch_bam_coverage_e7  // channel: [ val(meta), [ cov ] ]
+    ch_variants_freq // channel: [ val(meta), [ freq ] ]
+    ch_bam_coverage  // channel: [ val(meta), [ cov ] ]
+    ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from HAPLOSCAN
 
     main:
 
-    ch_versions = Channel.empty()
+    // JOIN: Variant frequency with BAM coverage
+    ch_combined_input = ch_variants_freq
+        .join(ch_bam_coverage)
 
-    // Check channels for sanity
-    // ch_variants_freq_e6.view { meta, freq -> "E6: meta=$meta, freq=$freq" }
-    // ch_variants_freq_e7.view { meta, freq -> "E7: meta=$meta, freq=$freq" }
+    /*
+    MODULE: ABO_GETABOSNPS
+    */
+    ABO_GETABOSNPS(
+        ch_combined_input
+    )
 
-
-    SNPS_EXON6 ( ch_variants_freq_e6.join(ch_bam_coverage_e6), "exon6")
-    SNPS_EXON7 ( ch_variants_freq_e7.join(ch_bam_coverage_e7), "exon7")
-
-    ch_versions = ch_versions.mix(SNPS_EXON6.out.versions.first())
-    ch_versions = ch_versions.mix(SNPS_EXON7.out.versions.first())
-
-    // Just some shenanigans to keep the process waiting until all processes are completed.
-    ch_SNP_reports = SNPS_EXON6.out.phenotype.map { meta, file -> 
-            [meta.id, [exon: 'exon6', file: file]]
+    // PREP: Organize SNP reports AND Haplotypes.tsv by sample, single
+    // "combined" folder per sample (single-reference mode -- one report
+    // covers every exon section).
+    ch_snp_reports = ABO_GETABOSNPS.out.phenotype
+        .map { meta, file ->
+            [meta.id, [file: file, type: 'phenotype']]
         }
         .mix(
-            SNPS_EXON7.out.phenotype.map { meta, file -> 
-                [meta.id, [exon: 'exon7', file: file]]
+            ch_haplotypes.map { meta, file ->
+                [meta.id, [file: file, type: 'haplotype']]
             }
         )
         .groupTuple()
-        .map { id, files -> 
+        .map { id, files ->
             def sample_dir = file("${params.outdir}/per_sample_processing/${id}")
             sample_dir.mkdirs()
-            files.each { 
-                def exon_dir = sample_dir.resolve(it.exon)
-                exon_dir.mkdirs()
-                it.file.copyTo(exon_dir.resolve(it.file.name))
+            def combined_dir = sample_dir.resolve('combined')
+            combined_dir.mkdirs()
+            files.each {
+                it.file.copyTo(combined_dir.resolve(it.file.name))
             }
             return sample_dir
         }
         .collect()
 
-    // Stage the existing per_sample_processing directory
-    ch_per_sample_processing = Channel.fromPath("${params.outdir}/per_sample_processing", type: 'dir')
+    // STAGE: Existing per_sample_processing directory in results
+    ch_per_sample_processing = channel.fromPath("${params.outdir}/per_sample_processing", type: 'dir')
 
-    // One of these input channels needs to be removed later !!
-    ABOSNPS2PHENO (
-        ch_SNP_reports, 
-        ch_per_sample_processing
+    /*
+    MODULE: ABO_SNPS2PHENO
+    */
+    ABO_SNPS2PHENO(
+        ch_snp_reports,
+        ch_per_sample_processing,
     )
-    ch_versions = ch_versions.mix(ABOSNPS2PHENO.out.versions.first())
 
     emit:
-    versions = ch_versions    // channel: [ versions.yml ]
+    abo_results = ABO_SNPS2PHENO.out.txt
 }

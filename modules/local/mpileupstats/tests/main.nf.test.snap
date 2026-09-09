@@ -1,0 +1,156 @@
+{
+    "abotyper - ABO_AA_barcode01 - exon6 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "exon": "exon6"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    "ABOReadPolymorphisms.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "2": [
+                    "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "exon": "exon6"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "txt": [
+                    "ABOReadPolymorphisms.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+                ]
+            }
+        ],
+        "timestamp": "2026-03-30T12:51:02.302773395",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "abotyper - ABO_AB_barcode02 - exon7 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02",
+                            "exon": "exon7"
+                        },
+                        "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    "ABOReadPolymorphisms.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "2": [
+                    "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02",
+                            "exon": "exon7"
+                        },
+                        "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "txt": [
+                    "ABOReadPolymorphisms.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+                ]
+            }
+        ],
+        "timestamp": "2026-03-30T12:51:09.864912052",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "ABO_AB_barcode02_exon7": {
+        "content": [
+            [
+                "Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\tInsertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth",
+                "1\tA\t0\t0\t0\t0\t0\t0\t0\t0\t0",
+                "2\tT\t100\t0\t0\t0\t0\t0\t0\t100\t9"
+            ],
+            "ABOReadPolymorphisms.txt",
+            [
+                "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+            ]
+        ],
+        "timestamp": "2026-03-30T12:50:54.956181302",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "ABO_AB_barcode02_exon6": {
+        "content": [
+            [
+                "Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\tInsertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth",
+                "1\tT\t0\t0\t0\t0\t0\t0\t0\t0\t0",
+                "2\tA\t100\t0\t0\t0\t100\t0\t0\t0\t111"
+            ],
+            "ABOReadPolymorphisms.txt",
+            [
+                "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+            ]
+        ],
+        "timestamp": "2026-03-30T12:50:47.25684341",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "ABO_AA_barcode01_exon7": {
+        "content": [
+            [
+                "Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\tInsertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth",
+                "1\tA\t0\t0\t0\t0\t0\t0\t0\t0\t0",
+                "2\tT\t0\t0\t0\t0\t0\t0\t0\t0\t0"
+            ],
+            "ABOReadPolymorphisms.txt",
+            [
+                "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+            ]
+        ],
+        "timestamp": "2026-03-30T12:50:39.624538555",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "ABO_AA_barcode01_exon6": {
+        "content": [
+            [
+                "Ref_Position_1based\tRef_Base\tMatch_Percent\tMismatch_Percent\tInsertion_Percent\tDeletion_Percent\tA_Percent\tG_Percent\tC_Percent\tT_Percent\tDepth",
+                "1\tT\t0\t0\t0\t0\t0\t0\t0\t0\t0",
+                "2\tA\t100\t0\t0\t0\t100\t0\t0\t0\t29"
+            ],
+            "ABOReadPolymorphisms.txt",
+            [
+                "versions.yml:md5,23a51d8618af4cd3151755e2e2208bc7"
+            ]
+        ],
+        "timestamp": "2026-03-30T12:50:31.892032177",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    }
+}

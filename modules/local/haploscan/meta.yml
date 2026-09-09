@@ -1,0 +1,130 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: HAPLOSCAN
+description: |
+  Read-level ABO haplotype scanner using pysam. Performs a single-pass scan over
+  aligned ONT BAM files to compute per-position allele frequencies AND per-read
+  haplotype tables. Replaces the two-step SAMTOOLS_MPILEUP → MPILEUPSTATS approach.
+  Because ONT reads can span an entire amplicon, variants on the same read are
+  confirmed on the same physical molecule, enabling within-amplicon phasing without
+  any wet-lab changes.
+keywords:
+  - abo
+  - blood typing
+  - haplotype
+  - phasing
+  - variant calling
+  - pysam
+  - ont
+  - nanopore
+tools:
+  - pysam:
+      description: |
+        A Python package for reading, manipulating, and writing genomic data sets.
+        Provides a Python interface to the htslib C library for working with SAM/BAM/CRAM files.
+      homepage: https://pysam.readthedocs.io/
+      documentation: https://pysam.readthedocs.io/en/latest/api.html
+      tool_dev_url: https://github.com/pysam-developers/pysam
+      licence: ["MIT"]
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      tool_dev_url: https://github.com/python/cpython
+      licence: ["Python Software Foundation License"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information.
+          e.g. [ id:'sample1', exon:'exon7', ref_id:'A1_01_01_1_reference_Exon7' ]
+        required: true
+    - bam:
+        type: file
+        description: Sorted BAM file containing reads aligned to the ABO exon reference.
+        pattern: "*.bam"
+        required: true
+    - bai:
+        type: file
+        description: BAM index file corresponding to the input BAM.
+        pattern: "*.bam.bai"
+        required: true
+  - - meta1:
+        type: map
+        description: |
+          Groovy Map containing reference sequence information.
+          e.g. [ id:'A1_01_01_1_reference_Exon7', exon:'exon7' ]
+        required: true
+    - fasta:
+        type: file
+        description: Reference FASTA file for the ABO exon amplicon (exon6 or exon7).
+        pattern: "*.fasta"
+        required: true
+    - fai:
+        type: file
+        description: FASTA index file for the reference sequence.
+        pattern: "*.fasta.fai"
+        required: true
+
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information.
+            e.g. [ id:'sample1', exon:'exon7' ]
+      - "*.AlignmentStatistics.tsv":
+          type: file
+          description: |
+            Per-position allele frequency table with identical column layout to
+            stats_from_pileup.py output. Columns: Position, #Reads, Mat%, Mis%,
+            Ins%, Del%, A%, G%, C%, T%. Used as input to predict_abo_phenotype.py.
+          pattern: "*.AlignmentStatistics.tsv"
+  haplotypes:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information.
+            e.g. [ id:'sample1', exon:'exon7' ]
+      - "*.Haplotypes.tsv":
+          type: file
+          description: |
+            Per-read haplotype table. Each row records which diagnostic positions
+            on that read carry a non-reference allele. Two variants on the same row
+            are confirmed on the same physical molecule (within-amplicon phasing).
+            Columns: Read_Name, Exon, Variant_Positions, Haplotype.
+            Consumed by aggregate_abo_reports.py for PhaseConfidence scoring.
+          pattern: "*.Haplotypes.tsv"
+  txt:
+    - "ABOReadPolymorphisms.txt":
+        type: file
+        description: |
+          Summary of polymorphic positions detected across all reads in the sample.
+          Lists each variant position, the observed alleles, and their frequencies.
+          Equivalent to the ABOReadPolymorphisms.txt produced by the legacy mpileup pipeline.
+        pattern: "ABOReadPolymorphisms.txt"
+  versions_python:
+    - - "${task.process}":
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - eval('python3 --version | sed "s/Python //"'):
+          type: string
+          description: Python version string
+  versions_pysam:
+    - - "${task.process}":
+          type: string
+          description: Name of the process
+      - pysam:
+          type: string
+          description: Name of the tool
+      - eval('python3 -c "import pysam; print(pysam.__version__)"'):
+          type: string
+          description: pysam version string
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABO_GETABOSNPS
+description: Extract ABO-specific SNPs from variant frequency data and predict ABO phenotype
+keywords:
+  - abo
+  - blood typing
+  - phenotype prediction
+  - snp analysis
+  - variant calling
+  - genotyping
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      tool_dev_url: https://github.com/python/cpython
+      licence: ["Python Software Foundation License"]
+  - pandas:
+      description: Powerful data structures for data analysis, time series, and statistics
+      homepage: https://pandas.pydata.org/
+      documentation: https://pandas.pydata.org/docs/
+      tool_dev_url: https://github.com/pandas-dev/pandas
+      licence: ["BSD-3-Clause"]
+  - json5:
+      description: A Python implementation of the JSON5 data format
+      homepage: https://github.com/dpranke/pyjson5
+      documentation: https://github.com/dpranke/pyjson5
+      tool_dev_url: https://github.com/dpranke/pyjson5
+      licence: ["Apache-2.0"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'sample1', single_end:false, exon:'exon6' ]
+        required: true
+    - variants_freq:
+        type: file
+        description: Variant frequency file containing nucleotide frequencies at each position
+        pattern: "*.{tsv,txt,freq}"
+        required: true
+    - coverage:
+        type: file
+        description: Coverage file containing depth information for genomic positions
+        pattern: "*.{cov,coverage,txt}"
+        required: true
+    - exon_n:
+        type: string
+        description: Exon identifier (e.g., 'exon6', 'exon7') specifying which ABO exon is being analyzed
+        required: true
+
+output:
+  phenotype:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'sample1', single_end:false, exon:'exon6' ]
+      - "*.ABOPhenotype.txt":
+          type: file
+          description: ABO phenotype prediction results file
+          pattern: "*.ABOPhenotype.txt"
+  log:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'sample1', single_end:false, exon:'exon6' ]
+      - "*.log.txt":
+          type: file
+          description: Log file containing processing information and any warnings/errors
+          pattern: "*.log.txt"
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+  versions_pandas:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pandas:
+          type: string
+          description: Name of the library
+      - python3 -c "import pandas; print(pandas.__version__)":
+          type: eval
+          description: The expression to obtain the version of pandas
+  versions_json5:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - json5:
+          type: string
+          description: Name of the library
+      - python3 -c "import json5; print(json5.__version__)":
+          type: eval
+          description: The expression to obtain the version of json5
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pandas:
+          type: string
+          description: Name of the library
+      - python3 -c "import pandas; print(pandas.__version__)":
+          type: eval
+          description: The expression to obtain the version of pandas
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - json5:
+          type: string
+          description: Name of the library
+      - python3 -c "import json5; print(json5.__version__)":
+          type: eval
+          description: The expression to obtain the version of json5
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

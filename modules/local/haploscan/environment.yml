@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::pysam=0.24.0
+  - conda-forge::python=3.13
+  - conda-forge::pyyaml=6.0
