@@ -41,10 +41,10 @@ workflow ABOTYPER {
     /*
     MODULE: FASTQC
     */
-    FASTQC(
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    // FASTQC(
+    //     ch_samplesheet
+    // )
+    // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
 
     /*
     SUBWORKFLOW: MINIMAP2_ALIGN_READS
