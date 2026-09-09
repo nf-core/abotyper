@@ -445,6 +445,38 @@ class ABOReportParser:
                 return f"{marker.ref_call_label} and {marker.alt_call_label}"
         return ""
 
+    def _primary_state(self, marker: VariantMarker, row_values: dict) -> str:
+        """Classify a primary_biallelic marker into 'ref' | 'alt' | 'het' | 'none'.
+
+        Uses the SAME thresholds as _call_primary_biallelic_row, but returns a
+        semantic state instead of a display string. This decouples the
+        phenotype decision tree from how the panel happens to word its
+        ref_call_label/alt_call_label, so re-labelling the panel can never
+        again silently break genotype assignment.
+        """
+        def pct_of(base):
+            if base is None:
+                return 0.0
+            b = base.strip().lower()
+            key_map = {"del": "Del", "ins": "Ins", "dup": "Ins"}
+            key = key_map.get(b, base.strip().upper())
+            return float(row_values.get(key, 0) or 0)
+
+        alt_pct = pct_of(marker.alt_base)
+        ref_pct = pct_of(marker.ref_base) if marker.ref_base not in ("REF", "") else (100.0 - alt_pct)
+
+        alt_thr = marker.alt_threshold_pct if marker.alt_threshold_pct is not None else 80
+        ref_thr = marker.ref_threshold_pct if marker.ref_threshold_pct is not None else 80
+        band = marker.het_band_pct if marker.het_band_pct is not None else 20
+
+        if alt_pct >= alt_thr and alt_pct > ref_pct:
+            return "alt"
+        if ref_pct >= ref_thr and ref_pct > alt_pct:
+            return "ref"
+        if abs(alt_pct - ref_pct) <= band or (band < ref_pct < 100 - band and band < alt_pct < 100 - band):
+            return "het"
+        return "none"
+
     # -----------------------------------------------------------------
     # Generic subtype marker scanner (replaces scan_bw_markers() / scan_a2_markers())
     # -----------------------------------------------------------------
@@ -549,11 +581,32 @@ class ABOReportParser:
             col_467 = col_for("a1_a2_467")
             col_1061 = col_for("a1_a2_1061del")
 
-            type_exon6 = safe_get_type(df, col_o1) if col_o1 else ""
-            type_exon7_422 = safe_get_type(df, col_796) if col_796 else ""
-            type_exon7_428 = safe_get_type(df, col_802) if col_802 else ""
-            type_exon7_429 = safe_get_type(df, col_803) if col_803 else ""
-            type_exon7_431 = safe_get_type(df, col_804) if col_804 else ""
+            # Normalize the primary markers into the exact legacy vocabulary
+            # the decision tree below matches on. The panel's display labels
+            # (ref_call_label/alt_call_label) are worded differently from the
+            # tree's hardcoded literals (e.g. panel "A or B or O" vs tree
+            # "O and (A or B)"; het "A or B or O and O1" vs tree
+            # "O1 and (A or B or O)"), so matching the raw Type cell makes
+            # every branch fail and every sample fall through to "Unknown".
+            # We classify each marker's biallelic STATE and emit the legacy
+            # string, so display wording and decision logic stay decoupled.
+            def primary_type(col, marker_id, ref_s, alt_s, het_s):
+                m = self.panel.get(marker_id)
+                if m is None or not col:
+                    return ""
+                state = self._primary_state(m, dict(safe_get_row(df, col)))
+                return {"ref": ref_s, "alt": alt_s, "het": het_s, "none": ""}[state]
+
+            type_exon6 = primary_type(
+                col_o1, "o1_marker", "A or B or O", "O1", "O1 and (A or B or O)")
+            type_exon7_422 = primary_type(
+                col_796, "b_vs_ao_796", "A or O", "B", "(A or O) and B")
+            type_exon7_428 = primary_type(
+                col_802, "o2_marker_802", "O and (A or B)", "O2", "O2 and (O or A or B)")
+            type_exon7_429 = primary_type(
+                col_803, "ao_vs_b_803", "A or O", "B", "(A or O) and B")
+            type_exon7_431 = primary_type(
+                col_804, "o34_homopolymer_804", "O and (A or B)", "O3", "O3 and (O or A or B)")
             type_exon7_93 = safe_get_type(df, col_467) if col_467 else ""
             type_exon7_685 = safe_get_type(df, col_1061) if col_1061 else ""
 
