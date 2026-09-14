@@ -31,6 +31,7 @@ workflow ABOTYPER {
     ch_samplesheet // channel: samplesheet read in from --input
     abo_reference_fai // channel: fai from params.abo_reference_fai
     abo_reference_fasta // channel: fasta from params.abo_reference_fasta
+    ch_clair3_model_url // chanel: clair3_url from params.clair3_model_url
     logo // channel: png from params.logo (custom pathwest logo)
 
     main:
@@ -63,24 +64,25 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.bai,
         MINIMAP2_ALIGN_READS.out.fasta,
         MINIMAP2_ALIGN_READS.out.fai,
+        ch_clair3_model_url,
     )
 
-    /*
-    SUBWORKFLOW: PREDICTABOPHENOTYPE
-    */
-    // Join metrics and coverage by metadata to ensure correct pairing
-    ch_prediction_input = VARIANTS_QUANTIFICATION.out.metrics
-        .join(MINIMAP2_ALIGN_READS.out.coverage)
-        .multiMap { meta, metrics, coverage ->
-            metrics: [meta, metrics]
-            coverage: [meta, coverage]
-        }
+    // /*
+    // SUBWORKFLOW: PREDICTABOPHENOTYPE
+    // */
+    // // Join metrics and coverage by metadata to ensure correct pairing
+    // ch_prediction_input = VARIANTS_QUANTIFICATION.out.metrics
+    //     .join(MINIMAP2_ALIGN_READS.out.coverage)
+    //     .multiMap { meta, metrics, coverage ->
+    //         metrics: [meta, metrics]
+    //         coverage: [meta, coverage]
+    //     }
 
-    PREDICTABOPHENOTYPE(
-        ch_prediction_input.metrics,
-        ch_prediction_input.coverage,
-        VARIANTS_QUANTIFICATION.out.haplotypes,
-    )
+    // PREDICTABOPHENOTYPE(
+    //     ch_prediction_input.metrics,
+    //     ch_prediction_input.coverage,
+    //     VARIANTS_QUANTIFICATION.out.haplotypes,
+    // )
 
     //
     // Collate and save software versions

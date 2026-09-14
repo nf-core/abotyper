@@ -127,6 +127,14 @@
                     "description": "Path to the ABO diagnostic variant panel (.yaml/.yml/.json/.csv/.tsv).",
                     "help_text": "Defines the diagnostic variant positions, calling thresholds, and ISBT allele associations used by the HAPLOSCAN, ABO_GETABOSNPS and ABO_SNPS2PHENO modules. Positions are given as ng006669_2_pos (verified against NG_006669.2, the default abo_reference_fasta) alongside legacy_exon6_pos/legacy_exon7_pos for backward compatibility. Run bin/calibrate_panel_positions.py to populate amplicon_pos if a different combined reference FASTA is used instead.",
                     "fa_icon": "fas fa-table"
+                },
+                "clair3_model_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL to the Clair3 basecaller model archive (.tar.gz) used for independent small-variant calling alongside HAPLOSCAN.",
+                    "help_text": "Downloaded once per run by DOWNLOAD_CLAIR3_MODEL and extracted for the CLAIR3 module. Must match the ONT basecaller model used to generate the reads (default: r1041_e82_400bps_sup_v420, matching the official Clair3 ONT R10.4.1 5kHz super-accuracy model).",
+                    "default": "https://www.bio8.cs.hku.hk/clair3/clair3_models/r1041_e82_400bps_sup_v420.tar.gz",
+                    "fa_icon": "fas fa-brain"
                 }
             }
         },
