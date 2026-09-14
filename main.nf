@@ -30,6 +30,7 @@ params.abo_reference_fai   = getGenomeAttribute('abo_reference_fai')   ?: params
 params.abo_reference_fasta = getGenomeAttribute('abo_reference_fasta') ?: params.abo_reference_fasta
 params.clair3_model_url    = getGenomeAttribute('clair3_model_url')    ?: params.clair3_model_url
 params.logo                = getGenomeAttribute('logo')                ?: params.logo
+params.abo_panel           = getGenomeAttribute('abo_panel')           ?: params.abo_panel
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,16 +47,18 @@ workflow NFCORE_ABOTYPER {
         .map { it -> [[id: it.baseName], it] } : Channel.empty()
     abo_reference_fasta = params.abo_reference_fasta ? Channel.fromPath(params.abo_reference_fasta)
         .map { it -> [[id: it.baseName], it] } : Channel.empty()
-    clair3_model_url    = params.clair3_model_url ? Channel.value(params.clair3_model_url) : 
+    clair3_model_url    = params.clair3_model_url ? Channel.value(params.clair3_model_url) :
         Channel.empty()
     logo = params.logo ? Channel.fromPath(params.logo).collect() : Channel.empty()
+    abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel).collect() : Channel.empty()
 
     ABOTYPER(
         samplesheet,
         abo_reference_fai,
         abo_reference_fasta,
         clair3_model_url,
-        logo
+        logo,
+        abo_panel
     )
 
     emit:
