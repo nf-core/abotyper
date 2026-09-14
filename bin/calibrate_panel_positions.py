@@ -3,7 +3,7 @@
 
 """
 calibrate_panel_positions.py — fill in amplicon_pos for the ABO variant panel
-against your finalised combined exon2-7 reference FASTA (v2.0.0 utility).
+against your finalised combined exon2-7 reference FASTA.
 
 WHY THIS EXISTS
 ---------------

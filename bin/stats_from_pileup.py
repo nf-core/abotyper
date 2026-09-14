@@ -14,8 +14,7 @@ from abo_panel import load_panel, Panel
 
 __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024-2025, ABO blood group typing using third-generation sequencing (TGS) technology"
-__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg",
-               "Claude Sonnet 5 (v2.0.0 rewrite for panel-driven indel handling)"]
+__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg", "Claude Sonnet 5"]
 __license__ = "GPL"
 __version__ = "2.0.0"
 __maintainer__ = "Fredrick Mobegi"
@@ -24,25 +23,17 @@ __status__ = "Production"
 
 
 """
-SAMtools Pileup Statistics Calculator — v2.0.0
+SAMtools Pileup Statistics Calculator
 
 This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
 
-CHANGES IN v2.0.0
-------------------
-  - The set of positions where indels are the DIAGNOSTIC variant (previously
-    the hardcoded KEY_DIAGNOSTIC_POSITIONS = {431, 687} / EXON6_INDEL_POSITION
-    = 22) is now loaded from the external variant panel (--panel), via
-    Panel.indel_diagnostic_positions(). Add a new indel-diagnostic marker by
-    editing the panel file, not this script.
-  - Exon-type classification by reference length is now OPTIONAL context
-    used only to decide the low-coverage indel-inclusion heuristic; it is
-    no longer required for indel-diagnostic-position lookup. This means the
-    script degrades gracefully when run against the new combined exon2-7
-    reference (where the old length-range heuristic doesn't apply) --
-    pass --exon-label explicitly (e.g. "combined") or let it default to
-    "combined", in which case the more permissive high-coverage rule is
-    always used for non-diagnostic positions.
+The set of positions where indels are the diagnostic variant is loaded from
+the external variant panel (--panel), via Panel.indel_diagnostic_positions();
+add a new indel-diagnostic marker by editing the panel file, not this
+script. Exon-type classification by reference length is only used to decide
+the low-coverage indel-inclusion heuristic, not for indel-diagnostic-position
+lookup -- pass --exon-label explicitly or let it default to "combined" for
+the new exon2-7 amplicon.
 
 This pipeline is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -56,7 +47,6 @@ frequencies for all nucleotides and indels per reference position.
 
 @dataclass
 class BaseCount:
-    """Data class for nucleotide base counts."""
     A: int = 0
     G: int = 0
     C: int = 0
@@ -75,7 +65,6 @@ class BaseCount:
 
 @dataclass
 class PositionStats:
-    """Data class for position statistics."""
     pos: int
     ref_base: str
     match_percent: int = 0
@@ -95,7 +84,6 @@ class PositionStats:
 
 @dataclass
 class ParsedBases:
-    """Data class for parsed base information from mpileup."""
     matches: int = 0
     mismatches: int = 0
     insertions: int = 0
@@ -104,8 +92,8 @@ class ParsedBases:
 
 
 class PileupProcessor:
-    """Main class for processing mpileup files. v2.0.0: indel-diagnostic
-    positions are panel-driven rather than hardcoded."""
+    """Main class for processing mpileup files. Indel-diagnostic positions
+    are panel-driven rather than hardcoded."""
 
     # Retained only as a fallback hint for --exon-label auto-detection
     # against v1.x-style short mini-amplicon files. Meaningless for the
@@ -118,16 +106,11 @@ class PileupProcessor:
     NUCLEOTIDES = {"A", "G", "C", "T"}
 
     def __init__(self, panel: Panel, exon_label: str = "combined", loglevel: str = "INFO"):
-        """
-        Args:
-            panel: loaded variant panel (see abo_panel.load_panel)
-            exon_label: "combined" (default -- treat as the new single
-                exon2-7 amplicon; indel-diagnostic positions are the union
-                across all exons, resolved via amplicon_pos), or a specific
-                legacy label like "Exon 6"/"Exon 7" (resolved via
-                legacy_exon6_pos/legacy_exon7_pos) for v1.x-style
-                mini-amplicon files.
-        """
+        """exon_label: "combined" (default) treats this as the new single
+        exon2-7 amplicon, with indel-diagnostic positions the union across
+        all exons (resolved via amplicon_pos); or a specific legacy label
+        like "Exon 6"/"Exon 7" (resolved via legacy_exon6_pos/
+        legacy_exon7_pos) for older mini-amplicon files."""
         self.panel = panel
         self.exon_label = exon_label
         self._setup_logging(loglevel)
@@ -214,11 +197,9 @@ class PileupProcessor:
         return parsed
 
     def _should_include_indels(self, pos: int, coverage: int, exon_hint: str) -> bool:
-        """
-        Determine if indels should be included in calculations for this
-        position. Panel-driven: always include at any position flagged as
-        indel-diagnostic in the variant panel (was: hardcoded {431, 687, 22}).
-        """
+        """Determine if indels should be included in calculations for this
+        position. Always includes any position flagged as indel-diagnostic
+        in the variant panel."""
         if pos in self.indel_diagnostic_positions:
             return True
 

@@ -21,8 +21,8 @@ __credits__ = [
     "Fredrick Mobegi",
     "Benedict Matern",
     "Mathijs Groeneweg",
-    "Claude Sonnet 4.6 (v1.2.0 rewrite to add Bw/B(A)/phase confidence)",
-    "Claude Sonnet 5 (v2.0.0 rewrite to panel-driven columns and subtype scanning)",
+    "Claude Sonnet 4.6",
+    "Claude Sonnet 5",
 ]
 __license__ = "GPL"
 __version__ = "2.0.0"
@@ -32,42 +32,25 @@ __status__ = "Production"
 
 
 """
-ABO Blood Group Report Aggregator — v2.0.0
+ABO Blood Group Report Aggregator.
 
-CHANGES FROM v1.2.0
---------------------
-  - Column layout, per-position parsing, and subtype-marker scanning are now
-    all driven by an external variant panel (--panel, default
-    abo_variant_panel.yaml) via abo_panel.py, instead of hardcoded position
-    lists and bespoke per-category functions (scan_bw_markers(),
-    scan_a2_markers()). Adding a new diagnostic position or a whole new
-    subtype category to the report requires editing the panel file only.
-  - scan_bw_markers()/scan_a2_markers() are replaced by one generic
-    scan_category_markers(category) usable for ANY panel category (a2, a3,
-    am, aweak, ael, bweak, bel, b3, bw/ba/cisab, onull, ...) -- this is what
-    lets the report comprehensively flag named ISBT subtypes instead of
-    only Bw/B(A)/cisAB as in v1.2.0.
-  - The core primary phenotype/genotype decision tree (which combination of
-    O1/O2/O3/A-or-O/B calls means AO vs BO vs OO vs AA vs BB vs AB) is
-    still an explicit rule table, because ABO serology genuinely is a small
-    closed set of combinatorial rules -- but the underlying primary calls it
-    reads are now produced by the panel-driven primary_biallelic engine, and
-    the column names it reads are resolved dynamically from the panel
-    (VariantMarker.column_label()) rather than being literal strings.
-  - Corrected a mislabelled Bw marker inherited from v1.2.0: c.657C>T
-    (pos283) is NOT specific to ABO*BW.06 -- it is part of the shared
-    B-lineage 7-SNP backbone present in nearly all B/B3/Bweak/Bel/cisAB/BA
-    alleles. Bw.06 is now correctly keyed to its actual private variant,
-    c.1036A>G (not yet in the exon6/7 amplicon's original position set --
-    add via the panel once calibrated against the combined amplicon).
+Column layout, per-position parsing, and subtype-marker scanning are driven
+by an external variant panel (--panel, default abo_variant_panel.yaml) via
+abo_panel.py, so adding a diagnostic position or subtype category requires
+editing the panel file only, not this script.
 
-This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
+Note: c.657C>T (legacy pos283) is NOT specific to ABO*BW.06 -- it is part of
+the shared B-lineage 7-SNP backbone present in nearly all B/B3/Bweak/Bel/
+cisAB/BA alleles. Bw.06's actual private variant is c.1036A>G (not yet in
+the exon6/7 amplicon's position set -- add via the panel once calibrated
+against the combined amplicon).
+
+Part of the nf-core/abotyper pipeline: https://github.com/fmobegi/nf-core-abotyper
 """
 
 
 # ===========================================================================
 # Phase Confidence Scoring — reads Haplotypes.tsv from pysam_haploscan.py
-# (unchanged from v1.2.0 -- this logic is not position-specific)
 # ===========================================================================
 
 
@@ -111,13 +94,9 @@ def compute_phase_confidence(
     """
     Compute phase confidence from haplotype tables.
 
-    v2.0.0: accepts a LIST of PhaseEvidence (one per exon covered by the
-    assay) rather than a fixed exon6/exon7 pair, since the combined
-    exon2-7 amplicon may eventually produce a single Haplotypes.tsv
-    spanning everything, or one per legacy sub-region during transition.
-    Picks whichever supplied evidence has the most reads.
-
-    Returns (confidence_level, detail_string).
+    Accepts a list of PhaseEvidence (one per exon covered by the assay)
+    rather than a fixed exon6/exon7 pair, and picks whichever has the most
+    reads. Returns (confidence_level, detail_string).
     """
     evidence_list = [e for e in evidence_exons if e and e.total_reads > 0]
     if not evidence_list:
@@ -163,21 +142,12 @@ class ABOReportParser:
     """
     Collates all ABO phenotype results from each sample into a general table
     and generates an Excel worksheet and a CSV file for export to LIS soft
-    or other general purpose lab management systems.
-
-    v2.0.0: column layout, position parsing, and subtype marker scanning are
-    all driven by an external variant panel (see abo_panel.py).
+    or other general purpose lab management systems. Column layout, position
+    parsing, and subtype marker scanning are driven by an external variant
+    panel (see abo_panel.py).
     """
 
     def __init__(self, input_dir, panel: Panel, default_barcode="barcode00"):
-        """
-        Initialize the ABOReportParser.
-
-        Args:
-            input_dir (str): The input directory containing data files.
-            panel (Panel): Loaded variant panel (see abo_panel.load_panel).
-            default_barcode (str): Default barcode for samples without explicit barcode suffix.
-        """
         self.input_dir = input_dir
         self.panel = panel
         self.default_barcode = default_barcode
@@ -221,7 +191,7 @@ class ABOReportParser:
         }
 
     # -----------------------------------------------------------------
-    # Column layout (was: manually enumerated exonN_posXXX = [...] * 10)
+    # Column layout
     # -----------------------------------------------------------------
     def initialize_columns(self):
         """Build the MultiIndex column layout dynamically from the panel."""
@@ -259,7 +229,7 @@ class ABOReportParser:
         return None
 
     # -----------------------------------------------------------------
-    # Sample/filename handling (unchanged from v1.2.0)
+    # Sample/filename handling
     # -----------------------------------------------------------------
     def extract_sample_info(self, filename):
         """Extract sample name and barcode from filename."""
@@ -285,7 +255,7 @@ class ABOReportParser:
             return sample_name, barcode, "default"
 
     # -----------------------------------------------------------------
-    # Generic per-exon report parser (replaces parse_exon6 / parse_exon7)
+    # Per-exon report parser
     # -----------------------------------------------------------------
     def parse_exon_report(self, filename: str, exon_label: str) -> pd.DataFrame:
         """Parse an *.ABOPhenotype.txt report section for one exon, using
@@ -299,9 +269,6 @@ class ABOReportParser:
 
             exon_num = "".join(ch for ch in exon_label if ch.isdigit()) or "?"
             header_token = f"{exon_label} position(1-based):"
-            # Also accept the legacy "Exon 6 position(1-based):" / "Exon 7
-            # position(1-based):" phrasing exactly, which is what
-            # predict_abo_phenotype.py v2 writes.
 
             positions, counts = [], []
             mat_values, mis_values, ins_values, del_values = [], [], [], []
@@ -377,14 +344,11 @@ class ABOReportParser:
             return empty_df
 
     # -----------------------------------------------------------------
-    # Generic type caller (replaces get_type() / get_type_exon6())
+    # Type caller
     # -----------------------------------------------------------------
     def get_type_generic(self, exon_label: str, pos: int, row: pd.Series) -> str:
-        """
-        Determine the blood-type label for a single position, using the
-        panel's call_rule for that position. Replaces the bespoke per-
-        position if/elif branches of v1.2.0's get_type()/get_type_exon6().
-        """
+        """Determine the blood-type label for a single position, using the
+        panel's call_rule for that position."""
         marker = None
         for m in self.panel.by_exon(exon_label):
             if m.resolved_position() == pos:
@@ -403,11 +367,9 @@ class ABOReportParser:
             return self._call_primary_biallelic_row(marker, row_values)
 
         if marker.call_rule == "named_marker":
-            # Legacy get_type() Notes column just wants "variant" / "" for
-            # the a2_panel category (not the fully-annotated marker text --
-            # that richer text is produced separately by
-            # scan_category_markers() for the Notes/BwSubtype/ASubtype
-            # columns). Reproduce that behaviour exactly here.
+            # The per-position Type cell just wants "variant" / "" -- the
+            # fully-annotated marker text is produced separately by
+            # scan_category_markers() for the Notes/BwSubtype/ASubtype columns.
             threshold = marker.variant_threshold_pct if marker.variant_threshold_pct is not None else 25
             non_ref_pct = 100.0 - float(row_values.get(marker.ref_base, 0) or 0) \
                 if marker.ref_base in ("A", "G", "C", "T") else \
@@ -478,7 +440,7 @@ class ABOReportParser:
         return "none"
 
     # -----------------------------------------------------------------
-    # Generic subtype marker scanner (replaces scan_bw_markers() / scan_a2_markers())
+    # Subtype marker scanner
     # -----------------------------------------------------------------
     def scan_category_markers(
         self,
@@ -490,7 +452,6 @@ class ABOReportParser:
         type_exon7_429: str = "",
     ) -> Tuple[List[str], List[str]]:
         """
-        Generic replacement for v1.2.0's scan_bw_markers()/scan_a2_markers().
         Works for ANY panel category (bw, ba, cisab, a2, a3, am, aweak, ael,
         bweak, bel, b3, onull, ...). Returns (fired_marker_texts, warnings).
         """
@@ -608,7 +569,14 @@ class ABOReportParser:
             type_exon7_431 = primary_type(
                 col_804, "o34_homopolymer_804", "O and (A or B)", "O3", "O3 and (O or A or B)")
             type_exon7_93 = safe_get_type(df, col_467) if col_467 else ""
-            type_exon7_685 = safe_get_type(df, col_1061) if col_1061 else ""
+
+            def primary_state(col, marker_id):
+                m = self.panel.get(marker_id)
+                if m is None or not col:
+                    return "none"
+                return self._primary_state(m, dict(safe_get_row(df, col)))
+
+            state_exon7_685 = primary_state(col_1061, "a1_a2_1061del")
 
             nreads6 = safe_get_reads(df, col_o1) if col_o1 else 0
             nreads_exon7_p422 = safe_get_reads(df, col_796) if col_796 else 0
@@ -649,12 +617,16 @@ class ABOReportParser:
                 return "A2", None
 
             def scan_a2_markers():
-                """Reproduces v1.2.0 scan_a2_markers() marker-name semantics
-                (c.1061del / c.907A / c.1032A / c.297G / c.266T / c.268C /
-                cXXXvar) but reads thresholds/positions from the panel."""
+                """Scans c.1061del / c.907A / c.1032A / c.297G / c.266T /
+                c.268C / cXXXvar A2 markers, reading thresholds/positions
+                from the panel."""
                 markers, warns = [], []
 
-                has_del = type_exon7_685 == "A2" and nreads_exon7_p422 >= 30
+                # c.1061delC is heterozygous in every AO/AB sample carrying a
+                # single A2.01 allele, so it reports as "A1 and A2", never
+                # the bare alt label "A2" -- check the semantic state (alt OR
+                # het), not the ref-only-vs-alt-only display string.
+                has_del = state_exon7_685 in ("alt", "het") and nreads_exon7_p422 >= 30
                 a907_marker = self.panel.get("a2p_907_a206")
                 a1032_marker = self.panel.get("a2p_1032_a201")
                 has_907 = False
@@ -735,7 +707,7 @@ class ABOReportParser:
                     return "A1", warning_text
                 return "", None
 
-            # ----- PART 1: PRIMARY PHENOTYPING LOGIC (unchanged combinatorics) -----
+            # ----- PART 1: PRIMARY PHENOTYPING LOGIC -----
             a_subtype_warning = None
 
             if (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
@@ -828,9 +800,7 @@ class ABOReportParser:
             else:
                 Phenotype, Genotype, ExtendedGenotype = "Unknown", "Unknown", "Unknown"
 
-            # ----- PART 2: Generic subtype-marker scan across ALL categories -----
-            # (v1.2.0 only scanned "bw"; v2.0.0 scans every named-marker
-            # category present in the panel, generically.)
+            # ----- PART 2: subtype-marker scan across ALL panel categories -----
             bw_markers, bw_warnings = self.scan_category_markers(
                 "bw", row_lookup, require_b_allele=True,
                 type_exon7_422=type_exon7_422, type_exon7_429=type_exon7_429,
@@ -926,23 +896,15 @@ class ABOReportParser:
             return df
 
     # -----------------------------------------------------------------
-    # File discovery (updated to be exon-list-agnostic, not exon6/7-only)
+    # File discovery
     # -----------------------------------------------------------------
     #
-    # Two on-disk layouts are supported:
-    #   "combined" mode -- one sample_dir/combined/*.ABOPhenotype.txt (and
-    #     matching *.Haplotypes.tsv) covering every exon section, produced
-    #     when the pipeline is run against a single combined exon2-7
-    #     reference. The same file is parsed once per exon_label since
-    #     parse_exon_report() locates each exon's section by its own
-    #     header token.
-    #   legacy per-exon mode -- one sample_dir/<exon_dirname>/ subfolder
-    #     per exon (e.g. "exon6", "exon7"), each with its own report,
-    #     produced by the original dual-mini-amplicon topology.
-    #
-    # "combined" is tried first; if that directory is absent the legacy
-    # per-exon layout is used, so both pipeline topologies are supported
-    # without a script change.
+    # Two on-disk layouts are supported: "combined" mode -- one
+    # sample_dir/combined/*.ABOPhenotype.txt (+ *.Haplotypes.tsv) covering
+    # every exon, produced against a single combined exon2-7 reference --
+    # and legacy per-exon mode -- one sample_dir/<exon_dirname>/ subfolder
+    # per exon, produced by the original dual-mini-amplicon topology.
+    # "combined" is tried first; if absent, the legacy layout is used.
     _COMBINED_DIRNAME = "combined"
 
     def _find_haplotype_file(self, sample_dir: str, exon_dirname: str) -> Optional[str]:
@@ -962,10 +924,7 @@ class ABOReportParser:
         return exon_label.lower().replace(" ", "")
 
     def process_file(self, filename):
-        """Process a single sample directory. Tries the combined-mode
-        layout (one sample_dir/combined/ folder covering every exon)
-        first, then falls back to one sub-folder per exon present in the
-        panel (the legacy dual-mini-amplicon layout)."""
+        """Process a single sample directory (see File discovery above)."""
         try:
             sample_name, barcode, pattern_type = self.extract_sample_info(filename)
             sample_dir = os.path.join(self.input_dir, filename)
@@ -1106,8 +1065,7 @@ class ABOReportParser:
         return final_df
 
     def save_results_to_file(self, final_df):
-        """Save results to text and Excel files (layout logic unchanged from
-        v1.2.0; column count/labels are now dynamic)."""
+        """Save results to text and Excel files; column count/labels are dynamic."""
         try:
             final_df.to_csv("./ABO_result.txt", sep="\t", index=False)
             print("Results saved successfully to text file.")
@@ -1180,7 +1138,7 @@ class ABOReportParser:
                     if not pd.isna(cell_value):
                         worksheet.write(row + 2, col, cell_value, data_format)
 
-            # Dynamic per-position header merge ranges (was: hand-typed list)
+            # Per-position header merge ranges
             column_start = 5
             merge_ranges = []
             for col_label in self.position_columns:
@@ -1213,7 +1171,7 @@ class ABOReportParser:
             import traceback
             traceback.print_exc()
 
-        # LIS export (unchanged from v1.2.0)
+        # LIS export
         self.df_for_lis_soft = pd.DataFrame()
         self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
         self.df_for_lis_soft["Shipment Date"] = ""
@@ -1388,14 +1346,10 @@ subfolders are picked up automatically):
   `-- SAMPLE3/  (will use default barcode)
 
 OUTPUT FILES:
-  - ABO_result.txt / ABO_result.xlsx / final_export.csv (same as v1.2.0)
+  - ABO_result.txt / ABO_result.xlsx / final_export.csv
 
-NEW IN v2.0.0:
-  - Column layout and position parsing are driven by --panel; add a new
-    diagnostic position by editing the panel file, not this script.
-  - Subtype-marker scanning generalised to ANY panel category (not just
-    Bw/B(A)/cisAB) via scan_category_markers().
-  - Corrected the v1.2.0 Bw.06 marker mislabelling (see module docstring).
+Column layout and position parsing are driven by --panel; add a new
+diagnostic position by editing the panel file, not this script.
 
 For more information, see: https://github.com/fmobegi/nf-core-abotyper
         """,

@@ -2,45 +2,33 @@
 # -*- coding: utf-8 -*-
 
 """
-pysam_haploscan.py — Read-level haplotype scanning for ABO amplicons (v2.0.0)
+pysam_haploscan.py — Read-level haplotype scanning for ABO amplicons.
 
-CHANGES IN v2.0.0
-------------------
-  - Diagnostic/indel positions are now loaded from an external variant panel
-    (--panel, default abo_variant_panel.yaml) via abo_panel.py, instead of
-    the hardcoded HAPLOTYPE_POSITIONS / INDEL_DIAGNOSTIC dicts.
-  - Supports the COMBINED single ~6.7 kb long-read amplicon spanning exons
-    2-7 (Goebel/Wu primers; Mobegi et al. 2025, IJMS 26(12):5443) as the
-    default reference mode: the whole reference is treated as one unit and
-    every calibrated panel position (any exon) is scored directly by its
-    amplicon_pos, with no length-based exon-type guessing at all.
-  - The old length-based ExonType detection (EXON6_LENGTH_RANGE /
-    EXON7_LENGTH_RANGE) is kept ONLY as a --legacy fallback for analysing
-    v1.x-style separate short exon6-only / exon7-only mini-amplicon BAMs,
-    where panel positions are resolved via legacy_exon6_pos/legacy_exon7_pos
-    instead of amplicon_pos.
-  - Because a single ONT read can now span every diagnostic position from
-    exon 2 through the 3' UTR, compute_read_haplotypes() reports ONE
-    haplotype string per read covering ALL calibrated positions (not just
-    one exon's worth) -- this removes the old "cross-amplicon phasing
-    requires a post-processing step" limitation entirely: full-length cis
-    confirmation is now available directly from Haplotypes.tsv.
+Diagnostic/indel positions are loaded from an external variant panel
+(--panel, default abo_variant_panel.yaml) via abo_panel.py. Default mode
+targets the combined ~6.7 kb long-read amplicon spanning exons 2-7 (Goebel/
+Wu primers; Mobegi et al. 2025, IJMS 26(12):5443): the whole reference is
+treated as one unit and every calibrated panel position is scored directly
+by its amplicon_pos. Pass --legacy to analyse separate short exon6-only /
+exon7-only mini-amplicon BAMs instead, where panel positions are resolved
+via legacy_exon6_pos/legacy_exon7_pos. Because a single ONT read can span
+every diagnostic position from exon 2 through the 3' UTR, in combined mode
+compute_read_haplotypes() reports one haplotype string per read covering
+ALL calibrated positions, giving full-length cis phasing directly from
+Haplotypes.tsv without any cross-amplicon post-processing step.
 
 Outputs
 -------
 {prefix}.AlignmentStatistics.tsv
-    Same column layout as stats_from_pileup.py / v1.x -- downstream scripts
-    (aggregate_abo_reports.py, predict_abo_phenotype.py) are unchanged in
-    format, only richer in content (more positions, spanning more exons).
+    Same column layout as stats_from_pileup.py.
 
 {prefix}.Haplotypes.tsv
     Per-read haplotype table. In combined mode this spans every calibrated
-    diagnostic position on the reference (potentially exon2 through exon7);
-    in --legacy mode it is scoped to whichever mini-amplicon (exon6/exon7)
-    the read came from, as in v1.x.
+    diagnostic position on the reference; in --legacy mode it is scoped to
+    whichever mini-amplicon (exon6/exon7) the read came from.
 
 ABOReadPolymorphisms.txt
-    Same polymorphic-position summary format as before.
+    Polymorphic-position summary.
 
 Usage
 -----
@@ -49,8 +37,8 @@ Usage
     pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix \\
         --panel abo_variant_panel.yaml
 
-    # Legacy dual mini-amplicon mode (v1.x behaviour, exon6-only or
-    # exon7-only reference/BAM, resolved via legacy_exonN_pos)
+    # Legacy dual mini-amplicon mode (exon6-only or exon7-only
+    # reference/BAM, resolved via legacy_exonN_pos)
     pysam_haploscan.py -b sample.bam -f reference.fasta -o prefix --legacy
 """
 
@@ -69,8 +57,7 @@ __author__ = "Fredrick Mobegi"
 __copyright__ = (
     "Copyright 2024-2025, ABO blood group typing using third-generation sequencing (TGS) technology"
 )
-__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg",
-               "Claude Sonnet 5 (v2.0.0 rewrite for panel-driven / combined amplicon)"]
+__credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg", "Claude Sonnet 5"]
 __license__ = "GPL"
 __version__ = "2.0.0"
 __maintainer__ = "Fredrick Mobegi"
@@ -200,13 +187,9 @@ def compute_position_stats(
     min_base_quality: int = 0,
     min_map_quality:  int = 0,
 ) -> List[PositionStats]:
-    """
-    Compute ATGC + indel frequencies at every reference position using the
-    pysam pileup engine. Logic mirrors stats_from_pileup.py exactly so the
-    TSV output is bit-for-bit compatible with existing downstream code.
-    indel_positions (panel-resolved, absolute reference coordinates) replaces
-    the old per-ExonType INDEL_DIAGNOSTIC dict.
-    """
+    """Compute ATGC + indel frequencies at every reference position using
+    the pysam pileup engine. Logic mirrors stats_from_pileup.py exactly so
+    the TSV output is bit-for-bit compatible with existing downstream code."""
     ref_length = len(ref_seq)
     results: List[PositionStats] = []
 
@@ -290,66 +273,71 @@ def compute_position_stats(
 # ---------------------------------------------------------------------------
 
 def compute_read_haplotypes(
-    bam:             pysam.AlignmentFile,
-    ref_name:        str,
-    ref_seq:         str,
-    diag_positions:  frozenset,
+    bam: pysam.AlignmentFile,
+    ref_name: str,
+    ref_seq: str,
+    diag_positions: frozenset,
     indel_positions: frozenset,
-    exon_label:      str,
+    exon_label: str,
     min_map_quality: int = 0,
 ) -> List[ReadHaplotype]:
-    """
-    Iterate every primary aligned read and record which diagnostic positions
-    carry a non-reference allele. In combined mode diag_positions spans
-    every calibrated position gene-wide, so a single full-length ONT read
-    yields full cis-phase information across exons in one row.
-    """
+
     if not diag_positions:
         return []
 
-    haplotypes: List[ReadHaplotype] = []
+    haplotypes = []
+
+    # Precompute for speed
+    diag_positions_0 = sorted([p - 1 for p in diag_positions])   # 0-based
+    diag_positions_set_0 = set(diag_positions_0)
+    indel_positions_0 = set([p - 1 for p in indel_positions])
+    ref_seq_upper = ref_seq.upper()
 
     for read in bam.fetch(ref_name):
         if read.is_unmapped or read.is_secondary or read.is_supplementary:
             continue
         if read.mapping_quality < min_map_quality:
             continue
-        if read.cigartuples is None or read.query_sequence is None:
-            continue
 
-        ref_to_qpos: Dict[int, Optional[int]] = {}
-        ref_followed_by_ins: set = set()
+        # FAST: get reference→query mapping in one call
+        aligned_pairs = read.get_aligned_pairs(matches_only=False, with_seq=False)
 
-        prev_rpos: Optional[int] = None
-        for qpos, rpos in read.get_aligned_pairs(matches_only=False, with_seq=False):
+        # Build a compact mapping: rpos0 → qpos
+        ref_to_qpos = {}
+        ref_followed_by_ins = set()
+
+        prev_rpos = None
+        for qpos, rpos in aligned_pairs:
             if rpos is not None:
                 ref_to_qpos[rpos] = qpos
                 prev_rpos = rpos
             elif qpos is not None and prev_rpos is not None:
+                # insertion after prev_rpos
                 ref_followed_by_ins.add(prev_rpos)
 
-        alleles: Dict[int, str] = {}
+        # FAST: only inspect diagnostic positions
+        alleles = {}
 
-        for pos1 in diag_positions:
-            rpos0 = pos1 - 1
-            if rpos0 not in ref_to_qpos:
+        for rpos0 in diag_positions_0:
+            qpos = ref_to_qpos.get(rpos0, None)
+            ref_base = ref_seq_upper[rpos0] if rpos0 < len(ref_seq_upper) else "N"
+
+            # Indel positions
+            if rpos0 in indel_positions_0:
+                if qpos is None:
+                    alleles[rpos0 + 1] = "del"
+                elif rpos0 in ref_followed_by_ins:
+                    alleles[rpos0 + 1] = "ins"
                 continue
 
-            qpos = ref_to_qpos[rpos0]
-            ref_base = ref_seq[rpos0].upper() if rpos0 < len(ref_seq) else "N"
+            # SNP positions
+            if qpos is None:
+                alleles[rpos0 + 1] = "del"
+                continue
 
-            if pos1 in indel_positions:
-                if qpos is None:
-                    alleles[pos1] = "del"
-                elif rpos0 in ref_followed_by_ins:
-                    alleles[pos1] = "ins"
-            else:
-                if qpos is None:
-                    alleles[pos1] = "del"
-                else:
-                    base = read.query_sequence[qpos].upper()
-                    if base != ref_base and base in NUCLEOTIDES:
-                        alleles[pos1] = base
+            base = read.query_sequence[qpos].upper()
+            if base != ref_base and base in ("A", "C", "G", "T"):
+                alleles[rpos0 + 1] = base
 
         haplotypes.append(ReadHaplotype(
             read_name=read.query_name or "unknown",

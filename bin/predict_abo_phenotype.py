@@ -20,8 +20,8 @@ __credits__ = [
     "Fredrick Mobegi",
     "Benedict Matern",
     "Mathijs Groeneweg",
-    "Claude Sonnet 4.6 (v1.1.0 rewrite to add A1/A2/A3 subtypes)",
-    "Claude Sonnet 5 (v2.0.0 rewrite to panel-driven position handling)",
+    "Claude Sonnet 4.6",
+    "Claude Sonnet 5",
 ]
 __license__ = "GPL"
 __version__ = "2.0.0"
@@ -31,25 +31,18 @@ __status__ = "Production"
 
 
 """
-ABO Blood Type Prediction Script — v2.0.0
+ABO Blood Type Prediction Script
 
 This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
 
-CHANGES IN v2.0.0
-------------------
-  - All diagnostic positions and their interpretation text are now loaded
-    from an external variant panel (--panel, default abo_variant_panel.yaml)
-    instead of being hardcoded in EXON6_POSITIONS / EXON7_POSITIONS /
-    _write_interpretation(). Add a new variant to the assay by editing the
-    panel file; no code change or redeploy needed.
-  - Report generation is exon-agnostic: any exon present in both the input
-    nucleotide-frequency file and the panel gets its own report section
-    (previously hardcoded to exon6/exon7 only). This is what lets the
-    pipeline start reporting on exons 2-5 once the combined exon2-7
-    amplicon (Mobegi et al. 2025, IJMS 26(12):5443) is calibrated.
-  - Position lookups prefer amplicon_pos (new combined-amplicon coordinate)
-    when calibrated, falling back to the legacy exon6/exon7 mini-amplicon
-    coordinate otherwise, via VariantMarker.resolved_position().
+All diagnostic positions and their interpretation text are loaded from an
+external variant panel (--panel, default abo_variant_panel.yaml); add a new
+variant to the assay by editing the panel file, no code change needed.
+Report generation is exon-agnostic: any exon present in both the input
+nucleotide-frequency file and the panel gets its own report section. Position
+lookups prefer amplicon_pos (combined-amplicon coordinate) when calibrated,
+falling back to the legacy exon6/exon7 mini-amplicon coordinate otherwise,
+via VariantMarker.resolved_position().
 
 This pipeline is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -64,7 +57,6 @@ pysam_haploscan.py AlignmentStatistics.tsv equivalent).
 
 @dataclass
 class PositionData:
-    """Data class for nucleotide position information."""
     ref_base: str
     match_percent: float
     mismatch_percent: float
@@ -79,22 +71,20 @@ class PositionData:
 
 @dataclass
 class CoverageInfo:
-    """Data class for coverage information."""
     numreads: int = 0
     covbases: int = 0
 
 
 class ABOPhenotypePredictor:
-    """Main class for ABO phenotype prediction. Panel-driven (v2.0.0)."""
+    """Main class for ABO phenotype prediction, driven by a loaded variant panel."""
 
     # Reference length used only as a fallback hint when a filename gives no
-    # clue about which exon(s) are present. With the combined exon2-7
-    # amplicon this heuristic is much less meaningful than in v1.x (two
-    # short separate amplicons) -- prefer --exon / filename detection.
+    # clue about which exon(s) are present -- prefer --exon / filename
+    # detection; this heuristic is unreliable with the combined exon2-7
+    # amplicon.
     EXON6_MIN_LENGTH = 135
 
     def __init__(self, panel: Panel, loglevel: str = "INFO"):
-        """Initialize the predictor with logging configuration and a loaded panel."""
         self.panel = panel
         self._setup_logging(loglevel)
         self.logger.info("=" * 80)
@@ -103,7 +93,6 @@ class ABOPhenotypePredictor:
         self.logger.info("=" * 80)
 
     def _setup_logging(self, loglevel: str) -> None:
-        """Setup logging configuration."""
         logging.basicConfig(
             level=getattr(logging, loglevel.upper()),
             format='[%(asctime)s] %(levelname)s: %(message)s',
@@ -120,15 +109,8 @@ class ABOPhenotypePredictor:
             return f"{value:.2f}"
 
     def read_nucleotide_frequencies(self, input_file: Union[str, Path]) -> Tuple[Dict[int, PositionData], int, bool]:
-        """
-        Read nucleotide frequency data from input file.
-
-        Args:
-            input_file: Path to input file
-
-        Returns:
-            Tuple of (positions dict, max_position, is_empty_file)
-        """
+        """Read nucleotide frequency data from input file. Returns
+        (positions dict, max_position, is_empty_file)."""
         input_path = Path(input_file)
         self.logger.info(f"Reading nucleotide frequencies from: {input_path}")
 
@@ -392,20 +374,9 @@ class ABOPhenotypePredictor:
         coverage_file: Optional[Union[str, Path]] = None,
         exon: Optional[str] = None,
     ) -> bool:
-        """
-        Process a single sample for ABO phenotype prediction.
-
-        Args:
-            input_file: Input nucleotide frequency file
-            output_file: Output report file
-            coverage_file: Optional coverage statistics file
-            exon: Optional explicit exon label (e.g. "Exon 6"); if omitted,
-                  exon(s) are inferred from filename / position overlap and
-                  ALL matching exons are written to the same output file.
-
-        Returns:
-            True if processing successful, False otherwise
-        """
+        """Process a single sample for ABO phenotype prediction. If `exon`
+        is omitted, exon(s) are inferred from filename / position overlap
+        and ALL matching exons are written to the same output file."""
         try:
             self.logger.info("=" * 60)
             self.logger.info("Starting ABO phenotype prediction")

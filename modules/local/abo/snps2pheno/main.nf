@@ -27,7 +27,7 @@ process ABO_SNPS2PHENO {
     def args = task.ext.args ?: ''
     """
     aggregate_abo_reports.py \\
-        per_sample_processing ${args} 2>&1 | tee ABO_results.log
+        ${per_sample_processing} ${args} 2>&1 | tee ABO_results.log
     """
 
     stub:
