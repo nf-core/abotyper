@@ -62,6 +62,10 @@ workflow VARIANTS_QUANTIFICATION {
         ch_fai.map { meta1, fai -> [meta1, fai] }.first(), // convert to value chanel
     )
 
+    //
+    // MODULE: CLAIR3
+    // 
+
     emit:
     // metrics    = HAPLOSCAN.out.tsv
     // haplotypes = HAPLOSCAN.out.haplotypes

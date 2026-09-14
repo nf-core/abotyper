@@ -133,7 +133,6 @@
                     "format": "uri",
                     "description": "URL to the Clair3 basecaller model archive (.tar.gz) used for independent small-variant calling alongside HAPLOSCAN.",
                     "help_text": "Downloaded once per run by DOWNLOAD_CLAIR3_MODEL and extracted for the CLAIR3 module. Must match the ONT basecaller model used to generate the reads (default: r1041_e82_400bps_sup_v420, matching the official Clair3 ONT R10.4.1 5kHz super-accuracy model).",
-                    "default": "https://www.bio8.cs.hku.hk/clair3/clair3_models/r1041_e82_400bps_sup_v420.tar.gz",
                     "fa_icon": "fas fa-brain"
                 }
             }
@@ -306,5 +305,11 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "abo_bed": {
+            "type": "string",
+            "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/abo_variant_panel.bed"
+        }
+    }
 }
