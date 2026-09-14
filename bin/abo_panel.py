@@ -3,7 +3,7 @@
 
 """
 abo_panel.py — shared variant-panel loader and scoring engine for the
-nf-core/abotyper pipeline (v2.0.0).
+nf-core/abotyper pipeline.
 
 This module is the ONLY place that understands the panel file format
 (abo_variant_panel.yaml / .yml / .json / .csv / .tsv). All four
@@ -380,11 +380,8 @@ def _pct_lookup(row_values: Dict[str, float], base: str) -> float:
 
 
 def call_primary_biallelic(marker: VariantMarker, row_values: Dict[str, float]) -> str:
-    """
-    Generic replacement for the bespoke per-position branches in the
-    legacy get_type()/get_type_exon6(). Reproduces the original asymmetric
-    homozygous/heterozygous thresholds, now driven by the panel row.
-    """
+    """Scores a primary type-defining position using asymmetric
+    homozygous/heterozygous thresholds driven by the panel row."""
     alt_pct = _pct_lookup(row_values, marker.alt_base)
     ref_pct = 100.0 - alt_pct if marker.ref_base in ("REF",) else _pct_lookup(
         row_values, marker.ref_base) or (100.0 - alt_pct)
@@ -408,10 +405,10 @@ def call_primary_biallelic(marker: VariantMarker, row_values: Dict[str, float]) 
 def call_named_marker(marker: VariantMarker, row_values: Dict[str, float],
                        nreads: float = 0) -> Optional[Dict[str, object]]:
     """
-    Generic replacement for scan_bw_markers()/scan_a2_markers()'s per-marker
-    branches. Returns a dict describing the observed call, or None if the
-    marker doesn't fire. Handles rows with multiple possible alt alleles
-    (e.g. c.700 C>G vs C>T) by checking each independently.
+    Scores one named-marker position. Returns a dict describing the
+    observed call, or None if the marker doesn't fire. Handles rows with
+    multiple possible alt alleles (e.g. c.700 C>G vs C>T) by checking each
+    independently.
     """
     threshold = marker.variant_threshold_pct if marker.variant_threshold_pct is not None else 15
     min_reads = marker.min_reads if marker.min_reads is not None else 0

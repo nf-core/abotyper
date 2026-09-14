@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::fastqc=0.12.1=hdfd78af_0
+  - "bioconda::longshot=1.0.0"
