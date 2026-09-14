@@ -54,12 +54,12 @@ workflow VARIANTS_QUANTIFICATION {
     //
     ch_clair3_input = ch_bam_bai
         .combine(ch_clair3_model_dir)
-        .map { meta, bam, bai, model_dir -> [meta, bam, bai, "", "${model_dir}/", "ont"] }
+        .map { meta, bam, bai, model_dir -> [meta, bam, bai, "", "${model_dir}/", "ont"] } // Already a value chanel
 
     CLAIR3(
         ch_clair3_input,
-        ch_fasta.map { meta1, fasta -> [meta1, fasta] },
-        ch_fai.map { meta1, fai -> [meta1, fai] },
+        ch_fasta.map { meta1, fasta -> [meta1, fasta] }.first(), // convert to value chanel
+        ch_fai.map { meta1, fai -> [meta1, fai] }.first(), // convert to value chanel
     )
 
     emit:
