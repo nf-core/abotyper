@@ -65,7 +65,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [SAMtools Coverage](#samtools-modules) – Coverage metrics
 - [SAMtools Flagstat](#samtools-modules) – Alignment summary statistics
 - [SAMtools Stats](#samtools-modules) – Detailed alignment metrics
-- [HAPLOSCAN](#nucleotide-quantification) – Per-position nucleotide frequency and per-read haplotype extraction
+- [Clair3](#variant-calling-and-quantification) – Small-variant calling and phasing, converted into per-position nucleotide frequencies and a haplotype table
 - [ABO SNP Interpretation](#abo-snp-interpretation) – Custom logic to infer ABO phenotype
 - [MultiQC](#multiqc) – Aggregate report describing results and QC from the whole pipeline
 
@@ -117,19 +117,23 @@ This set of modules use [SAMtools](http://www.htslib.org/) and its subtools to e
 
 **Stats**: Generates comprehensive metrics such as insert size distributions, read lengths, and mapping quality.
 
-### Nucleotide Quantification
+### Variant Calling and Quantification
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `combined/`
-  - `*.AlignmentStatistics.tsv`: Per-position nucleotide frequency and coverage table.
-  - `*.Haplotypes.tsv`: Per-read haplotype table, enabling cis-phasing across every diagnostic position on the same read.
-  - `ABOReadPolymorphisms.txt`: Summary of polymorphic positions observed.
+- `clair3/`
+  - `*.merge_output.vcf.gz`: Clair3's PASS-filtered small-variant calls.
+  - `*.merge_output.gvcf.gz`: Clair3's gVCF, including non-variant reference blocks.
+  - `*.phased_merge_output.vcf.gz`: Clair3's phased small-variant calls (GT + PS tags).
+  - `*.panel.vcf.gz` / `*.panel..tsv`: normalized calls restricted to the ABO panel positions, and a flat TSV of the same, for manual review (`VARIANTS_QC`).
+- `clair2metrics/`
+  - `*.AlignmentStatistics.tsv`: Per-position nucleotide frequency and coverage table, converted from Clair3's gVCF.
+  - `*.Haplotypes.tsv`: Haplotype table, synthesized from Clair3's phased-VCF phase-set allele depths (not literal per-read observations).
 
 </details>
 
-`pysam_haploscan.py` (the `HAPLOSCAN` module) computes per-position nucleotide frequencies and per-read haplotypes directly from the aligned BAM in a single pass, replacing a separate samtools mpileup step.
+Clair3 (`--gvcf --enable_phasing`) calls small variants directly from the aligned BAM, with phasing. `clair2metrics.py` (the `ABO_CLAIR2METRICS` module) and `clair2haplotypes.py` (the `ABO_CLAIR2HAPLOTYPES` module) then convert its gVCF and phased VCF into per-position nucleotide frequencies and a haplotype table respectively, in the same formats the retired BAM-pileup-based `HAPLOSCAN` module used to produce, so downstream phenotype prediction needs no changes.
 
 ### ABO SNP Interpretation
 

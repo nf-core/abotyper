@@ -60,7 +60,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from abo_panel import load_panel, export_csv, FIELD_NAMES, Panel, VariantMarker
+from abo_panel import load_panel, export_csv, FIELD_NAMES, Panel
 
 try:
     import yaml

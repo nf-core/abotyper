@@ -1,11 +1,21 @@
+/*
+  MODULE: ABO_SNPS2PHENO
+  Description:
+    Runs aggregate_abo_reports.py over every sample's combined/ directory
+    (*.ABOPhenotype.txt from ABO_GETABOSNPS, *.Haplotypes.tsv from
+    ABO_CLAIR2HAPLOTYPES), scoring primary and named-marker calls per the
+    panel's thresholds, resolving Phenotype/Genotype/ExtendedGenotype, and
+    writing the pipeline's final output: ABO_result.txt/.xlsx and
+    final_export.csv. Runs once per pipeline run, not per sample.
+*/
 process ABO_SNPS2PHENO {
     tag "COMPILING ABO RESULTS"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/14/14bab3c5ebaf4e44be2bbc6fa56108905b8aceb3ecbc85371516dcf1cdaafd3a/data'
-        : 'community.wave.seqera.io/library/pandas_xlsxwriter:b231bcbbf11b41fd'}"
+        ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:e206f33f53f3639b'
+        : 'community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:4325a71f45ad8e44'}"
 
     publishDir "${params.outdir}", mode: 'copy'
 

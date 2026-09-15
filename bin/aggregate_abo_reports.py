@@ -21,7 +21,6 @@ __credits__ = [
     "Fredrick Mobegi",
     "Benedict Matern",
     "Mathijs Groeneweg",
-    "Claude Sonnet 4.6",
     "Claude Sonnet 5",
 ]
 __license__ = "GPL"
@@ -131,6 +130,44 @@ def compute_phase_confidence(
     else:
         detail = f"High haplotype diversity: {n_distinct} patterns, top 2 cover only {top2_fraction*100:.0f}%"
         return "Low", detail
+
+
+def phase_relationship(evidence: Optional[PhaseEvidence], pos_a: int, pos_b: int) -> str:
+    """
+    Whether two panel positions' ALT alleles sit on the same physical
+    haplotype (cis) or different ones (trans), read directly off the
+    haplotype-string keys already parsed into evidence.haplotype_counts
+    (each string lists every ALT-carrying panel position on that side,
+    e.g. "p23952=T;p24544=del" -- see ReadHaplotype.to_string() /
+    clair2haplotypes.py). Advisory only: this does not feed genotype
+    scoring, it only informs warning text.
+
+    Returns "cis", "trans", "ambiguous", or "unknown" (not enough phased
+    evidence covering both positions to say anything).
+    """
+    if not evidence or not evidence.haplotype_counts:
+        return "unknown"
+
+    tag_a, tag_b = f"p{pos_a}=", f"p{pos_b}="
+    cis_reads = a_only_reads = b_only_reads = 0
+    for haplo_str, count in evidence.haplotype_counts.items():
+        has_a = tag_a in haplo_str
+        has_b = tag_b in haplo_str
+        if has_a and has_b:
+            cis_reads += count
+        elif has_a:
+            a_only_reads += count
+        elif has_b:
+            b_only_reads += count
+
+    total = cis_reads + a_only_reads + b_only_reads
+    if total == 0:
+        return "unknown"
+    if cis_reads / total >= 0.7:
+        return "cis"
+    if a_only_reads > 0 and b_only_reads > 0 and cis_reads / total < 0.2:
+        return "trans"
+    return "ambiguous"
 
 
 # ===========================================================================
@@ -346,6 +383,7 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # Type caller
     # -----------------------------------------------------------------
+
     def get_type_generic(self, exon_label: str, pos: int, row: pd.Series) -> str:
         """Determine the blood-type label for a single position, using the
         panel's call_rule for that position."""
@@ -416,6 +454,7 @@ class ABOReportParser:
         ref_call_label/alt_call_label, so re-labelling the panel can never
         again silently break genotype assignment.
         """
+
         def pct_of(base):
             if base is None:
                 return 0.0
@@ -442,6 +481,7 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # Subtype marker scanner
     # -----------------------------------------------------------------
+
     def scan_category_markers(
         self,
         category: str,
@@ -491,6 +531,7 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # Phenotype/genotype assignment
     # -----------------------------------------------------------------
+
     def assign_phenotype_genotype(
         self,
         df,
@@ -499,6 +540,11 @@ class ABOReportParser:
         """Assign phenotype/genotype information with panel-driven subtype
         marker scanning and phase confidence."""
         phase_evidence_by_exon = phase_evidence_by_exon or {}
+        # Same "most reads wins" selection compute_phase_confidence uses --
+        # in combined mode every exon key holds the same PhaseEvidence
+        # object anyway (one shared Haplotypes.tsv per sample).
+        _evidence_candidates = [e for e in phase_evidence_by_exon.values() if e and e.total_reads > 0]
+        resolved_phase_evidence = max(_evidence_candidates, key=lambda e: e.total_reads) if _evidence_candidates else None
         try:
 
             def safe_get_type(df, pos_key, default=""):
@@ -528,6 +574,7 @@ class ABOReportParser:
             # ----- Resolve the primary markers by their semantic role -----
             # (column label depends on resolved_position(), so look it up
             # dynamically rather than assuming a literal string.)
+
             def col_for(marker_id: str) -> Optional[str]:
                 m = self.panel.get(marker_id)
                 if m is None or m.resolved_position() is None:
@@ -551,6 +598,7 @@ class ABOReportParser:
             # every branch fail and every sample fall through to "Unknown".
             # We classify each marker's biallelic STATE and emit the legacy
             # string, so display wording and decision logic stay decoupled.
+
             def primary_type(col, marker_id, ref_s, alt_s, het_s):
                 m = self.panel.get(marker_id)
                 if m is None or not col:
@@ -642,9 +690,30 @@ class ABOReportParser:
 
                 a297_marker = self.panel.get("a2_marker_297_a201")
                 has_297 = False
+                a297_phase_note = None
                 if a297_marker and a297_marker.resolved_position() in row_lookup:
                     row = row_lookup[a297_marker.resolved_position()]
                     has_297 = float(row.get("G", 0) or 0) >= 25
+                    if has_297:
+                        # c.297A>G is dual-purpose (panel notes): also part of
+                        # the shared B-lineage backbone. If phasing shows it
+                        # riding on the SAME haplotype as the B primary
+                        # marker, it's likely just B-backbone noise, not
+                        # independently confirmatory for A2.01 -- advisory
+                        # only, does not change has_297 or any call below.
+                        b_marker = self.panel.get("b_vs_ao_796")
+                        if b_marker and b_marker.resolved_position() is not None:
+                            rel = phase_relationship(
+                                resolved_phase_evidence,
+                                a297_marker.resolved_position(),
+                                b_marker.resolved_position(),
+                            )
+                            if rel == "cis":
+                                a297_phase_note = (
+                                    "Phase check: c.297A>G co-occurs with the B allele on the "
+                                    "same haplotype (Clair3 phasing) -- likely B-lineage backbone "
+                                    "signal, not independently confirmatory for A2.01"
+                                )
 
                 if has_del:
                     markers.append("c.1061del")
@@ -654,6 +723,8 @@ class ABOReportParser:
                     markers.append("c.1032A")
                 if has_297:
                     markers.append("c.297G")
+                if a297_phase_note:
+                    warns.append(a297_phase_note)
 
                 o1v_fired = has_297 and not has_del and not has_907 and not has_1032
                 if o1v_fired:
@@ -1318,7 +1389,6 @@ class ABOReportParser:
 # ===========================================================================
 # CLI entry point
 # ===========================================================================
-
 
 def create_argument_parser():
     parser = argparse.ArgumentParser(

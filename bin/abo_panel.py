@@ -6,10 +6,11 @@ abo_panel.py — shared variant-panel loader and scoring engine for the
 nf-core/abotyper pipeline.
 
 This module is the ONLY place that understands the panel file format
-(abo_variant_panel.yaml / .yml / .json / .csv / .tsv). All four
-position-consuming scripts (pysam_haploscan.py, stats_from_pileup.py,
-predict_abo_phenotype.py, aggregate_abo_reports.py) import this module
-instead of hardcoding position dictionaries.
+(abo_variant_panel.yaml / .yml / .json / .csv / .tsv). Every
+position-consuming script (panel_to_bed.py, clair2metrics.py,
+clair2haplotypes.py, predict_abo_phenotype.py, aggregate_abo_reports.py,
+calibrate_panel_positions.py) imports this module instead of hardcoding
+position dictionaries.
 
 Adding a new diagnostic variant to the assay requires editing ONLY the
 panel file — no script needs to change.
@@ -28,7 +29,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import sys
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Dict, List, Optional, Union

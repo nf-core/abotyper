@@ -1,11 +1,22 @@
+/*
+  MODULE: ABO_GETABOSNPS
+  Description:
+    Runs predict_abo_phenotype.py: reads the per-position metrics
+    (AlignmentStatistics.tsv, from ABO_CLAIR2METRICS) and BAM coverage for
+    one sample, and writes a human-readable *.ABOPhenotype.txt report --
+    one marker per diagnostic panel position, with its interpretation text.
+    No -e/--exon is passed: the script auto-detects every exon present via
+    panel position overlap and writes all sections into one combined report.
+    This is the report ABO_SNPS2PHENO later aggregates across samples.
+*/
 process ABO_GETABOSNPS {
     tag "${meta.id}"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8d/8d69e246c0a530fa88ba496bf8a62bd282e770fb4b68d2877ab777ce4943fed1/data'
-        : 'community.wave.seqera.io/library/json5_pandas_python:e3184b0698afebbd'}"
+        ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml:a1b47a7a3bb7f9c7'
+        : 'community.wave.seqera.io/library/pandas_python_pyyaml:e40312b9d861eff3'}"
 
     input:
     tuple val(meta), path(variants_freq), path(coverage)
@@ -15,7 +26,6 @@ process ABO_GETABOSNPS {
     tuple val(meta), path("*.log.txt"), emit: log
     tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
     tuple val("${task.process}"), val('pandas'), eval('python3 -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
-    tuple val("${task.process}"), val('json5'), eval('python3 -c "import json5; print(json5.__version__)"'), emit: versions_json5, topic: versions
 
     script:
     def args = task.ext.args ?: ''

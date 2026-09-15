@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABO_CLAIR2HAPLOTYPES
+description: Convert a Clair3 phased VCF into HAPLOSCAN-format Haplotypes.tsv for PhaseConfidence scoring
+keywords:
+  - abo
+  - blood typing
+  - variant calling
+  - genotyping
+  - clair3
+  - phasing
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      tool_dev_url: https://github.com/python/cpython
+      licence: ["Python Software Foundation License"]
+  - pyyaml:
+      description: YAML parser and emitter for Python
+      homepage: https://pyyaml.org/
+      documentation: https://pyyaml.org/wiki/PyYAMLDocumentation
+      tool_dev_url: https://github.com/yaml/pyyaml
+      licence: ["MIT"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'sample1' ]
+        required: true
+    - phased_vcf:
+        type: file
+        description: Clair3 phased_merge_output.vcf.gz (run with --enable_phasing)
+        pattern: "*.vcf.gz"
+        required: true
+  - - panel_file:
+        type: file
+        description: ABO variant panel file (abo_variant_panel.yaml / .json / .csv / .tsv)
+        pattern: "*.{yaml,yml,json,csv,tsv}"
+        required: true
+
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'sample1' ]
+      - "*.Haplotypes.tsv":
+          type: file
+          description: |
+            Synthesized haplotype table (2 patterns per Clair3 phase set,
+            row counts proportional to that phase set's own allele depths)
+          pattern: "*.Haplotypes.tsv"
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+  versions_pyyaml:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pyyaml:
+          type: string
+          description: Name of the library
+      - python3 -c "import yaml; print(yaml.__version__)":
+          type: eval
+          description: The expression to obtain the version of pyyaml
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pyyaml:
+          type: string
+          description: Name of the library
+      - python3 -c "import yaml; print(yaml.__version__)":
+          type: eval
+          description: The expression to obtain the version of pyyaml
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

@@ -336,7 +336,6 @@ class ABOPhenotypePredictor:
             return
 
         pos_data = positions[pos]
-        exon_num = "".join(ch for ch in exon_label if ch.isdigit()) or "?"
 
         file_handle.write(f"\n{exon_label} position(1-based): {pos}\n")
 

@@ -6,7 +6,6 @@
 //   with BAM coverage, extracting SNPs, and mapping them to phenotypes.
 //   Uses metadata-driven joining and structured per-sample output.
 
-
 include { ABO_GETABOSNPS } from '../../../modules/local/abo/getabosnps/main'
 include { ABO_SNPS2PHENO } from '../../../modules/local/abo/snps2pheno/main'
 
@@ -14,7 +13,7 @@ workflow PREDICTABOPHENOTYPE {
     take:
     ch_variants_freq // channel: [ val(meta), [ freq ] ]
     ch_bam_coverage  // channel: [ val(meta), [ cov ] ]
-    ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from HAPLOSCAN
+    ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from ABO_CLAIR2HAPLOTYPES
 
     main:
 

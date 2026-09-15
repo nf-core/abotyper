@@ -5,8 +5,8 @@
 # ===========================================================================
 #
 # This file is the SINGLE SOURCE OF TRUTH for every diagnostic position used
-# by the abotyper pipeline (pysam_haploscan.py, stats_from_pileup.py,
-# predict_abo_phenotype.py, aggregate_abo_reports.py).
+# by the abotyper pipeline (panel_to_bed.py, clair2metrics.py,
+# clair2haplotypes.py, predict_abo_phenotype.py, aggregate_abo_reports.py).
 #
 # Adding a new variant to the assay = adding a row here. No script needs to
 # be edited or redeployed.
