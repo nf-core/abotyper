@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "MINIMAP2_ALIGN_READS"
+description: Aligns each sample to two exon references using Minimap2, then runs Samtools coverage, flagstat, and stats. Uses a pure metadata-driven approach with no aliasing or premature splitting.
+keywords:
+  - alignment
+  - minimap2
+  - samtools
+  - coverage
+  - flagstat
+  - stats
+  - exons
+  - abo
+components:
+  - minimap2/align
+  - samtools/coverage
+  - samtools/flagstat
+  - samtools/stats
+input:
+  - ch_combined_input:
+      type: channel
+      description: |
+        Channel containing FASTQ files with exon metadata
+        Structure: [ val(meta), path(fastq) ]
+      pattern: "*.{fastq,fastq.gz,fq,fq.gz}"
+  - ch_combined_fasta:
+      type: channel
+      description: |
+        Channel containing FASTA reference files with exon metadata
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,fa,fas}"
+  - ch_combined_fai:
+      type: channel
+      description: |
+        Channel containing FASTA index files with exon metadata
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
+output:
+  - bam:
+      type: file
+      description: |
+        Channel containing BAM files from minimap2 alignment
+        Structure: [ val(meta), path(bam) ]
+      pattern: "*.bam"
+  - bai:
+      type: file
+      description: |
+        Channel containing indexed BAM (BAI) files
+        Structure: [ val(meta), path(bai) ]
+      pattern: "*.bai"
+  - coverage:
+      type: file
+      description: |
+        Channel containing samtools coverage output files
+        Structure: [ val(meta), path(coverage) ]
+      pattern: "*.txt"
+  - flagstat:
+      type: file
+      description: |
+        Channel containing samtools flagstat output files
+        Structure: [ val(meta), path(flagstat) ]
+      pattern: "*.flagstat"
+  - stats:
+      type: file
+      description: |
+        Channel containing samtools stats output files
+        Structure: [ val(meta), path(stats) ]
+      pattern: "*.stats"
+  - fasta:
+      type: file
+      description: |
+        Channel containing FASTA reference files with exon metadata
+        Structure: [ val(meta), path(fasta) ]
+      pattern: "*.{fasta,fa,fas}"
+  - fai:
+      type: file
+      description: |
+        Channel containing FASTA index files with exon metadata
+        Structure: [ val(meta), path(fai) ]
+      pattern: "*.fai"
+  - versions:
+      type: file
+      description: |
+        File containing software versions
+        Structure: [ path(versions.yml) ]
+      pattern: "versions.yml"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
