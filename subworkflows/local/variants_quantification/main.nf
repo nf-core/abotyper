@@ -39,7 +39,7 @@ workflow VARIANTS_QUANTIFICATION {
     // PROCESS: DOWNLOAD_CLAIR3_MODEL
     //
     DOWNLOAD_CLAIR3_MODEL(model_url)
-    ch_clair3_model_dir = DOWNLOAD_CLAIR3_MODEL.out.model_dir.first()
+    ch_clair3_model_dir = DOWNLOAD_CLAIR3_MODEL.out.model_dir
 
     //
     // MODULE: CLAIR3
@@ -58,7 +58,6 @@ workflow VARIANTS_QUANTIFICATION {
     // MODULE: ABO_PANEL2BED
     //
     ABO_PANEL2BED(panel_file)
-    ch_panel_bed = ABO_PANEL2BED.out.bed.first()
 
     //
     // MODULE: ABO_CLAIR2METRICS
@@ -92,7 +91,7 @@ workflow VARIANTS_QUANTIFICATION {
     clair3_phased_tbi = CLAIR3.out.phased_tbi
     clair3_gvcf       = CLAIR3.out.gvcf
     clair3_gtbi       = CLAIR3.out.gtbi
-    panel_bed         = ch_panel_bed
+    panel_bed         = ABO_PANEL2BED.out.bed
 }
 
 /*
