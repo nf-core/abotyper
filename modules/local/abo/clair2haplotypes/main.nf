@@ -1,18 +1,16 @@
 /*
-  MODULE: ABO_PANEL2BED
+  MODULE: ABO_CLAIR2HAPLOTYPES
   Description:
-    Generates a BED file of diagnostic positions from the ABO variant panel
-    (abo_variant_panel.yaml), for use as Clair3's --bed_fn and for
-    bcftools view -R filtering of its output.
+    Converts a Clair3 phased VCF into the same Haplotypes.tsv format
+    pysam_haploscan.py (HAPLOSCAN) produces, so PREDICTABOPHENOTYPE's
+    existing PhaseConfidence scoring works against Clair3 phasing.
 
-    Indel/homopolymer/multi-offset panel rows are padded on both sides
-    (see bin/panel_to_bed.py); plain SNP rows stay an exact 1bp interval.
-    Runs once against the reference-wide panel file (no per-sample meta),
-    matching DOWNLOAD_CLAIR3_MODEL's broadcast pattern in
-    variants_quantification.
+    Clair3's phasing is block-level (GT + PS tag), not per-read -- rows
+    are synthesized in proportion to each phase set's own allele depths,
+    not literal individual reads. See bin/clair2haplotypes.py docstring.
 */
-process ABO_PANEL2BED {
-    tag "${panel_file.baseName}"
+process ABO_CLAIR2HAPLOTYPES {
+    tag "${meta.id}"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
@@ -21,26 +19,28 @@ process ABO_PANEL2BED {
         : 'community.wave.seqera.io/library/json5_pandas_python:e3184b0698afebbd'}"
 
     input:
+    tuple val(meta), path(phased_vcf)
     path panel_file
 
     output:
-    path "*.bed", emit: bed
+    tuple val(meta), path("*.Haplotypes.tsv"), emit: tsv
     tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
     tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
 
     script:
     def args   = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: 'abo_variant_panel'
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    panel_to_bed.py \\
+    clair2haplotypes.py \\
+        -i ${phased_vcf} \\
+        -o ${prefix}.Haplotypes.tsv \\
         --panel ${panel_file} \\
-        --output ${prefix}.bed \\
         ${args}
     """
 
     stub:
-    def prefix = task.ext.prefix ?: 'abo_variant_panel'
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.bed
+    touch ${prefix}.Haplotypes.tsv
     """
 }

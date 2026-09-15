@@ -1,5 +1,5 @@
 /*
- * Subworkflow: minimap_align_exons
+ * Subworkflow: minimap2_align_reads
  * Description: Aligns each sample against the single combined ABO reference
  * using Minimap2, then runs Samtools coverage, flagstat, and stats.
  * Single-reference mode: every sample is aligned exactly once, no

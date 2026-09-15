@@ -19,11 +19,12 @@ could not reach.
 | File | Role |
 | --- | --- |
 | `abo_panel.py` | Shared loader + scoring engine. Every other script imports this. Also a CLI: `--summary`, `--export-csv`, `--export-yaml`. |
-| `pysam_haploscan.py` | BAM → per-position stats + per-read haplotypes, in a single pass using pysam. This is the live path (`HAPLOSCAN` module) for the combined-reference topology. |
+| `panel_to_bed.py` | Panel YAML → BED (`ABO_PANEL2BED` module). Indel/homopolymer/multi-offset rows padded +-15bp; plain SNP rows stay exact, since several panel positions sit only 2-5bp apart. |
+| `clair2metrics.py` | Clair3 gVCF → per-position stats, in the same `AlignmentStatistics.tsv` format the retired `pysam_haploscan.py`/HAPLOSCAN path used to produce (`ABO_CLAIR2METRICS` module). This is the live path for the combined-reference topology. |
+| `clair2haplotypes.py` | Clair3 phased VCF → haplotype table, in the same `Haplotypes.tsv` format HAPLOSCAN used to produce (`ABO_CLAIR2HAPLOTYPES` module). Synthesized from phase-set allele depths, not literal per-read observations -- see the module's docstring. |
 | `predict_abo_phenotype.py` | Per-position stats → human-readable `*.ABOPhenotype.txt`. Auto-detects which exon(s) a report covers from panel position overlap, so one combined-reference run produces one report covering every exon in a single file. |
 | `aggregate_abo_reports.py` | Aggregates every sample's report + haplotype data into `ABO_result.txt/.xlsx` and `final_export.csv`. Column layout, position parsing, and subtype-marker scanning are all panel-driven. Supports both the current single `combined/` per-sample layout and the legacy per-exon subfolder layout. |
-| `calibrate_panel_positions.py` | Populates `amplicon_pos` for panel rows against a specific reference FASTA. Not required for the default `NG_006669v2.fasta` reference — see "Coordinate systems" below — but needed if switching to a different combined reference. |
-| `stats_from_pileup.py` | samtools mpileup → per-position stats. Retained for the legacy dual-mini-amplicon topology; not used by the pipeline's current single-reference default. |
+| `calibrate_panel_positions.py` | Populates `amplicon_pos` for panel rows against a specific reference FASTA. Not required for the default `NG_006669v2.fasta` reference (all 51 rows are already calibrated against it) — needed only if switching to a different combined reference. |
 | `rename_samples.py` | Optional sample renaming using a tab-delimited `sequencingID`/`sampleName` file (`--renaming_file`). |
 
 ## Coordinate systems in the panel
@@ -91,13 +92,10 @@ run `calibrate_panel_positions.py` to derive it.
 
 ## Known gaps and caveats
 
-- **10 panel rows remain uncalibrated**: `onull_106`, `onull_188`,
-  `onull_189`, `onull_220`, `o02_53`, `o04_88`, `aweak_intron6_374`,
-  `aweak_intron2_98`, `b3_intron3_155`, `abantu_intron4_203` (exon 2–5 /
-  intronic positions), plus the `o16` structural deletion and the exon 1
-  start-codon variants. These need either the annotated `NG_006669.2`
-  GenBank flatfile (for exact intron lengths) or a spliced alignment of
-  `NM_020469.3` against the reference to resolve.
+- All 51 panel rows are calibrated against `NG_006669.2` (verify at any
+  time with `python3 abo_panel.py --panel abo_variant_panel.yaml
+  --summary`). The `o16` structural deletion and the exon 1 start-codon
+  variants remain **documented but not scored** — see below.
 - **`o34_homopolymer_804`** (legacy `pos431`): sits in/near a G-homopolymer
   associated with c.804dupG/delG. ONT is error-prone at homopolymers —
   cross-check against the `ael_804_indel` marker and raw indel percentages

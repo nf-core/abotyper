@@ -3,7 +3,7 @@ name: "PREDICTABOPHENOTYPE"
 description: |
   Predicts ABO phenotype and extended genotype by combining variant frequency data
   with BAM coverage, extracting ABO-specific SNPs, and aggregating per-sample results
-  into a unified report. Stages per-read haplotype tables (from HAPLOSCAN) alongside
+  into a unified report. Stages haplotype tables (from ABO_CLAIR2HAPLOTYPES) alongside
   phenotype files to enable PhaseConfidence scoring and Bw/B(A) subtype detection in
   aggregate_abo_reports.py.
 keywords:
@@ -23,7 +23,7 @@ input:
       type: channel
       description: |
         Channel containing per-position allele frequency files (AlignmentStatistics.tsv)
-        with exon metadata, produced by HAPLOSCAN.
+        with exon metadata, produced by ABO_CLAIR2METRICS.
         Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
       pattern: "*.AlignmentStatistics.tsv"
   - ch_bam_coverage:
@@ -36,9 +36,9 @@ input:
   - ch_haplotypes:
       type: channel
       description: |
-        Channel containing per-read haplotype tables (Haplotypes.tsv) with exon metadata,
-        produced by HAPLOSCAN. Staged into the per-sample exon subdirectory so that
-        aggregate_abo_reports.py can compute PhaseConfidence scores.
+        Channel containing haplotype tables (Haplotypes.tsv) with exon metadata,
+        produced by ABO_CLAIR2HAPLOTYPES. Staged into the per-sample combined
+        subdirectory so that aggregate_abo_reports.py can compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"
 output:

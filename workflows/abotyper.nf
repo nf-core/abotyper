@@ -15,10 +15,10 @@ include { methodsDescriptionText  } from '../subworkflows/local/utils_nfcore_abo
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MINIMAP2_ALIGN_READS    } from '../subworkflows/local/minimap_align_exons'
+include { MINIMAP2_ALIGN_READS    } from '../subworkflows/local/minimap2_align_reads'
 include { PREDICTABOPHENOTYPE     } from '../subworkflows/local/predictabophenotype'
-// include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variant_calling_mpileup'
-include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variant_calling_haploscan'
+include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variants_quantification'
+include { VARIANTS_QC             } from '../subworkflows/local/variants_qc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,38 +28,38 @@ include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variant_calling_
 
 workflow ABOTYPER {
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
-    abo_reference_fai // channel: fai from params.abo_reference_fai
-    abo_reference_fasta // channel: fasta from params.abo_reference_fasta
-    ch_clair3_model_url // chanel: clair3_url from params.clair3_model_url
-    logo // channel: png from params.logo (custom pathwest logo)
-    abo_panel // channel: path from params.abo_panel (variant panel YAML)
+    ch_samplesheet       // channel: samplesheet read in from --input
+    abo_reference_fai    // channel: fai from params.abo_reference_fai
+    abo_reference_fasta  // channel: fasta from params.abo_reference_fasta
+    ch_clair3_model_url  // channel: clair3_url from params.clair3_model_url
+    logo                 // channel: png from params.logo (custom pathwest logo)
+    abo_panel            // channel: path from params.abo_panel (variant panel YAML)
 
     main:
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
 
-    /*
-    MODULE: FASTQC
-    */
+    //
+    // MODULE: FASTQC
+    //
     FASTQC(
         ch_samplesheet
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
 
-    /*
-    SUBWORKFLOW: MINIMAP2_ALIGN_READS
-    */
+    //
+    // SUBWORKFLOW: MINIMAP2_ALIGN_READS
+    //
     MINIMAP2_ALIGN_READS(
         ch_samplesheet,
         abo_reference_fasta,
         abo_reference_fai,
     )
 
-    /*
-    SUBWORKFLOW: VARIANTS_QUANTIFICATION
-    */
+    //
+    // SUBWORKFLOW: VARIANTS_QUANTIFICATION
+    //
     VARIANTS_QUANTIFICATION(
         MINIMAP2_ALIGN_READS.out.bam,
         MINIMAP2_ALIGN_READS.out.bai,
@@ -69,9 +69,20 @@ workflow ABOTYPER {
         abo_panel,
     )
 
-    /*
-    SUBWORKFLOW: PREDICTABOPHENOTYPE
-    */
+    //
+    // SUBWORKFLOW: VARIANTS_QC
+    //
+    VARIANTS_QC(
+        VARIANTS_QUANTIFICATION.out.clair3_vcf,
+        VARIANTS_QUANTIFICATION.out.clair3_tbi,
+        MINIMAP2_ALIGN_READS.out.fasta,
+        VARIANTS_QUANTIFICATION.out.panel_bed,
+    )
+
+    //
+    // SUBWORKFLOW: PREDICTABOPHENOTYPE
+    //
+
     // Join metrics and coverage by metadata to ensure correct pairing
     ch_prediction_input = VARIANTS_QUANTIFICATION.out.metrics
         .join(MINIMAP2_ALIGN_READS.out.coverage)
@@ -116,7 +127,7 @@ workflow ABOTYPER {
         ).set { ch_collated_versions }
 
     //
-    // MODULE: MultiQC
+    // MODULE: MULTIQC
     //
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
 

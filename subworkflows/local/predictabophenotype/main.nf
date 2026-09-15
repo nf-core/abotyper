@@ -14,7 +14,7 @@ workflow PREDICTABOPHENOTYPE {
     take:
     ch_variants_freq // channel: [ val(meta), [ freq ] ]
     ch_bam_coverage  // channel: [ val(meta), [ cov ] ]
-    ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from HAPLOSCAN
+    ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from ABO_CLAIR2HAPLOTYPES
 
     main:
 

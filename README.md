@@ -43,10 +43,11 @@ ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
    - Coverage analysis ([`SAMTOOLS_COVERAGE`](modules/nf-core/samtools/coverage/))
    - Flagstat metrics ([`SAMTOOLS_FLAGSTAT`](modules/nf-core/samtools/flagstat/))
    - Detailed statistics ([`SAMTOOLS_STATS`](modules/nf-core/samtools/stats/))
-4. **Variant quantification** - Compute per-position allele frequencies and per-read haplotypes directly from the BAM file in a single pass ([`HAPLOSCAN`](modules/local/haploscan/))
-5. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABO_GETABOSNPS`](modules/local/abo/getabosnps/))
-6. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns ([`ABO_SNPS2PHENO`](modules/local/abo/snps2pheno/))
-7. **Quality control reporting** - Compile comprehensive QC report with alignment and variant metrics ([`MULTIQC`](modules/nf-core/multiqc/))
+4. **Variant calling** - Call small variants (with phasing) directly from the aligned BAM using Clair3 ([`CLAIR3`](modules/nf-core/clair3/))
+5. **Variant quantification** - Convert Clair3's gVCF and phased VCF into per-position allele frequencies and per-read-equivalent haplotypes ([`ABO_CLAIR2METRICS`](modules/local/abo/clair2metrics/), [`ABO_CLAIR2HAPLOTYPES`](modules/local/abo/clair2haplotypes/))
+6. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABO_GETABOSNPS`](modules/local/abo/getabosnps/))
+7. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns ([`ABO_SNPS2PHENO`](modules/local/abo/snps2pheno/))
+8. **Quality control reporting** - Compile comprehensive QC report with alignment and variant metrics ([`MULTIQC`](modules/nf-core/multiqc/))
 
 The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO reference. Variant marker positions and coordinate calibration are defined in `assets/refs/abo_variant_panel.yaml` (see [`bin/README.md`](bin/README.md) for details).
 
