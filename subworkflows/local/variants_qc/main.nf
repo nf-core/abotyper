@@ -1,15 +1,12 @@
 /*
   SUBWORKFLOW: VARIANTS_QC
-
-  Review/export side-branch, independent of the phenotype-prediction path.
-  Normalizes Clair3's PASS-filtered calls, restricts them to the ABO panel
-  positions, and flattens them to a flat TSV -- a panel-scoped VCF a human
-  can open in IGV, and a TSV for spot-checking, alongside (not feeding)
-  ABO_CLAIR2METRICS's own gVCF-derived metrics used by PREDICTABOPHENOTYPE.
-
-  Runs on CLAIR3.out.vcf (not the gVCF) -- symbolic <NON_REF> ref-blocks
-  in the gVCF aren't what bcftools norm/view/query are built for.
 */
+
+// Description: Review/export side-branch, independent of the phenotype-prediction path.
+// Normalizes Clair3's PASS-filtered calls, restricts them to the ABO panel
+// positions, and flattens them to a flat TSV -- a panel-scoped VCF a human
+// can open in IGV, and a TSV for spot-checking, alongside (not feeding)
+// ABO_CLAIR2METRICS's own gVCF-derived metrics used by PREDICTABOPHENOTYPE.
 
 include { BCFTOOLS_NORM  } from '../../../modules/nf-core/bcftools/norm/main'
 include { BCFTOOLS_VIEW  } from '../../../modules/nf-core/bcftools/view/main'

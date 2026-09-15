@@ -18,8 +18,8 @@ process ABO_CLAIR2METRICS {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8d/8d69e246c0a530fa88ba496bf8a62bd282e770fb4b68d2877ab777ce4943fed1/data'
-        : 'community.wave.seqera.io/library/json5_pandas_python:e3184b0698afebbd'}"
+        ? 'oras://community.wave.seqera.io/library/python_pyyaml:10a1a757f29eaf02'
+        : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
 
     input:
     tuple val(meta), path(gvcf)

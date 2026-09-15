@@ -1,8 +1,13 @@
 /*
   SUBWORKFLOW: VARIANTS_QUANTIFICATION
-
-  Uses clair3 compute whole-gene variants from aligned BAM files
 */
+
+//   Description: Calls small variants (with phasing) from each sample's aligned BAM using
+//   Clair3 (--gvcf --enable_phasing), then converts its gVCF and phased VCF
+//   into the per-position metrics / haplotype table PREDICTABOPHENOTYPE
+//   expects (ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES). Also regenerates the
+//   ABO panel BED from the panel YAML once per run (ABO_PANEL2BED), broadcast
+//   to every sample here and to the sibling VARIANTS_QC subworkflow.
 
 include { CLAIR3                } from '../../../modules/nf-core/clair3/main'
 include { ABO_PANEL2BED         } from '../../../modules/local/abo/panel2bed/main'

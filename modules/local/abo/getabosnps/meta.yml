@@ -21,33 +21,26 @@ tools:
       documentation: https://pandas.pydata.org/docs/
       tool_dev_url: https://github.com/pandas-dev/pandas
       licence: ["BSD-3-Clause"]
-  - json5:
-      description: A Python implementation of the JSON5 data format
-      homepage: https://github.com/dpranke/pyjson5
-      documentation: https://github.com/dpranke/pyjson5
-      tool_dev_url: https://github.com/dpranke/pyjson5
-      licence: ["Apache-2.0"]
 
 input:
   - - meta:
         type: map
         description: |
           Groovy Map containing sample information
-          e.g. [ id:'sample1', single_end:false, exon:'exon6' ]
+          e.g. [ id:'sample1' ]
         required: true
     - variants_freq:
         type: file
-        description: Variant frequency file containing nucleotide frequencies at each position
+        description: |
+          Per-position allele frequency file (AlignmentStatistics.tsv), produced
+          by ABO_CLAIR2METRICS. Auto-detects which exon(s) it covers from panel
+          position overlap -- no separate exon parameter needed.
         pattern: "*.{tsv,txt,freq}"
         required: true
     - coverage:
         type: file
         description: Coverage file containing depth information for genomic positions
         pattern: "*.{cov,coverage,txt}"
-        required: true
-    - exon_n:
-        type: string
-        description: Exon identifier (e.g., 'exon6', 'exon7') specifying which ABO exon is being analyzed
         required: true
 
 output:
@@ -91,16 +84,6 @@ output:
       - python3 -c "import pandas; print(pandas.__version__)":
           type: eval
           description: The expression to obtain the version of pandas
-  versions_json5:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - json5:
-          type: string
-          description: Name of the library
-      - python3 -c "import json5; print(json5.__version__)":
-          type: eval
-          description: The expression to obtain the version of json5
 
 topics:
   versions:
@@ -122,15 +105,6 @@ topics:
       - python3 -c "import pandas; print(pandas.__version__)":
           type: eval
           description: The expression to obtain the version of pandas
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - json5:
-          type: string
-          description: Name of the library
-      - python3 -c "import json5; print(json5.__version__)":
-          type: eval
-          description: The expression to obtain the version of json5
 
 authors:
   - "@fmobegi"

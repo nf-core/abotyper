@@ -1,10 +1,11 @@
 /*
- * Subworkflow: minimap2_align_reads
- * Description: Aligns each sample against the single combined ABO reference
- * using Minimap2, then runs Samtools coverage, flagstat, and stats.
- * Single-reference mode: every sample is aligned exactly once, no
- * per-exon metadata matching required.
- */
+  SUBWORKFLOW: MINIMAP2_ALIGN_READS
+*/
+
+// Description: Aligns each sample against the single combined ABO reference using
+// Minimap2, then runs Samtools coverage, flagstat, and stats.
+// Single-reference mode: every sample is aligned exactly once, no
+// per-exon metadata matching required.
 
 include { MINIMAP2_ALIGN    } from '../../../modules/nf-core/minimap2/align'
 include { SAMTOOLS_COVERAGE } from '../../../modules/nf-core/samtools/coverage'

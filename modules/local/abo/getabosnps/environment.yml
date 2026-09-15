@@ -2,7 +2,6 @@ name: getabosnps
 channels:
   - conda-forge
 dependencies:
-  - python=3.13.5
-  - pandas=2.3.1
-  - json5=0.12.0
-  - pyyaml=6.0
+  - python=3.13.15
+  - pyyaml=6.0.3
+  - pandas=3.0.5

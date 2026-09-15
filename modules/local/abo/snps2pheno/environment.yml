@@ -2,6 +2,8 @@ name: snps2pheno
 channels:
   - conda-forge
 dependencies:
-  - pandas=2.3.1
-  - xlsxwriter=3.2.5
-  - pyyaml=6.0
+  - python=3.13.15
+  - pyyaml=6.0.3
+  - pandas=3.0.5
+  - xlsxwriter=3.2.9
+

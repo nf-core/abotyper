@@ -55,21 +55,22 @@ The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO ref
 
 The pipeline makes use of the following core dependencies:
 
-| Dependency             | Minimum version |
-| ---------------------- | --------------- |
-| **Core Tools**         |                 |
-| fastqc                 | 0.12.1          |
-| minimap2               | 2.29-r1283      |
-| samtools               | 1.21            |
-| multiqc                | 1.30            |
-| **Python Environment** |                 |
-| python                 | 3.13.5          |
-| pandas                 | 2.3.1           |
-| numpy                  | 2.3.2           |
-| xlsxwriter             | 3.2.5           |
-| json5                  | 0.12.0          |
-| openpyxl               | 3.1.2           |
-| re                     | 2.2.1           |
+| Dependency             | Minimum version | Used for                           |
+| ---------------------- | --------------- | ----------------------------------- |
+| **Core Tools**         |                 |                                      |
+| fastqc                 | 0.12.1          | raw read quality control            |
+| minimap2               | 2.30            | long-read alignment                 |
+| samtools               | 1.23            | BAM sort, index, alignment QC       |
+| clair3                 | 2.0.0           | variant calling, phasing            |
+| bcftools               | 1.23.1          | VCF normalize, filter (QC export)   |
+| multiqc                | 1.35            | aggregate QC report                 |
+| **Python Environment** |                 |                                      |
+| python                 | 3.13.5          | runtime for `bin/` scripts          |
+| pandas                 | 2.3.1           | tabular data handling               |
+| pyyaml                 | 6.0             | variant panel YAML parsing          |
+| xlsxwriter             | 3.2.5           | final Excel report output           |
+
+`bin/rename_samples.py` is a standalone lab-export utility, not wired into any pipeline process — if you run it manually it needs its own `pandas` + `numpy` environment, separate from the above.
 
 ## Required input files structure
 
