@@ -1,67 +1,160 @@
----
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-name: "abo_snps2pheno"
-## TODO nf-core: Add a description of the module and list keywords
-description: write your description here
+name: ABO_SNPS2PHENO
+description: Aggregate ABO SNP results from multiple samples and generate comprehensive phenotype reports
 keywords:
-  - sort
-  - example
-  - genomics
+  - abo
+  - blood typing
+  - phenotype
+  - aggregation
+  - reporting
+  - snp analysis
+  - genotyping
+  - excel
+  - csv
 tools:
-  - "abo":
-      ## TODO nf-core: Add a description and other details for the software below
-      description: ""
-      homepage: ""
-      documentation: ""
-      tool_dev_url: ""
-      doi: ""
-      licence: 
-      identifier: 
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/
+      tool_dev_url: https://github.com/python/cpython
+      licence: ["Python Software Foundation License"]
+  - pandas:
+      description: Powerful data structures for data analysis, time series, and statistics
+      homepage: https://pandas.pydata.org/
+      documentation: https://pandas.pydata.org/docs/
+      tool_dev_url: https://github.com/pandas-dev/pandas
+      licence: ["BSD-3-Clause"]
+  - numpy:
+      description: Fundamental package for scientific computing with Python
+      homepage: https://numpy.org/
+      documentation: https://numpy.org/doc/
+      tool_dev_url: https://github.com/numpy/numpy
+      licence: ["BSD-3-Clause"]
+  - xlsxwriter:
+      description: Python module for creating Excel XLSX files
+      homepage: https://xlsxwriter.readthedocs.io/
+      documentation: https://xlsxwriter.readthedocs.io/
+      tool_dev_url: https://github.com/jmcnamara/XlsxWriter
+      licence: ["BSD-2-Clause"]
+  - openpyxl:
+      description: Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files
+      homepage: https://openpyxl.readthedocs.io/
+      documentation: https://openpyxl.readthedocs.io/
+      tool_dev_url: https://foss.heptapod.net/openpyxl/openpyxl
+      licence: ["MIT"]
 
-## TODO nf-core: Add a description of all of the variables used as input
 input:
-  # Only when we have meta
-  - - meta:
-        type: map
-        description: |
-          Groovy Map containing sample information
-          e.g. `[ id:'sample1', single_end:false ]`
-  
-  ## TODO nf-core: Delete / customise this example input
-    - bam:
-        type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
-        ontologies:
-          - edam: "http://edamontology.org/format_25722"
-          - edam: "http://edamontology.org/format_2573"
-          - edam: "http://edamontology.org/format_3462"
-          
+  - - samples_dir:
+        type: directory
+        description: Directory containing processed sample results with ABO phenotype predictions
+        pattern: "*/"
+        required: true
+  - - per_sample_processing:
+        type: directory
+        description: Root directory containing per-sample processing results organized by sample ID and exon
+        pattern: "per_sample_processing/"
+        required: true
 
-## TODO nf-core: Add a description of all of the variables used as output
 output:
-  - bam:
-  #Only when we have meta
-    - meta:
-        type: map
-        description: |
-          Groovy Map containing sample information
-          e.g. `[ id:'sample1', single_end:false ]`
-  ## TODO nf-core: Delete / customise this example output
-    - "*.bam":
-        type: file
-        description: Sorted BAM/CRAM/SAM file
-        pattern: "*.{bam,cram,sam}"
-        ontologies:
-          - edam: "http://edamontology.org/format_25722"
-          - edam: "http://edamontology.org/format_2573"
-          - edam: "http://edamontology.org/format_3462"
-          
-  - versions:
-    - "versions.yml":
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
+  txt:
+    - - "ABO_result.txt":
+          type: file
+          description: Text file containing aggregated ABO phenotype results in human-readable format
+          pattern: "ABO_result.txt"
+  xls:
+    - - "ABO_result.xlsx":
+          type: file
+          description: Excel file containing comprehensive ABO phenotype results with formatting
+          pattern: "ABO_result.xlsx"
+  log:
+    - - "ABO_results.log":
+          type: file
+          description: Log file containing processing information, warnings, and errors from aggregation
+          pattern: "ABO_results.log"
+  csv:
+    - - "final_export.csv":
+          type: file
+          description: CSV file containing final exported ABO results suitable for downstream analysis
+          pattern: "final_export.csv"
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+  versions_pandas:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pandas:
+          type: string
+          description: Name of the library
+      - python -c "import pandas; print(pandas.__version__)":
+          type: eval
+          description: The expression to obtain the version of pandas
+  versions_numpy:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - numpy:
+          type: string
+          description: Name of the library
+      - python -c "import numpy; print(numpy.__version__)":
+          type: eval
+          description: The expression to obtain the version of numpy
+  versions_xlsxwriter:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - xlsxwriter:
+          type: string
+          description: Name of the library
+      - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
+          type: eval
+          description: The expression to obtain the version of xlsxwriter
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pandas:
+          type: string
+          description: Name of the library
+      - python -c "import pandas; print(pandas.__version__)":
+          type: eval
+          description: The expression to obtain the version of pandas
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - numpy:
+          type: string
+          description: Name of the library
+      - python -c "import numpy; print(numpy.__version__)":
+          type: eval
+          description: The expression to obtain the version of numpy
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - xlsxwriter:
+          type: string
+          description: Name of the library
+      - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
+          type: eval
+          description: The expression to obtain the version of xlsxwriter
 
 authors:
   - "@fmobegi"
