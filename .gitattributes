@@ -2,3 +2,4 @@
 *.nf.test linguist-language=nextflow
 modules/nf-core/** linguist-generated
 subworkflows/nf-core/** linguist-generated
+assets/refs/NG_006669v2.fasta filter=lfs diff=lfs merge=lfs -text
