@@ -766,17 +766,57 @@ class ABOReportParser:
                 return markers, warns
 
             def determine_a_subtype():
+                """Returns (subtype_label, warning_text, zygosity).
+
+                zygosity is "het" (one A1 allele + one subtype allele) or
+                "hom" (both alleles carry the subtype) -- callers that
+                construct a homozygous-looking ExtendedGenotype (the AA
+                branch) MUST check this before writing f"{subtype}/{subtype}",
+                otherwise a genuinely heterozygous A1/A2.01 sample gets
+                silently doubled into a false A2.01/A2.01 homozygote. This
+                previously wasn't tracked at all -- scan_a2_markers() only
+                returned *whether* a subtype marker fired, never whether it
+                fired at ~50% (het) or ~90%+ (hom) allele fraction.
+                """
                 markers, warns = scan_a2_markers()
                 if markers:
                     clean_subtype, nt_notation = determine_a2_subtype(markers)
                     if nt_notation:
                         warns.insert(0, nt_notation)
                     warning_text = "; ".join(warns) if warns else None
-                    return clean_subtype, warning_text
+
+                    zygosity = "hom"
+                    if "c.1061del" in markers:
+                        if state_exon7_685 == "het":
+                            zygosity = "het"
+                    else:
+                        # Subtype was called from a non-primary marker
+                        # (c.907A/c.1032A/c.297G) -- check ITS allele
+                        # fraction directly via the same ref/alt/het
+                        # classifier used for primary markers, since
+                        # scan_a2_markers()/call_named_marker() only report
+                        # whether the marker fired, not its zygosity.
+                        driving_marker_id = {
+                            "c.907A": "a2p_907_a206",
+                            "c.1032A": "a2p_1032_a201",
+                            "c.297G": "a2_marker_297_a201",
+                        }
+                        for label, marker_id in driving_marker_id.items():
+                            if label not in markers:
+                                continue
+                            m = self.panel.get(marker_id)
+                            if m and m.resolved_position() in row_lookup:
+                                state = self._primary_state(
+                                    m, dict(row_lookup[m.resolved_position()]))
+                                if state == "het":
+                                    zygosity = "het"
+                            break
+
+                    return clean_subtype, warning_text, zygosity
                 warning_text = "; ".join(warns) if warns else None
                 if type_exon7_93 in ("A1.02 or A2", "A1"):
-                    return "A1", warning_text
-                return "", None
+                    return "A1", warning_text, "hom"
+                return "", None, "hom"
 
             # ----- PART 1: PRIMARY PHENOTYPING LOGIC -----
             a_subtype_warning = None
@@ -784,21 +824,21 @@ class ABOReportParser:
             if (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning = determine_a_subtype()
+                a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
                 ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning = determine_a_subtype()
+                a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
                 ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                a_subtype, a_subtype_warning = determine_a_subtype()
+                a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
                 ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O3"
 
@@ -810,7 +850,7 @@ class ABOReportParser:
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "O2/B"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
@@ -850,8 +890,12 @@ class ABOReportParser:
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning = determine_a_subtype()
-                if a_subtype:
+                a_subtype, a_subtype_warning, a_subtype_zygosity = determine_a_subtype()
+                if a_subtype and a_subtype_zygosity == "het":
+                    # One A1 allele (reference/silent at every A2 marker) +
+                    # one subtype allele -- NOT two copies of the subtype.
+                    Phenotype, Genotype, ExtendedGenotype = "A", "AA", f"A1/{a_subtype}"
+                elif a_subtype:
                     Phenotype, Genotype, ExtendedGenotype = a_subtype, "AA", f"{a_subtype}/{a_subtype}"
                 else:
                     Phenotype, Genotype, ExtendedGenotype = "A", "AA", "A/A"
@@ -864,7 +908,7 @@ class ABOReportParser:
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning = determine_a_subtype()
+                a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "AB", "AB"
                 ExtendedGenotype = f"{a_subtype}/B" if a_subtype else "A/B"
 
