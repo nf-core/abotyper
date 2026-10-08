@@ -3,16 +3,19 @@ description: "Suggested text and references to use when describing pipeline usag
 section_name: "nf-core/abotyper Methods Description"
 section_href: "https://github.com/nf-core/abotyper"
 plot_type: "html"
-## TODO nf-core: Update the HTML below to your preferred methods description, e.g. add publication citation for this pipeline
-## You inject any metadata in the Nextflow '${workflow}' object
+## ABO blood group characterization pipeline using third-generation sequencing
+## Based on methodology described in Mobegi et al., 2025
 data: |
   <h4>Methods</h4>
-  <p>Data was processed using nf-core/abotyper v${workflow.manifest.version} ${doi_text} of the nf-core collection of workflows (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
+  <p>ABO blood group characterization was performed using nf-core/abotyper v${workflow.manifest.version} ${doi_text} of the nf-core collection of workflows (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
+  <p>This pipeline implements a third-generation sequencing (TGS) workflow for comprehensive determination of clinically relevant ABO phenotypes from DNA samples, based on the methodology described by <a href="https://doi.org/10.3390/ijms26125443">Mobegi <em>et al.</em>, 2025</a>. The analysis focuses on genomic regions spanning exons 2-7 of the ABO gene and identifies ABO blood group phenotypes based on key polymorphic positions.</p>
+  <p>ABO phenotype prediction is performed by analyzing single-nucleotide variants at five critical positions: gDNA261 (rs8176719), gDNA796 (rs8176746), gDNA803 (rs8176747), gDNA802 (rs41302905), and gDNA805 (caused by gDNA804, rs782782485). This comprehensive variant analysis enables differentiation between the four clinically relevant ABO blood group phenotypes, including O subtypes that lack the distinguishing deletion (rs8176719) but exhibit variations in exon 7.</p>
   <p>The pipeline was executed with Nextflow v${workflow.nextflow.version} (<a href="https://doi.org/10.1038/nbt.3820">Di Tommaso <em>et al.</em>, 2017</a>) with the following command:</p>
   <pre><code>${workflow.commandLine}</code></pre>
   <p>${tool_citations}</p>
   <h4>References</h4>
   <ul>
+    <li>Mobegi, F. M., Bruce, S., El-Lagta, N., Ayora, F., Matern, B. M., Groeneweg, M., D'Orsogna, L. J., & De Santis, D. (2025). Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing. <em>International Journal of Molecular Sciences</em>, 26(12), 5443. doi: <a href="https://doi.org/10.3390/ijms26125443">10.3390/ijms26125443</a></li>
     <li>Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., & Notredame, C. (2017). Nextflow enables reproducible computational workflows. Nature Biotechnology, 35(4), 316-319. doi: <a href="https://doi.org/10.1038/nbt.3820">10.1038/nbt.3820</a></li>
     <li>Ewels, P. A., Peltzer, A., Fillinger, S., Patel, H., Alneberg, J., Wilm, A., Garcia, M. U., Di Tommaso, P., & Nahnsen, S. (2020). The nf-core framework for community-curated bioinformatics pipelines. Nature Biotechnology, 38(3), 276-278. doi: <a href="https://doi.org/10.1038/s41587-020-0439-x">10.1038/s41587-020-0439-x</a></li>
     <li>Grüning, B., Dale, R., Sjödin, A., Chapman, B. A., Rowe, J., Tomkins-Tinch, C. H., Valieris, R., Köster, J., & Bioconda Team. (2018). Bioconda: sustainable and comprehensive software distribution for the life sciences. Nature Methods, 15(7), 475–476. doi: <a href="https://doi.org/10.1038/s41592-018-0046-7">10.1038/s41592-018-0046-7</a></li>

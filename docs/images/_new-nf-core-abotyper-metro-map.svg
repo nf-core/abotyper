@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1040" role="img" aria-label="Metro-map diagram of the nf-core/abotyper pipeline in six numbered zones: 1 Reads Quality Control (FastQC), 2 Alignment and Alignment QC (Minimap2, SAMtools sort/index/stats/flagstat/coverage), 3 Variant calling and quantification (Clair3 with phasing, ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES), 4 Resolving ABO phenotype and genotype (ABO_GETABOSNPS, ABO_SNPS2PHENO), 5 Post-processing QC export (VARIANTS_QC: bcftools norm, view, query -- branches off Clair3 and does not feed zone 4), 6 Final QC and reporting (MultiQC).">
+  <defs>
+    <marker id="tri-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#22A96B"/>
+    </marker>
+    <marker id="tri-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#D98B2B"/>
+    </marker>
+    <g id="doc">
+      <path d="M0,0 H50 L64,14 V76 H0 Z" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="2.5"/>
+      <path d="M50,0 L50,14 L64,14 Z" fill="none" stroke="#1B1F1C" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="0" y="50" width="64" height="26" fill="#1B1F1C"/>
+    </g>
+  </defs>
+  <style>
+    text { font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .mono { font-family: "IBM Plex Mono", "Consolas", monospace; }
+    .doclabel { font-weight: 700; font-size: 13px; fill: #FFFFFF; text-anchor: middle; }
+    .doccaption { font-size: 10px; fill: #8A9089; text-anchor: middle; }
+    .stationlabel { font-weight: 700; font-size: 15px; fill: #171B18; text-anchor: middle; }
+    .stationsub { font-weight: 400; font-size: 10.5px; fill: #59635C; text-anchor: middle; }
+  </style>
+
+  <rect x="0" y="0" width="2000" height="1040" fill="#F4F5F3"/>
+
+  <!-- ===================== ZONE BACKGROUNDS ===================== -->
+  <g>
+    <rect x="20" y="20" width="640" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="630" y="472" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">1</text>
+
+    <rect x="676" y="20" width="744" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="1390" y="472" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">2</text>
+
+    <rect x="1436" y="20" width="544" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="1950" y="472" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">3</text>
+
+    <rect x="660" y="536" width="340" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="970" y="988" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">6</text>
+
+    <rect x="1016" y="536" width="400" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="1386" y="988" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">5</text>
+
+    <rect x="1432" y="536" width="548" height="480" rx="14" fill="#E7E8E3"/>
+    <text x="1950" y="988" text-anchor="end" font-size="46" font-weight="700" fill="#8A9089" opacity="0.55">4</text>
+  </g>
+
+  <!-- ===================== RAW INPUTS (top-left) ===================== -->
+  <g>
+    <rect x="70" y="62" width="70" height="88" rx="4" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="2" transform="translate(10,-10) rotate(4 105 106)"/>
+    <rect x="70" y="62" width="70" height="88" rx="4" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="2" transform="translate(4,-4) rotate(-3 105 106)"/>
+    <rect x="70" y="62" width="70" height="88" rx="4" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="2.5"/>
+    <text x="105" y="112" text-anchor="middle" font-weight="700" font-size="13" fill="#171B18">fastq</text>
+    <text x="105" y="172" text-anchor="middle" font-size="11" fill="#8A9089">Raw reads</text>
+
+    <rect x="70" y="210" width="70" height="88" rx="4" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="2.5"/>
+    <rect x="70" y="248" width="70" height="26" fill="#1B1F1C"/>
+    <text x="105" y="266" text-anchor="middle" font-weight="700" font-size="12" fill="#FFFFFF">CSV</text>
+    <text x="105" y="320" text-anchor="middle" font-size="11" fill="#8A9089">Samplesheet</text>
+
+    <path d="M150,106 C220,106 240,300 320,300" fill="none" stroke="#22A96B" stroke-width="5"/>
+    <path d="M150,254 C220,254 240,300 320,300" fill="none" stroke="#22A96B" stroke-width="5"/>
+    <polygon points="150,98 168,106 150,114" fill="#8C2F26"/>
+    <polygon points="150,246 168,254 150,262" fill="#8C2F26"/>
+  </g>
+
+  <!-- ===================== MAIN GREEN LINE ===================== -->
+  <g fill="none" stroke="#22A96B" stroke-width="5">
+    <path d="M320,300 L410,300"/>
+    <path d="M410,300 L676,300"/>
+    <path d="M964,300 L1194,300"/>
+    <path d="M1284,300 L1436,300"/>
+    <path d="M1580,300 L1830,300"/>
+    <path d="M1930,300 C1980,300 1980,780 1930,780" marker-end="url(#tri-green)"/>
+    <path d="M1650,780 L1810,780"/>
+  </g>
+  <g fill="none" stroke="#22A96B" stroke-width="5" marker-end="url(#tri-green)">
+    <path d="M344,300 L406,300"/>
+    <path d="M540,300 L672,300"/>
+    <path d="M876,300 L960,300"/>
+    <path d="M1116,300 L1190,300"/>
+    <path d="M1236,300 L1280,300"/>
+    <path d="M1478,300 L1576,300"/>
+    <path d="M1520,780 L1646,780"/>
+    <path d="M1264,780 L1470,780"/>
+    <path d="M980,780 L1012,780"/>
+    <path d="M700,780 L892,780"/>
+  </g>
+
+  <!-- ===================== AMBER BRANCH: VARIANTS_QC off Clair3 (terminal) ===================== -->
+  <path d="M1520,334 L1520,460 C1520,520 1220,520 1220,600" fill="none" stroke="#D98B2B" stroke-width="5" marker-end="url(#tri-amber)"/>
+  <text x="1560" y="470" font-size="11" fill="#D98B2B" class="mono">vcf</text>
+
+  <!-- ===================== STATIONS: ZONE 1 ===================== -->
+  <circle cx="410" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="410" y="358" class="stationlabel">FastQC</text>
+  <use href="#doc" x="378" y="150"/>
+  <text x="410" y="196" class="doclabel">HTML</text>
+  <text x="410" y="224" class="doccaption">fastqc report</text>
+  <line x1="410" y1="226" x2="410" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="398" y1="246" x2="422" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <!-- ===================== STATIONS: ZONE 2 ===================== -->
+  <circle cx="820" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="820" y="352" class="stationlabel">Minimap2</text>
+  <text x="820" y="368" class="stationsub">align (single ref)</text>
+  <use href="#doc" x="788" y="150"/>
+  <text x="820" y="196" class="doclabel">Fasta</text>
+  <text x="820" y="224" class="doccaption">NG_006669.2</text>
+  <line x1="820" y1="226" x2="820" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="808" y1="246" x2="832" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="1020" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="1020" y="352" class="stationlabel">SAMtools</text>
+  <text x="1020" y="368" class="stationsub">sort; index</text>
+  <use href="#doc" x="958" y="150"/>
+  <text x="990" y="196" class="doclabel">BAM</text>
+  <use href="#doc" x="1032" y="150"/>
+  <text x="1064" y="196" class="doclabel">BAI</text>
+  <line x1="1020" y1="226" x2="1020" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1008" y1="246" x2="1032" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="1235" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="1235" y="352" class="stationlabel">SAMtools</text>
+  <text x="1235" y="368" class="stationsub">stats; flagstat; coverage</text>
+  <use href="#doc" x="1173" y="150"/>
+  <text x="1205" y="196" class="doclabel">stats</text>
+  <use href="#doc" x="1247" y="150"/>
+  <text x="1279" y="196" class="doclabel">flag</text>
+  <line x1="1235" y1="226" x2="1235" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1223" y1="246" x2="1247" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <!-- ===================== STATIONS: ZONE 3 ===================== -->
+  <circle cx="1520" cy="300" r="34" fill="#FFFFFF" stroke="#22A96B" stroke-width="4"/>
+  <text x="1520" y="352" class="stationlabel">Clair3</text>
+  <text x="1520" y="368" class="stationsub">call + phase</text>
+  <use href="#doc" x="1488" y="146"/>
+  <text x="1520" y="192" class="doclabel">gVCF</text>
+  <text x="1520" y="220" class="doccaption">+ phased VCF</text>
+  <line x1="1520" y1="222" x2="1520" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1508" y1="244" x2="1532" y2="244" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="1725" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="1725" y="345" class="stationlabel" font-size="12.5">ABO_CLAIR2</text>
+  <text x="1725" y="359" class="stationlabel" font-size="12.5">METRICS</text>
+  <use href="#doc" x="1693" y="150"/>
+  <text x="1725" y="196" class="doclabel">TSV</text>
+  <text x="1725" y="224" class="doccaption">AlignmentStatistics</text>
+  <line x1="1725" y1="226" x2="1725" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1713" y1="246" x2="1737" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="1885" cy="300" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="1885" y="345" class="stationlabel" font-size="12.5">ABO_CLAIR2</text>
+  <text x="1885" y="359" class="stationlabel" font-size="12.5">HAPLOTYPES</text>
+  <use href="#doc" x="1853" y="150"/>
+  <text x="1885" y="196" class="doclabel">TSV</text>
+  <text x="1885" y="224" class="doccaption">Haplotypes</text>
+  <line x1="1885" y1="226" x2="1885" y2="266" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1873" y1="246" x2="1897" y2="246" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <!-- ===================== STATIONS: ZONE 4 (bottom-right) ===================== -->
+  <circle cx="1930" cy="780" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="1930" y="838" class="stationlabel" font-size="13">ABO_GETABOSNPS</text>
+  <use href="#doc" x="1898" y="628"/>
+  <text x="1930" y="674" class="doclabel">TXT</text>
+  <text x="1930" y="702" class="doccaption">ABOPhenotype</text>
+  <line x1="1930" y1="704" x2="1930" y2="746" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1918" y1="726" x2="1942" y2="726" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="1650" cy="780" r="34" fill="#FFFFFF" stroke="#22A96B" stroke-width="4"/>
+  <text x="1650" y="832" class="stationlabel" font-size="13">ABO_SNPS2PHENO</text>
+  <text x="1650" y="848" class="stationsub">genotype + phenotype</text>
+  <use href="#doc" x="1618" y="626"/>
+  <text x="1650" y="672" class="doclabel">XLSX</text>
+  <text x="1650" y="700" class="doccaption">ABO_result</text>
+  <line x1="1650" y1="702" x2="1650" y2="746" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1638" y1="724" x2="1662" y2="724" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <!-- ===================== STATIONS: ZONE 5 (bottom-middle, amber branch) ===================== -->
+  <circle cx="1220" cy="780" r="32" fill="#FFFFFF" stroke="#D98B2B" stroke-width="4"/>
+  <text x="1220" y="832" class="stationlabel" font-size="12.5">VARIANTS_QC</text>
+  <text x="1220" y="848" class="stationsub">bcftools norm &#183; view &#183; query</text>
+  <use href="#doc" x="1158" y="626"/>
+  <text x="1190" y="672" class="doclabel">VCF</text>
+  <use href="#doc" x="1232" y="626"/>
+  <text x="1264" y="672" class="doclabel">TSV</text>
+  <text x="1220" y="700" class="doccaption">panel-filtered, review only</text>
+  <line x1="1220" y1="702" x2="1220" y2="746" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="1208" y1="724" x2="1232" y2="724" stroke="#1B1F1C" stroke-width="2.5"/>
+  <text x="1220" y="920" text-anchor="middle" font-size="11" fill="#D98B2B" font-style="italic">branches off zone 3 &#183; not read by zone 4</text>
+
+  <!-- ===================== STATIONS: ZONE 6 (bottom-left) ===================== -->
+  <use href="#doc" x="668" y="700"/>
+  <text x="700" y="746" class="doclabel">XLSX</text>
+  <text x="700" y="774" class="doccaption">ABO results</text>
+  <line x1="700" y1="670" x2="700" y2="700" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <circle cx="820" cy="780" r="32" fill="#FFFFFF" stroke="#1B1F1C" stroke-width="3"/>
+  <text x="820" y="832" class="stationlabel">MultiQC</text>
+  <use href="#doc" x="788" y="880"/>
+  <text x="820" y="926" class="doclabel">HTML</text>
+  <line x1="820" y1="812" x2="820" y2="878" stroke="#1B1F1C" stroke-width="2.5"/>
+  <line x1="808" y1="846" x2="832" y2="846" stroke="#1B1F1C" stroke-width="2.5"/>
+
+  <!-- ===================== ZONE LABELS ===================== -->
+  <g font-size="13.5" font-weight="700" fill="#59635C">
+    <text x="42" y="46">Reads Quality Control</text>
+    <text x="698" y="46">Alignment &amp; Alignment QC</text>
+    <text x="1458" y="46">Variant Calling &amp; Quantification</text>
+    <text x="682" y="562">Final QC &amp; Reporting</text>
+    <text x="1038" y="562">Post-processing (QC export)</text>
+    <text x="1454" y="562">Resolving ABO Phenotype &amp; Genotype</text>
+  </g>
+
+  <!-- ===================== LEGEND / STAGE KEY ===================== -->
+  <g>
+    <text x="20" y="600" font-size="26" font-weight="700" fill="#22A96B">nf-core/</text>
+    <text x="20" y="632" font-size="26" font-weight="700" fill="#171B18">abotyper</text>
+
+    <text x="20" y="672" font-size="15" font-weight="700" fill="#171B18" letter-spacing="0.06em">STAGE</text>
+    <g font-size="13.5" fill="#171B18">
+      <text x="20" y="700">1. Reads Quality Control</text>
+      <text x="20" y="722">2. Alignment to reference &amp; Alignment QC</text>
+      <text x="20" y="744">3. Variant calling and quantification (Clair3)</text>
+      <text x="20" y="766">4. Resolving ABO phenotype and genotype</text>
+      <text x="20" y="788">5. Post-processing (panel QC export)</text>
+      <text x="20" y="810">6. Final QC and reporting</text>
+    </g>
+    <text x="20" y="850" font-size="12" fill="#8A9089">License: CC-BY</text>
+  </g>
+</svg>
