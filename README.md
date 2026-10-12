@@ -25,7 +25,7 @@
 **nf-core/abotyper** is a bioinformatics pipeline that analyses data obtained from Third Generation Sequencing of the `Homo sapiens ABO, alpha 1-3-N-acetylgalactosaminyltransferase and alpha 1-3-galactosyltransferase` (ABO) gene to deduce the ABO blood type.<br/>
 It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related Single nucleotide variants (SVNs).
 
-![nf-core/abotyper metro map](docs/images/nf-core-abotyper-metro-map.jpg)
+![nf-core/abotyper metro map](docs/images/nf-core-abotyperv2-metro-map.jpg)
 
 ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
 
