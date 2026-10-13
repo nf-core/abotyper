@@ -1,9 +1,8 @@
 <h1>
-  <picture>
-    <source media="(prefers-color-scheme: light)" srcset="docs/images/nf-core-abotyper_logo_dark.png">
-    <img alt="nf-core/abotyper" src="docs/images/nf-core-abotyper_logo_light.png">
-  </picture>
+  <img alt="nf-core/abotyper" src="docs/images/nf-core-abotyper_logo_light.png#gh-dark-mode-only">
+  <img alt="nf-core/abotyper" src="docs/images/nf-core-abotyper_logo_dark.png#gh-light-mode-only">
 </h1>
+
 
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/nf-core/abotyper)
 [![GitHub Actions CI Status](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml)
