@@ -21,6 +21,24 @@ gVCF non-variant blocks (ALT=<NON_REF>, INFO=END=...) give real
 reference-depth coverage even where no variant is called -- this is
 what recovers indel signal that Clair3's plain (non-gvcf) merge_output
 silently drops (see c.1061delC / IMM-26-23099 in the panel notes).
+
+No-evidence positions (v1.1.0)
+------------------------------
+Before v1.1.0, a position with neither a matching variant record nor a
+reference block was written as 100% reference at the sample's MEDIAN block
+depth. That made "Clair3 said nothing here" indistinguishable from a
+confirmed reference call, and it gave every such position a depth it never
+had. Now each panel position is classified as:
+
+  variant   a record matched the panel alt allele      -> depth = record DP
+  record    a record at the position, other allele     -> depth = record DP,
+                                                         Match = real ref fraction
+  block     covered by a gVCF reference block          -> depth = block MIN_DP, 100% ref
+  none      nothing covers the position                -> Depth 0, Match 0 (no evidence)
+
+Positions with no evidence are listed on stderr. The aggregator reports them
+as "no evidence" rather than as reference. --legacy-fallback restores the old
+behaviour for reproducing earlier runs.
 """
 
 from __future__ import annotations
@@ -35,7 +53,7 @@ from typing import Dict, List, Optional, Tuple
 
 from abo_panel import load_panel, Panel, VariantMarker
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 TSV_HEADER = "\t".join([
     "Ref_Position_1based", "Ref_Base", "Match_Percent", "Mismatch_Percent",
@@ -44,6 +62,10 @@ TSV_HEADER = "\t".join([
 ])
 
 INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
+# The +-15bp window is for FINDING an indel record that the caller anchored away from the
+# nominal position. Evidence that a position was actually covered (a reference block, or a
+# record of another allele) must be tight: a block 15bp away says nothing about this base.
+EVIDENCE_WINDOW = 2
 INFO_END_RE = re.compile(r"(?:^|;)END=(\d+)")
 BUCKET_MAP = {"del": "Del", "dup": "Ins", "ins": "Ins"}
 
@@ -179,13 +201,37 @@ def find_best_match(
     return best_rec, best_pct
 
 
+def nearest_record(records_by_pos: Dict[int, List[VcfRecord]], center_pos: int,
+                   window: int) -> Optional[VcfRecord]:
+    """Closest VCF record (any allele, with depth) within +-window of center_pos."""
+    for off in range(0, window + 1):
+        for p in ((center_pos,) if off == 0 else (center_pos - off, center_pos + off)):
+            for rec in records_by_pos.get(p, []):
+                if rec.dp:
+                    return rec
+    return None
+
+
+def block_dp_near(pos: int, window: int, ref_blocks: RefBlocks) -> int:
+    """Reference-block depth at pos, or at the nearest covered position within +-window."""
+    for off in range(0, window + 1):
+        for p in ((pos,) if off == 0 else (pos - off, pos + off)):
+            d = dp_at(p, ref_blocks)
+            if d:
+                return d
+    return 0
+
+
 def marker_row(
     marker: VariantMarker,
     records_by_pos: Dict[int, List[VcfRecord]],
     ref_blocks: RefBlocks,
     fallback_dp: float,
-) -> str:
-    """Build one TSV row (matching TSV_HEADER) for a single panel marker."""
+    legacy_fallback: bool = False,
+) -> Tuple[str, str]:
+    """Build one TSV row (matching TSV_HEADER) for a single panel marker.
+    Returns (row, evidence); evidence is 'variant', 'record', 'block',
+    'fallback' (legacy only) or 'none'."""
     row = {"A": 0.0, "G": 0.0, "C": 0.0, "T": 0.0, "Del": 0.0, "Ins": 0.0}
     pos = marker.resolved_position()
     window = 15 if needs_padding(marker) else 0
@@ -197,26 +243,52 @@ def marker_row(
         if rec is not None and matched_rec is None:
             matched_rec = rec
 
-    block_dp = dp_at(pos, ref_blocks)
-    depth = matched_rec.dp if matched_rec is not None else (block_dp or int(fallback_dp))
+    ev_rec = matched_rec
+    if matched_rec is not None:
+        evidence, depth = "variant", matched_rec.dp
+    else:
+        ev_rec = nearest_record(records_by_pos, pos, min(window, EVIDENCE_WINDOW))
+        if ev_rec is not None:
+            evidence, depth = "record", ev_rec.dp
+        else:
+            bdp = block_dp_near(pos, min(window, EVIDENCE_WINDOW), ref_blocks)
+            if bdp:
+                evidence, depth = "block", bdp
+            elif legacy_fallback:
+                evidence, depth = "fallback", int(fallback_dp)
+            else:
+                evidence, depth = "none", 0
 
     ref_base = marker.ref_base if marker.ref_base not in ("REF", "") else "N"
-    if marker.ref_base not in ("REF", ""):
-        ref_letter = marker.ref_base.strip().upper()
-        if matched_rec is not None and matched_rec.dp and matched_rec.ad:
-            ref_pct = 100.0 * matched_rec.ad[0] / matched_rec.dp
-        else:
-            ref_pct = 100.0  # confirmed reference (gVCF block) or no evidence at all
-        row[ref_letter] = ref_pct
-        mismatch = sum(row[b] for b in ("A", "G", "C", "T", "Del", "Ins")) - row[ref_letter]
-    else:
-        mismatch = sum(row.values())
-
-    match_pct = max(0.0, 100.0 - mismatch)
-    mismatch = max(0.0, mismatch)
+    ref_letter = marker.ref_base.strip().upper() if marker.ref_base not in ("REF", "") else None
 
     def fmt(v: float) -> str:
         return str(int(v)) if float(v).is_integer() else f"{v:.2f}"
+
+    if evidence == "none":
+        # nothing covers this position: do not claim a reference call
+        return "\t".join([str(pos), ref_base, "0", "0", "0", "0", "0", "0", "0", "0", "0"]), evidence
+
+    alt_sum = sum(row.values())
+    if ref_letter:
+        if ev_rec is not None and ev_rec.dp and ev_rec.ad:
+            ref_pct = 100.0 * ev_rec.ad[0] / ev_rec.dp
+        else:
+            ref_pct = 100.0  # gVCF reference block (or legacy fallback)
+        row[ref_letter] = ref_pct
+        mismatch = alt_sum
+    else:
+        ref_pct = None
+        mismatch = alt_sum
+
+    if evidence == "record":
+        # a record sits here but carries an allele the panel does not score;
+        # report the real reference fraction, and count the rest as mismatch
+        match_pct = ref_pct if ref_pct is not None else max(0.0, 100.0 - alt_sum)
+        mismatch = max(0.0, 100.0 - match_pct)
+    else:
+        match_pct = max(0.0, 100.0 - mismatch)
+        mismatch = max(0.0, mismatch)
 
     return "\t".join([
         str(pos), ref_base,
@@ -224,10 +296,12 @@ def marker_row(
         fmt(row["Ins"]), fmt(row["Del"]),
         fmt(row["A"]), fmt(row["G"]), fmt(row["C"]), fmt(row["T"]),
         str(depth),
-    ])
+    ]), evidence
 
 
-def convert(gvcf_path: Path, panel: Panel, output_path: Path) -> int:
+def convert(gvcf_path: Path, panel: Panel, output_path: Path,
+            legacy_fallback: bool = False,
+            no_evidence_out: Optional[List[str]] = None) -> int:
     records_by_pos, ref_blocks = parse_gvcf(gvcf_path)
     fallback_dp = median(ref_blocks[2])
 
@@ -235,7 +309,10 @@ def convert(gvcf_path: Path, panel: Panel, output_path: Path) -> int:
     with open(output_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(TSV_HEADER + "\n")
         for marker in markers:
-            f.write(marker_row(marker, records_by_pos, ref_blocks, fallback_dp) + "\n")
+            line, evidence = marker_row(marker, records_by_pos, ref_blocks, fallback_dp, legacy_fallback)
+            if evidence == "none" and no_evidence_out is not None:
+                no_evidence_out.append(marker.cdna_change.split()[0])
+            f.write(line + "\n")
     return len(markers)
 
 
@@ -248,12 +325,21 @@ def main() -> int:
     ap.add_argument("-o", "--output", required=True, help="Output *.AlignmentStatistics.tsv path")
     ap.add_argument("--panel", default="abo_variant_panel.yaml",
                      help="Path to the variant panel (.yaml/.json/.csv/.tsv). Default: %(default)s")
+    ap.add_argument("--legacy-fallback", action="store_true",
+                     help="Pre-1.1.0 behaviour: a position with no record and no reference block is written "
+                          "as 100%% reference at the sample's median block depth instead of as 'no evidence'.")
     ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = ap.parse_args()
 
     panel = load_panel(args.panel)
-    n = convert(Path(args.gvcf), panel, Path(args.output))
+    no_ev: List[str] = []
+    n = convert(Path(args.gvcf), panel, Path(args.output),
+                legacy_fallback=args.legacy_fallback, no_evidence_out=no_ev)
     print(f"Wrote {n} panel-position rows to {args.output}")
+    if no_ev:
+        print(f"WARNING: no gVCF evidence (no variant record and no reference block) at {len(no_ev)} "
+              f"position(s): {', '.join(no_ev)}. Written as depth 0 / no match, not as reference.",
+              file=sys.stderr)
     return 0
 
 

@@ -37,7 +37,7 @@ __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg"]
 __license__ = "GPL"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
@@ -51,8 +51,13 @@ class SampleRenamer:
     REQUIRED_COLUMNS = ["Acc#", "Patient Name"]
     MIN_READ_THRESHOLD = 20
     SAMPLE_ID_PATTERN = r"(.+)_barcode\d+$"
+    # Added to final_export.csv by aggregate_abo_reports.py 2.1.0. Kept in the
+    # with-sequencingAcc file; dropped from the MatchPoint file unless asked for.
+    QC_COLUMNS = ["QC Status", "QC Flags", "A2 Trace", "Evidence Basis"]
 
-    def __init__(self, loglevel: str = "INFO"):
+    def __init__(self, loglevel: str = "INFO", keep_qc_columns: bool = False, exclude_review: bool = False):
+        self.keep_qc_columns = keep_qc_columns
+        self.exclude_review = exclude_review
         self._setup_logging(loglevel)
         self.logger = logging.getLogger(__name__)
 
@@ -190,6 +195,19 @@ class SampleRenamer:
             "Grid_number": "Sample ID"
         })
 
+    def report_qc_status(self, df: pd.DataFrame) -> None:
+        """Say how many exported rows the aggregator marked REVIEW."""
+        if "QC Status" not in df.columns:
+            return
+        n_review = int((df["QC Status"] == "REVIEW").sum())
+        if n_review:
+            action = "EXCLUDED from" if self.exclude_review else "still included in"
+            self.logger.warning(
+                f"{n_review} of {len(df)} rows are flagged REVIEW by the aggregator (see 'QC Flags' in the "
+                f"with-sequencingAcc file); they are {action} the MatchPoint file.")
+        else:
+            self.logger.info("No rows flagged REVIEW by the aggregator.")
+
     def create_copy_without_sequencing_acc(self, df: pd.DataFrame) -> pd.DataFrame:
         df_copy = df.copy()
         if "SequencingAcc#" in df_copy.columns:
@@ -296,7 +314,12 @@ class SampleRenamer:
             merged_df = self.rename_columns(merged_df)
 
             # Only the version without accession numbers gets filtered/cleaned.
+            self.report_qc_status(merged_df)
             df_without_acc = self.create_copy_without_sequencing_acc(merged_df)
+            if self.exclude_review and "QC Status" in df_without_acc.columns:
+                df_without_acc = df_without_acc[df_without_acc["QC Status"] != "REVIEW"]
+            if not self.keep_qc_columns:
+                df_without_acc = df_without_acc.drop(columns=[c for c in self.QC_COLUMNS if c in df_without_acc.columns])
             df_without_acc = self.filter_and_clean_data(df_without_acc)
 
             output_paths = self.write_output_files(merged_df, df_without_acc, output_dir)
@@ -338,6 +361,18 @@ Examples:
         help="Output directory for renamed files (default: current directory)"
     )
     parser.add_argument(
+        "--keep-qc-columns",
+        action="store_true",
+        help="Keep the QC columns (QC Status, QC Flags, A2 Trace, Evidence Basis) in the MatchPoint file. "
+             "Default: they are kept only in the with-sequencingAcc file."
+    )
+    parser.add_argument(
+        "--exclude-review",
+        action="store_true",
+        help="Leave samples the aggregator marked REVIEW out of the MatchPoint file (they stay in the "
+             "with-sequencingAcc file). Default: include them and log a warning."
+    )
+    parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Enable verbose logging"
@@ -351,7 +386,8 @@ Examples:
     args = parser.parse_args()
 
     loglevel = "DEBUG" if args.verbose else "INFO"
-    renamer = SampleRenamer(loglevel=loglevel)
+    renamer = SampleRenamer(loglevel=loglevel, keep_qc_columns=args.keep_qc_columns,
+                            exclude_review=args.exclude_review)
 
     try:
         final_export_path = Path(args.final_export)

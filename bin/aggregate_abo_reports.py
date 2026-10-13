@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import glob
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
@@ -43,6 +44,44 @@ the shared B-lineage 7-SNP backbone present in nearly all B/B3/Bweak/Bel/
 cisAB/BA alleles. Bw.06's actual private variant is c.1036A>G (not yet in
 the exon6/7 amplicon's position set -- add via the panel once calibrated
 against the combined amplicon).
+
+QC / failure capture (v2.1.0)
+-----------------------------
+Calls are NOT changed. Each sample is annotated with four extra Notes
+columns -- A2Trace, EvidenceBasis, QCStatus, QCFlags -- and the run prints
+(and writes to ABO_run_qc.txt) a QC summary. The checks come from an audit of
+a 6,218-sample run and from reading the upstream converters:
+
+  * A2 traceability. c.467C>T (SNP) and c.1061delC (indel) are the two
+    primary A2 markers. If only one is present, the A subtype is traced as
+    "partial" and flagged. Observed: 84 samples had c.467 variant without
+    c.1061delC; both known A2 donors that came back as plain "A" had exactly
+    this pattern. Het c.467 without the deletion falls through
+    determine_a_subtype() to a bare "A"; hom c.467 without the deletion is
+    reported as "A1". Both are flagged.
+  * A subtype contradicted by evidence (A1 with an A2-lineage marker, A2 with
+    no primary A2 marker) and A1 calls made on very few reads.
+  * Missing evidence. A position absent from the report is zero-filled, and
+    clair2metrics.py >= 1.1.0 writes an all-zero row for a position nothing
+    covers. Before 2.1.0 such a row was typed as a call (heterozygous at a
+    SNP primary, "variant" at a named marker) and ReadReliability ignored
+    zero-read positions. Now a zero row gives no call at that position (so a
+    missing primary makes the genotype Unknown), ReadReliability is "Very
+    Low", the position is listed in QCFlags and EvidenceBasis = "no data".
+  * Reference-only calls. A genotype made only because no variant was seen at
+    any primary position (EvidenceBasis = "reference-only") cannot be told
+    apart from a failed call. clair2metrics.py writes 100% reference with the
+    sample median depth when a position has neither a variant record nor a
+    gVCF reference block, so this needs the run-level checks below.
+  * Marker inconsistency: c.796 and c.803 are both B-defining and must
+    agree; "Unknown" genotypes get an explicit reason.
+  * Replicates. Samples sharing a Sequencing_ID must agree on genotype and on
+    A2 evidence; disagreements mark every replicate for review. In the audit
+    85 of 110 discordant replicate groups had one A1/A1 replicate.
+  * #Reads caveat. In the audited run #Reads was identical at every primary
+    position of every sample (a sample-wide read count, not depth at the
+    site), so ReadReliability and the low-read flag cannot confirm
+    site-level evidence. The run summary warns when this is the case.
 
 Part of the nf-core/abotyper pipeline: https://github.com/fmobegi/nf-core-abotyper
 """
@@ -184,12 +223,17 @@ class ABOReportParser:
     panel (see abo_panel.py).
     """
 
-    def __init__(self, input_dir, panel: Panel, default_barcode="barcode00"):
+    def __init__(self, input_dir, panel: Panel, default_barcode="barcode00",
+                 min_depth=100, qc_report="ABO_run_qc.txt"):
         self.input_dir = input_dir
         self.panel = panel
         self.default_barcode = default_barcode
         self.results = []
         self.failed_samples = []
+        self.min_depth = min_depth            # reads below which an A1 call is flagged
+        self.qc_report_path = qc_report       # run-level QC text report ("" disables)
+        self.qc_records = []                  # one dict per sample, for the run summary
+        self.replicate_stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
 
         # Positions actually usable in THIS run (resolved via amplicon_pos
         # if calibrated, else legacy exon6/exon7 coordinate). Anything else
@@ -242,7 +286,8 @@ class ABOReportParser:
                 self.position_columns.append(col_label)
                 header_cols += [col_label] * 10
 
-        self.notes_columns = ["ASubtype", "ReadReliability", "PhaseConfidence", "BwSubtype"]
+        self.notes_columns = ["ASubtype", "ReadReliability", "PhaseConfidence", "BwSubtype",
+                              "A2Trace", "EvidenceBasis", "QCStatus", "QCFlags"]
         header_cols += ["Notes"] * len(self.notes_columns)
 
         column_metrics = ["#Reads", "Mat", "Mis", "Ins", "Del", "A", "G", "C", "T", "Type"]
@@ -384,6 +429,21 @@ class ABOReportParser:
     # Type caller
     # -----------------------------------------------------------------
 
+    @staticmethod
+    def _no_evidence_row(row_values: dict) -> bool:
+        """True when a position carries no evidence at all: Mat, Mis, Ins and Del are all zero.
+        That is what clair2metrics.py (>=1.1.0) writes for a position nothing covers, and what
+        parse_exon_report() zero-fills for a position missing from the report. Typing such a row
+        would invent a call: both the ref and alt fractions are 0, so the biallelic caller reads
+        it as heterozygous, and the named-marker caller reads "100% non-reference" as a variant."""
+        keys = ("Mat", "Mis", "Ins", "Del")
+        if not all(k in row_values for k in keys):
+            return False
+        try:
+            return sum(float(row_values.get(k) or 0) for k in keys) <= 0
+        except (TypeError, ValueError):
+            return False
+
     def get_type_generic(self, exon_label: str, pos: int, row: pd.Series) -> str:
         """Determine the blood-type label for a single position, using the
         panel's call_rule for that position."""
@@ -399,7 +459,10 @@ class ABOReportParser:
             "A": row.get("A", 0), "G": row.get("G", 0),
             "C": row.get("C", 0), "T": row.get("T", 0),
             "Del": row.get("Del", 0), "Ins": row.get("Ins", 0),
+            "Mat": row.get("Mat", 0), "Mis": row.get("Mis", 0),
         }
+        if self._no_evidence_row(row_values):
+            return ""
 
         if marker.call_rule == "primary_biallelic":
             return self._call_primary_biallelic_row(marker, row_values)
@@ -454,6 +517,9 @@ class ABOReportParser:
         ref_call_label/alt_call_label, so re-labelling the panel can never
         again silently break genotype assignment.
         """
+
+        if self._no_evidence_row(row_values):
+            return "none"
 
         def pct_of(base):
             if base is None:
@@ -567,9 +633,12 @@ class ABOReportParser:
                         "A": df.at[0, (pos_key, "A")], "G": df.at[0, (pos_key, "G")],
                         "C": df.at[0, (pos_key, "C")], "T": df.at[0, (pos_key, "T")],
                         "Del": df.at[0, (pos_key, "Del")],
+                        "Mat": df.at[0, (pos_key, "Mat")], "Mis": df.at[0, (pos_key, "Mis")],
+                        "Ins": df.at[0, (pos_key, "Ins")],
                     })
                 except (KeyError, IndexError):
-                    return pd.Series({"#Reads": 0, "A": 0, "G": 0, "C": 0, "T": 0, "Del": 0})
+                    return pd.Series({"#Reads": 0, "A": 0, "G": 0, "C": 0, "T": 0, "Del": 0,
+                                      "Mat": 0, "Mis": 0, "Ins": 0})
 
             # ----- Resolve the primary markers by their semantic role -----
             # (column label depends on resolved_position(), so look it up
@@ -982,6 +1051,148 @@ class ABOReportParser:
             else:
                 Reliability = "Unknown (no read data)"
 
+            # ----- PART 5: QC / FAILURE CAPTURE (v2.1.0) -----
+            # Annotates the call; never changes it. See the module docstring.
+            qc_review: List[str] = []
+            _copies = {"ref": 0, "het": 1, "hom": 2}
+
+            def cell(col, key):
+                try:
+                    v = df.at[0, (col, key)]
+                    return float(v) if pd.notna(v) else 0.0
+                except (KeyError, IndexError, TypeError, ValueError):
+                    return 0.0
+
+            def alt_frac(marker_id):
+                m = self.panel.get(marker_id)
+                if m is None or m.resolved_position() is None:
+                    return None
+                col = m.column_label()
+                best = 0.0
+                for tok in m.alt_bases():
+                    t = tok.strip().lower()
+                    key = "Del" if t == "del" else ("Ins" if t in ("ins", "dup") else tok.strip().upper())
+                    best = max(best, cell(col, key))
+                return best
+
+            def vstate(frac):
+                if frac is None:
+                    return None
+                return "hom" if frac >= 80 else ("het" if frac >= 20 else "ref")
+
+            s261 = vstate(alt_frac("o1_marker"))
+            s796 = vstate(alt_frac("b_vs_ao_796"))
+            s802 = vstate(alt_frac("o2_marker_802"))
+            s803 = vstate(alt_frac("ao_vs_b_803"))
+            s467 = vstate(alt_frac("a1_a2_467"))
+            s1061 = vstate(alt_frac("a1_a2_1061del"))
+            primary_states = [s for s in (s261, s796, s802, s803, s467, s1061) if s is not None]
+
+            # evidence actually present at each primary position
+            no_evidence, primary_reads, unscored = [], [], []
+            for pid, short in (("o1_marker", "c.261delG"), ("b_vs_ao_796", "c.796C>A"),
+                               ("o2_marker_802", "c.802G>A"), ("ao_vs_b_803", "c.803G>C"),
+                               ("a1_a2_467", "c.467C>T"), ("a1_a2_1061del", "c.1061delC")):
+                m = self.panel.get(pid)
+                if m is None or m.resolved_position() is None:
+                    continue
+                c = m.column_label()
+                reads = cell(c, "#Reads")
+                primary_reads.append(reads)
+                if reads <= 0 or (cell(c, "Mat") + cell(c, "Mis") + cell(c, "Ins") + cell(c, "Del")) <= 0:
+                    no_evidence.append(short)
+                else:
+                    # non-reference reads that are NOT the panel's alt allele (e.g. a different base at
+                    # c.803). 100 - Mat is the non-reference fraction in both the pileup and the Clair3
+                    # metrics formats (Mis is not: it already includes Ins/Del in the Clair3 format).
+                    nonref = 100.0 - cell(c, "Mat")
+                    scored = alt_frac(pid) or 0.0
+                    if nonref - scored >= 20.0:
+                        unscored.append(f"{short} (~{int(round(nonref - scored))}% of reads)")
+            reads_uniform = len(primary_reads) > 1 and len(set(primary_reads)) == 1
+            if unscored:
+                qc_review.append("allele not scored by the panel at " + ", ".join(unscored))
+            if no_evidence:
+                qc_review.append("no evidence at primary position(s) " + ", ".join(no_evidence)
+                                 + " (no call made there)")
+
+            tokens = [t for t in ExtendedGenotype.split("/")] if ExtendedGenotype != "Unknown" else []
+            has_A = any(t.startswith("A") for t in tokens)
+
+            # --- A2 trace ---
+            A2Trace = "n/a (no A allele)"
+            a2_missing = [x for x in ("c.467C>T", "c.1061delC") if x in no_evidence]
+            if has_A and a2_missing:
+                A2Trace = "5 A2 unknown: no data at " + " and ".join(a2_missing)
+                if any(t == "A" for t in tokens):
+                    qc_review.append("A subtype unresolved (generic A)")
+            elif has_A and s467 is not None and s1061 is not None:
+                e467, e1061 = s467 != "ref", s1061 != "ref"
+                if e467 and e1061:
+                    A2Trace = "1 A2 confirmed (c.467 + c.1061delC)"
+                elif e467:
+                    A2Trace = "2 A2 partial: c.467 variant, c.1061delC not called"
+                    qc_review.append("A2 partial: c.467 variant without c.1061delC (possible missed deletion or A1.02)")
+                elif e1061:
+                    A2Trace = "3 A2 partial: c.1061delC variant, c.467 not called"
+                    qc_review.append("A2 partial: c.1061delC variant without c.467")
+                else:
+                    A2Trace = "4 No A2 evidence (both primary markers reference)"
+                a2_tokens = [t for t in tokens if t.startswith("A2")]
+                a1_tokens = [t for t in tokens if t == "A1"]
+                if any(t == "A" for t in tokens):
+                    qc_review.append("A subtype unresolved (generic A)")
+                if a1_tokens and not a2_tokens and not A2Trace.startswith("4"):
+                    qc_review.append("reported A1 despite A2-lineage marker")
+                if a2_tokens and A2Trace.startswith("4"):
+                    qc_review.append("reported A2 without a primary A2 marker")
+                if A2Trace.startswith("4"):
+                    a2_reads = [cell(self.panel.get(p).column_label(), "#Reads")
+                                for p in ("a1_a2_467", "a1_a2_1061del")
+                                if self.panel.get(p) is not None and self.panel.get(p).resolved_position() is not None]
+                    if a2_reads and min(a2_reads) < self.min_depth:
+                        kind = "same count at every primary position" if reads_uniform else "site-level"
+                        qc_review.append(f"A1 call on low read count ({int(min(a2_reads))} < {self.min_depth}, {kind})")
+
+            # --- marker consistency ---
+            b_pair_disagree = s796 is not None and s803 is not None and s796 != s803
+            if b_pair_disagree:
+                qc_review.append(f"B markers disagree (c.796 = {s796}, c.803 = {s803})")
+            if Genotype == "Unknown":
+                b_copies = max(_copies.get(s796, 0), _copies.get(s803, 0))
+                n_alleles = _copies.get(s261, 0) + _copies.get(s802, 0) + b_copies
+                if n_alleles > 2:
+                    qc_review.append(f"Unknown genotype: more than two alleles (O1 x{_copies.get(s261, 0)}, "
+                                     f"O2 x{_copies.get(s802, 0)}, B x{b_copies})")
+                elif not b_pair_disagree:
+                    qc_review.append("Unknown genotype: primary marker pattern not recognised")
+
+            # --- evidence basis ---
+            if no_evidence:
+                EvidenceBasis = "no data"
+            elif unscored:
+                EvidenceBasis = "unscored allele"
+            elif primary_states and all(s == "ref" for s in primary_states):
+                EvidenceBasis = "reference-only"
+            else:
+                EvidenceBasis = "variant evidence"
+
+            QCStatus = "REVIEW" if qc_review else "PASS"
+            QCFlags = "; ".join(qc_review)
+            try:
+                _sid = str(df.at[0, ("", "Sequencing_ID")])
+            except (KeyError, IndexError):
+                _sid = ""
+            self.qc_records.append({
+                "sample": _sid, "genotype": Genotype, "ext": ExtendedGenotype, "a2trace": A2Trace,
+                "evidence": EvidenceBasis, "s261": s261, "reads_uniform": reads_uniform,
+            })
+
+            # A primary position with zero reads is missing evidence, not a position to skip.
+            _zero = [r for r in primary_reads if r <= 0]
+            if _zero:
+                Reliability = "Very Low(<=20 reads)"
+
             ASubtype = a_subtype_warning or ""
 
             if any("cisAB" in w for w in all_subtype_warnings):
@@ -994,6 +1205,10 @@ class ABOReportParser:
             df[("Notes", "ReadReliability")] = Reliability
             df[("Notes", "PhaseConfidence")] = PhaseConfidence
             df[("Notes", "BwSubtype")] = BwSubtype
+            df[("Notes", "A2Trace")] = A2Trace
+            df[("Notes", "EvidenceBasis")] = EvidenceBasis
+            df[("Notes", "QCStatus")] = QCStatus
+            df[("Notes", "QCFlags")] = QCFlags
 
             return df
 
@@ -1008,6 +1223,10 @@ class ABOReportParser:
             df[("Notes", "ReadReliability")] = "Error processing"
             df[("Notes", "PhaseConfidence")] = "Error"
             df[("Notes", "BwSubtype")] = "Error"
+            df[("Notes", "A2Trace")] = ""
+            df[("Notes", "EvidenceBasis")] = "error"
+            df[("Notes", "QCStatus")] = "REVIEW"
+            df[("Notes", "QCFlags")] = "processing error"
             return df
 
     # -----------------------------------------------------------------
@@ -1177,6 +1396,8 @@ class ABOReportParser:
         final_df = pd.concat(self.results)
         final_df[("", "Barcode")] = final_df[("", "Barcode")].astype(int)
         final_df = final_df.sort_values(by=[("", "Sequencing_ID"), ("", "Barcode")], ascending=True)
+        final_df = final_df.reset_index(drop=True)   # one-row frames all carried index 0
+        self._apply_replicate_checks(final_df)
         return final_df
 
     def save_results_to_file(self, final_df):
@@ -1217,7 +1438,9 @@ class ABOReportParser:
             header_format.set_align("vcenter")
 
             num_rows, num_cols = final_df.shape
-            reliability_col = xl_col_to_name(num_cols - 3)
+            # locate by name: the Notes block now has 8 columns, so a fixed offset from the end is unsafe
+            _cols = list(final_df.columns)
+            reliability_col = xl_col_to_name(_cols.index("ReadReliability")) if "ReadReliability" in _cols else xl_col_to_name(num_cols - 1)
 
             print(f"Data has {num_rows} rows, starting at row 3 with two header rows")
 
@@ -1246,6 +1469,13 @@ class ABOReportParser:
                 )
             except Exception as format_err:
                 print(f"Warning: Could not apply row-level conditional formatting: {format_err}")
+
+            if "QCStatus" in _cols:
+                qc_letter = xl_col_to_name(_cols.index("QCStatus"))
+                worksheet.conditional_format(
+                    f"{qc_letter}3:{qc_letter}{num_rows + 2}",
+                    {"type": "cell", "criteria": "==", "value": '"REVIEW"', "format": orange_bg_format},
+                )
 
             for row in range(num_rows):
                 for col in range(num_cols):
@@ -1334,9 +1564,135 @@ class ABOReportParser:
             else:
                 self.df_for_lis_soft["#Reads"] = 0
 
+        for _src, _dst in (("QCStatus", "QC Status"), ("QCFlags", "QC Flags"),
+                           ("A2Trace", "A2 Trace"), ("EvidenceBasis", "Evidence Basis")):
+            if _src in final_df.columns:
+                self.df_for_lis_soft[_dst] = final_df[_src]
+
         self.df_for_lis_soft.drop_duplicates(inplace=True)
         self.df_for_lis_soft.to_csv("./final_export.csv", index=False, encoding="utf-8")
         print(f"LIS export file created successfully with {len(self.df_for_lis_soft)} samples")
+
+    # -----------------------------------------------------------------
+    # QC: replicate cross-check and run-level summary (v2.1.0)
+    # -----------------------------------------------------------------
+    def _apply_replicate_checks(self, final_df):
+        """Samples sharing a Sequencing_ID (replicates across barcodes/runs)
+        must agree on genotype and on A2 evidence. Disagreement marks EVERY
+        member of the group for review; nothing is changed."""
+        sid = final_df[("", "Sequencing_ID")].astype(str)
+        stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
+        for _, idx in sid.groupby(sid).groups.items():
+            idx = list(idx)
+            if len(idx) < 2:
+                continue
+            stats["groups"] += 1
+            grp = final_df.loc[idx]
+            genos = set(grp[("Result", "Genotype")].astype(str))
+            a2 = grp[("Notes", "A2Trace")].astype(str)
+            a2_has = set(not x.startswith("4") for x in a2 if "n/a" not in x and not x.startswith("5"))
+            members = ", ".join(
+                f"barcode{int(b):02d}={e}" for b, e in zip(grp[("", "Barcode")], grp[("Result", "ExtendedGenotype")]))
+            msg = None
+            if len(genos) > 1:
+                stats["discordant_genotype"] += 1
+                msg = f"replicates disagree on genotype ({members})"
+            elif len(a2_has) > 1:
+                stats["discordant_a2"] += 1
+                msg = f"replicates disagree on A2 evidence ({members})"
+            if msg:
+                for i in idx:
+                    old = str(final_df.at[i, ("Notes", "QCFlags")] or "")
+                    final_df.at[i, ("Notes", "QCFlags")] = (old + "; " if old else "") + msg
+                    final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
+        self.replicate_stats = stats
+
+    def report_qc(self, final_df):
+        """Print (and optionally write) a run-level QC summary. Called after
+        the results are saved, so final_df has single-level column names."""
+        lines = ["=== QC SUMMARY ==="]
+        n = len(final_df)
+        if n == 0:
+            return
+        review = int((final_df["QCStatus"] == "REVIEW").sum()) if "QCStatus" in final_df.columns else 0
+        lines.append(f"Samples: {n}   flagged REVIEW: {review} ({100.0 * review / n:.1f}%)")
+
+        if "QCFlags" in final_df.columns:
+            tally = Counter()
+            for flags in final_df["QCFlags"].astype(str):
+                for f in flags.split("; "):
+                    f = f.strip()
+                    if not f or f == "nan":
+                        continue
+                    f = re.sub(r"\(barcode.*?\)$", "", f).strip()     # drop per-group member lists
+                    f = re.sub(r"\(\d+ < \d+,", "(<N,", f)           # collapse read counts
+                    f = re.sub(r"\(O1 x\d, O2 x\d, B x\d\)", "", f).strip()
+                    tally[f] += 1
+            if tally:
+                lines.append("Flags (a sample can carry more than one):")
+                for f, c in tally.most_common():
+                    lines.append(f"  {c:6d}  {f}")
+
+        if "EvidenceBasis" in final_df.columns:
+            lines.append("Evidence basis: " + ", ".join(
+                f"{k}={v}" for k, v in final_df["EvidenceBasis"].value_counts().items()))
+        if "A2Trace" in final_df.columns:
+            lines.append("A2 trace:")
+            for k, v in final_df["A2Trace"].value_counts().sort_index().items():
+                lines.append(f"  {v:6d}  {k}")
+        rs = self.replicate_stats
+        if rs["groups"]:
+            bad = rs["discordant_genotype"] + rs["discordant_a2"]
+            lines.append(f"Replicate groups: {rs['groups']}   disagreeing: {bad} "
+                         f"(genotype {rs['discordant_genotype']}, A2 evidence {rs['discordant_a2']})")
+
+        notes = []
+        recs = self.qc_records
+        if recs:
+            uni = sum(1 for r in recs if r["reads_uniform"]) / len(recs)
+            if uni >= 0.9:
+                notes.append(
+                    f"#Reads is identical at every primary position for {100 * uni:.0f}% of samples, i.e. it is a "
+                    "sample-wide read count, not depth at the site. ReadReliability and the low-read flag therefore "
+                    "cannot confirm site-level evidence. Emit per-position depth upstream (AlignmentStatistics 'Depth') "
+                    "and write it into the report's 'Aligned Read Count'.")
+            ref_only = sum(1 for r in recs if r["evidence"] == "reference-only") / len(recs)
+            if ref_only >= 0.5:
+                notes.append(
+                    f"{100 * ref_only:.0f}% of samples are reference-only (no variant at any primary position). "
+                    "These cannot be told apart from failed calls; confirm a subset with independent typing.")
+            c = Counter(r["s261"] for r in recs if r["s261"] is not None)
+            tot = sum(c.values())
+            if tot >= 200:
+                q = (c["het"] + 2 * c["hom"]) / (2 * tot)
+                exp_het = 2 * q * (1 - q) * tot
+                if exp_het > 0:
+                    F = 1 - c["het"] / exp_het
+                    if F > 0.30:
+                        notes.append(
+                            f"c.261delG shows a heterozygote deficit (observed {c['het']}, expected {exp_het:.0f} under "
+                            f"Hardy-Weinberg; F={F:.2f}). Possible under selection or relatedness; also what missed "
+                            "heterozygous calls look like.")
+            aa = sum(1 for r in recs if r["genotype"] == "AA")
+            ao = sum(1 for r in recs if r["genotype"] == "AO")
+            if aa + ao >= 100 and aa / (aa + ao) > 0.5:
+                notes.append(
+                    f"A/A is {100 * aa / (aa + ao):.0f}% of group A (A/O {100 * ao / (aa + ao):.0f}%). In most populations "
+                    "A/O carriers outnumber A/A; check against independently typed samples.")
+        if notes:
+            lines.append("Notes (informational):")
+            for t in notes:
+                lines.append("  - " + t)
+
+        text = "\n".join(lines)
+        print("\n" + text)
+        if self.qc_report_path:
+            try:
+                with open(self.qc_report_path, "w", encoding="utf-8") as fh:
+                    fh.write(text + "\n")
+                print(f"QC report written to {self.qc_report_path}")
+            except OSError as e:
+                print(f"Could not write QC report: {e}")
 
     def run(self):
         """Run the ABOReportParser."""
@@ -1428,6 +1784,7 @@ class ABOReportParser:
                 print(f"Could not analyze phenotype distribution: {e}")
 
         print(f"============================")
+        self.report_qc(final_df)
 
 
 # ===========================================================================
@@ -1475,6 +1832,10 @@ For more information, see: https://github.com/fmobegi/nf-core-abotyper
                          help="Path to the variant panel file (.yaml/.json/.csv/.tsv). Default: %(default)s")
     parser.add_argument("--default-barcode", "-b", default="barcode00", metavar="BARCODE",
                          help="Default barcode for samples without explicit barcode suffix (default: %(default)s)")
+    parser.add_argument("--min-depth", type=int, default=100, metavar="N",
+                         help="Flag A1 calls made on fewer than N reads at c.467/c.1061delC (default: %(default)s)")
+    parser.add_argument("--qc-report", default="ABO_run_qc.txt", metavar="FILE",
+                         help="Write the run-level QC summary here; use '' to disable (default: %(default)s)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output for debugging")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
@@ -1516,6 +1877,7 @@ if __name__ == "__main__":
     print(f"Loaded panel v{panel.meta.get('panel_version', '?')} with {len(panel.variants)} variants "
           f"({len(panel.calibrated())} usable now, {len(panel.uncalibrated())} awaiting calibration)")
 
-    parser_instance = ABOReportParser(args.input_directory, panel, args.default_barcode)
+    parser_instance = ABOReportParser(args.input_directory, panel, args.default_barcode,
+                                      min_depth=args.min_depth, qc_report=args.qc_report)
     parser_instance.run()
     print("All done!\n")
