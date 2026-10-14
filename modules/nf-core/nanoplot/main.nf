@@ -4,8 +4,8 @@ process NANOPLOT {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/nanoplot:1.47.0--pyhdfd78af_0' :
-        'quay.io/biocontainers/nanoplot:1.47.0--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/nanoplot:1.48.0--pyhdfd78af_1' :
+        'quay.io/biocontainers/nanoplot:1.48.0--pyhdfd78af_1' }"
 
     input:
     tuple val(meta), path(ontfile)
@@ -21,7 +21,8 @@ process NANOPLOT {
 
     script:
     def args = task.ext.args ?: ''
-    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz")) ? "--fastq ${ontfile}" :
+    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz") ||
+                      "$ontfile".endsWith(".fastq")    || "$ontfile".endsWith(".fq")) ? "--fastq ${ontfile}" :
         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
     """
     NanoPlot \\
