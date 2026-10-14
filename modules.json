@@ -7,7 +7,7 @@
                 "nf-core": {
                     "bcftools/norm": {
                         "branch": "master",
-                        "git_sha": "feef37435aea56816adf4b3bde1fc76aac327a8d",
+                        "git_sha": "3cdacf0655d26d724d465874ac76cfef79cc4732",
                         "installed_by": ["modules"]
                     },
                     "bcftools/query": {
@@ -25,11 +25,6 @@
                         "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
                         "installed_by": ["modules"]
                     },
-                    "fastqc": {
-                        "branch": "master",
-                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
-                        "installed_by": ["modules"]
-                    },
                     "minimap2/align": {
                         "branch": "master",
                         "git_sha": "135d883a43b1a2324b4112cd270cf22e20835533",
@@ -38,6 +33,11 @@
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "98403d15b0e50edae1f3fec5eae5e24982f1fade",
+                        "installed_by": ["modules"]
+                    },
+                    "nanoplot": {
+                        "branch": "master",
+                        "git_sha": "cc4d441624bd2a0db697502bdde9005a5a5f0b36",
                         "installed_by": ["modules"]
                     },
                     "samtools/coverage": {

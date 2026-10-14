@@ -895,66 +895,66 @@ class ABOReportParser:
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O1"
+                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O.01"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O2"
+                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O.02"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O3"
+                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O.03"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O1"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.01"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O2"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.02"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O3"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.03"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O2"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.02"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O3"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.03"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O3"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.03"
 
             elif (type_exon6 == "O1" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O1"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.01"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O2"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.02"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O3/O3"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.03/O.03"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
