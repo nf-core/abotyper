@@ -1,0 +1,119 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "VARIANTS_QUANTIFICATION"
+description: |
+  Calls small variants (with phasing) from each sample's aligned BAM using
+  Clair3, then converts Clair3's gVCF and phased VCF into the same
+  per-position metrics / per-read-equivalent haplotype table formats
+  pysam_haploscan.py (HAPLOSCAN, since removed) used to produce, so
+  PREDICTABOPHENOTYPE needs no changes downstream. Also regenerates the
+  ABO panel BED (indel/homopolymer rows padded) from the panel YAML once
+  per run, broadcast to every sample and to the sibling VARIANTS_QC
+  subworkflow.
+keywords:
+  - abo
+  - blood typing
+  - variant calling
+  - clair3
+  - gvcf
+  - phasing
+  - allele frequency
+components:
+  - clair3
+  - abo/panel2bed
+  - abo/clair2metrics
+  - abo/clair2haplotypes
+input:
+  - ch_bam:
+      type: channel
+      description: |
+        Channel containing aligned BAM files with sample metadata.
+        Structure: [ val(meta), path(*.bam) ]
+      pattern: "*.bam"
+  - ch_bai:
+      type: channel
+      description: |
+        Channel containing BAM index files with sample metadata.
+        Structure: [ val(meta), path(*.bai) ]
+      pattern: "*.bai"
+  - ch_fasta:
+      type: channel
+      description: |
+        Channel containing the single combined ABO reference FASTA (single-reference mode).
+        Structure: [ val(meta1), path(*.fasta) ]
+      pattern: "*.fasta"
+  - ch_fai:
+      type: channel
+      description: |
+        Channel containing the FASTA index for ch_fasta.
+        Structure: [ val(meta1), path(*.fasta.fai) ]
+      pattern: "*.fasta.fai"
+  - model_url:
+      type: val
+      description: URL to the Clair3 model archive (params.clair3_model_url), downloaded once per run.
+  - panel_file:
+      type: file
+      description: |
+        ABO variant panel file (abo_variant_panel.yaml), the single source of
+        truth for diagnostic positions -- broadcast to ABO_PANEL2BED,
+        ABO_CLAIR2METRICS, and ABO_CLAIR2HAPLOTYPES.
+      pattern: "*.{yaml,yml,json,csv,tsv}"
+output:
+  - metrics:
+      type: file
+      description: |
+        Per-position allele frequency / alignment statistics table, in the
+        same format pysam_haploscan.py produced, from ABO_CLAIR2METRICS
+        reading Clair3's gVCF directly.
+        Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
+      pattern: "*.AlignmentStatistics.tsv"
+  - haplotypes:
+      type: file
+      description: |
+        Haplotype table from ABO_CLAIR2HAPLOTYPES, synthesized from Clair3's
+        phased-VCF phase-set allele depths (not literal per-read
+        observations -- see bin/clair2haplotypes.py docstring). Consumed by
+        PREDICTABOPHENOTYPE to compute PhaseConfidence scores.
+        Structure: [ val(meta), path(*.Haplotypes.tsv) ]
+      pattern: "*.Haplotypes.tsv"
+  - clair3_vcf:
+      type: file
+      description: |
+        Clair3's PASS-filtered small-variant calls (merge_output.vcf.gz).
+        Structure: [ val(meta), path(*.vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - clair3_tbi:
+      type: file
+      description: Tabix index for clair3_vcf.
+      pattern: "*.vcf.gz.tbi"
+  - clair3_phased_vcf:
+      type: file
+      description: |
+        Clair3's phased small-variant calls (phased_merge_output.vcf.gz, GT + PS tags).
+        Structure: [ val(meta), path(*.vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - clair3_phased_tbi:
+      type: file
+      description: Tabix index for clair3_phased_vcf.
+      pattern: "*.vcf.gz.tbi"
+  - clair3_gvcf:
+      type: file
+      description: |
+        Clair3's gVCF (--gvcf), including non-variant reference blocks --
+        what ABO_CLAIR2METRICS reads to recover indel signal a plain VCF
+        would silently drop.
+        Structure: [ val(meta), path(*.gvcf.gz) ]
+      pattern: "*.gvcf.gz"
+  - clair3_gtbi:
+      type: file
+      description: Tabix index for clair3_gvcf.
+      pattern: "*.gvcf.gz.tbi"
+  - panel_bed:
+      type: file
+      description: |
+        ABO panel BED regenerated from panel_file by ABO_PANEL2BED
+        (broadcast value channel), for VARIANTS_QC's bcftools view -R filtering.
+      pattern: "*.bed"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
