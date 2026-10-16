@@ -1,0 +1,6 @@
+N E X T F L O W  ~  version 26.10.2
+Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-442376fb72b8a702012b64e7890cea8b.nf` [drunk_chandrasekhar] - revision: 49cb0a9851
+WARN: Unrecognized config option 'validation.defaultIgnoreParams'
+WARN: Unrecognized config option 'validation.monochromeLogs'
+[46/6e5b6e] Submitted process > PREDICTABOPHENOTYPE:ABO_GETABOSNPS (ABO_AA_barcode01)
+[cf/f85261] Submitted process > PREDICTABOPHENOTYPE:ABO_SNPS2PHENO (COMPILING ABO RESULTS)

@@ -1,0 +1,6 @@
+# id: 'abo_evidence_summary'
+# section_name: 'ABO evidence summary'
+# description: 'Agreement between the two lines of evidence (Clair3 and BAM pileup) per sample. Samples with no reads over the ABO region, Clair3-only or BAM-only evidence, or discordant primary positions need review. RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or transfusion decisions; confirm results with an accredited method before any clinical use.'
+# plot_type: 'table'
+Sample	Barcode	Evidence source	Evidence status	BAM-only positions	Clair3/BAM discordant	Discordant primary positions	QC status	Typing result
+ABO_AA	barcode01	CLAIR3+BAM	OK	0	0	0	PASS	ABO*A1.01/ABO*A2.01

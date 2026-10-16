@@ -1,0 +1,18 @@
+N E X T F L O W  ~  version 26.10.2
+Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-da176640a7c4c65e5498274e0be23ab9.nf` [adoring_kirch] - revision: 2a6519937a
+WARN: Unrecognized config option 'validation.defaultIgnoreParams'
+WARN: Unrecognized config option 'validation.monochromeLogs'
+WARN: The operator `first` is useless when applied to a value channel which returns a single value by definition
+WARN: The operator `first` is useless when applied to a value channel which returns a single value by definition
+[04/83a326] Submitted process > VARIANTS_QUANTIFICATION:ABO_PANEL2BED (abo_variant_panel)
+[b6/d23aa2] Submitted process > VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL (clair3_model)
+[79/9ea825] Submitted process > VARIANTS_QUANTIFICATION:CLAIR3 (ABO_AA_barcode01)
+WARN: Process `VARIANTS_QUANTIFICATION:ABO_PANEL2BED` publishDir path contains a variable with a null value
+[4f/bcca49] Submitted process > VARIANTS_QUANTIFICATION:ABO_PILEUP (ABO_AA_barcode01)
+WARN: Process `VARIANTS_QUANTIFICATION:CLAIR3` publishDir path contains a variable with a null value
+[29/6471e2] Submitted process > VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES (ABO_AA_barcode01)
+[30/cbf3b1] Submitted process > VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS (ABO_AA_barcode01)
+WARN: Process `VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES` publishDir path contains a variable with a null value
+WARN: Process `VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS` publishDir path contains a variable with a null value
+[22/db5061] Submitted process > VARIANTS_QUANTIFICATION:ABO_EVIDENCE (ABO_AA_barcode01)
+WARN: Process `VARIANTS_QUANTIFICATION:ABO_EVIDENCE` publishDir path contains a variable with a null value

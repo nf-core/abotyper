@@ -1,0 +1,5 @@
+N E X T F L O W  ~  version 26.10.2
+Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-9835d46d69018ab3af3e5d7e8e858bbe.nf` [suspicious_tesla] - revision: fa872c00d2
+WARN: Unrecognized config option 'validation.defaultIgnoreParams'
+WARN: Unrecognized config option 'validation.monochromeLogs'
+[24/533f2d] Submitted process > ABO_PILEUP (ABO_AA_barcode01)

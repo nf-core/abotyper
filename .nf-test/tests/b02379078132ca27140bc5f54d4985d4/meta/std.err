@@ -1,0 +1,6 @@
+N E X T F L O W  ~  version 26.10.2
+Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-b02379078132ca27140bc5f54d4985d4.nf` [high_brazil] - revision: 6136cf244c
+WARN: Unrecognized config option 'validation.defaultIgnoreParams'
+WARN: Unrecognized config option 'validation.monochromeLogs'
+[94/494751] Submitted process > ABO_EVIDENCE (ABO_AA_barcode01)
+WARN: Process `ABO_EVIDENCE` publishDir path contains a variable with a null value

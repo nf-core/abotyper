@@ -1,0 +1,2 @@
+Sample ID,Shipment Date,ABO Geno Type1,ABO Geno Type2,ABO Pheno Type,RH,Blood Type,ABORH Comments,A Subtype,Bw Subtype,Phase Confidence,Read Reliability,#Reads,QC Status,QC Flags,A2 Trace,Evidence Basis,Replicate Note
+ABO_AA,,A,A,A,,A,,,,High: Top 2 haplotypes cover 100% of 69 reads,Normal,84.52941176470588,PASS,,1 A2 confirmed (c.467 + c.1061delC),variant evidence,
