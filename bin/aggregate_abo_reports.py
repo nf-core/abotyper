@@ -25,7 +25,7 @@ __credits__ = [
     "Claude Sonnet 5",
 ]
 __license__ = "GPL"
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
@@ -619,7 +619,7 @@ class ABOReportParser:
                 header_cols += [col_label] * 10
 
         self.notes_columns = ["ASubtype", "ReadReliability", "PhaseConfidence", "BwSubtype",
-                              "A2Trace", "EvidenceBasis", "QCStatus", "QCFlags"]
+                              "A2Trace", "EvidenceBasis", "QCStatus", "QCFlags", "ReplicateNote"]
         header_cols += ["Notes"] * len(self.notes_columns)
 
         column_metrics = ["#Reads", "Mat", "Mis", "Ins", "Del", "A", "G", "C", "T", "Type"]
@@ -1803,6 +1803,7 @@ class ABOReportParser:
                 "Genotype": r["Genotype"],
                 "QCStatus": r["QCStatus"],
                 "QCFlags": r["QCFlags"],
+                "Replicate note": r.get("ReplicateNote"),
             })
         return pd.DataFrame(rows, columns=[
             "Sample name", "Barcode", "Number of reads", "Read Length", "Insert Size",
@@ -1810,7 +1811,7 @@ class ABOReportParser:
             "Median analyzed Read depth",
             "Number of question mark positions", "Evidence source", "BAM-only positions",
             "Clair3/BAM discordant", "Discordant primary positions", "Typing Result", "Phenotype", "Genotype",
-            "QCStatus", "QCFlags"]).astype(object)
+            "QCStatus", "QCFlags", "Replicate note"]).astype(object)
 
     def process_files(self):
         """Process all files in the input directory that match expected patterns."""
@@ -1968,7 +1969,7 @@ class ABOReportParser:
                             ws_t.write(r + 1, c, v, data_format)
                 for c, name in enumerate(typing_df.columns):
                     longest = max([len(str(name))] + [len(str(x)) for x in typing_df[name] if x is not None])
-                    ws_t.set_column(c, c, min(max(longest + 2, 10), 60 if name == "QCFlags" else 40))
+                    ws_t.set_column(c, c, min(max(longest + 2, 10), 80 if name == "Replicate note" else 60 if name == "QCFlags" else 40))
                 ws_t.set_row(0, 45, header_format)
                 ws_t.freeze_panes(1, 0)
                 last = len(typing_df)
@@ -1977,6 +1978,11 @@ class ABOReportParser:
                     ws_t.conditional_format(
                         f"{qc_t}2:{qc_t}{last + 1}",
                         {"type": "cell", "criteria": "==", "value": '"REVIEW"', "format": orange_bg_format},
+                    )
+                    rn_t = xl_col_to_name(list(typing_df.columns).index("Replicate note"))
+                    ws_t.conditional_format(
+                        f"A2:{xl_col_to_name(len(typing_df.columns) - 1)}{last + 1}",
+                        {"type": "formula", "criteria": f"=LEN(${rn_t}2)>0", "format": red_bg_format},
                     )
                     rd_t = xl_col_to_name(list(typing_df.columns).index("Number of reads"))
                     ws_t.conditional_format(
@@ -2045,6 +2051,13 @@ class ABOReportParser:
                     cell_value = final_df.iat[row, col]
                     if not pd.isna(cell_value):
                         worksheet.write(row + 2, col, cell_value, data_format)
+
+            if "ReplicateNote" in _cols and num_rows:
+                rn_letter = xl_col_to_name(_cols.index("ReplicateNote"))
+                worksheet.conditional_format(
+                    f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",
+                    {"type": "formula", "criteria": f"=LEN(${rn_letter}3)>0", "format": red_bg_format},
+                )
 
             # Per-position header merge ranges
             column_start = 5
@@ -2128,7 +2141,8 @@ class ABOReportParser:
                 self.df_for_lis_soft["#Reads"] = 0
 
         for _src, _dst in (("QCStatus", "QC Status"), ("QCFlags", "QC Flags"),
-                           ("A2Trace", "A2 Trace"), ("EvidenceBasis", "Evidence Basis")):
+                           ("A2Trace", "A2 Trace"), ("EvidenceBasis", "Evidence Basis"),
+                           ("ReplicateNote", "Replicate Note")):
             if _src in final_df.columns:
                 self.df_for_lis_soft[_dst] = final_df[_src]
 
@@ -2139,12 +2153,21 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # QC: replicate cross-check and run-level summary (v2.1.0)
     # -----------------------------------------------------------------
+    @staticmethod
+    def _zygosity(genotype) -> str:
+        g = str(genotype)
+        if len(g) != 2 or g in ("Unknown", "nan"):
+            return "unresolved"
+        return "homozygous" if g[0] == g[1] else "heterozygous"
+
     def _apply_replicate_checks(self, final_df):
-        """Samples sharing a Sequencing_ID (replicates across barcodes/runs)
-        must agree on genotype and on A2 evidence. Disagreement marks EVERY
-        member of the group for review; nothing is changed."""
+        """Samples sharing a Sequencing_ID (the same sample on different barcodes/runs) must
+        agree on genotype, A2 evidence and allele-level typing. Disagreement marks EVERY member
+        of the group: REVIEW + a QC flag, and a ReplicateNote that lists each replicate's
+        genotype, zygosity and typing (the sheets colour these rows red). Nothing is changed.
+        Rows are already sorted by sample then barcode, so replicates sit together."""
         sid = final_df[("", "Sequencing_ID")].astype(str)
-        stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
+        stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0, "discordant_allele": 0}
         for _, idx in sid.groupby(sid).groups.items():
             idx = list(idx)
             if len(idx) < 2:
@@ -2152,10 +2175,12 @@ class ABOReportParser:
             stats["groups"] += 1
             grp = final_df.loc[idx]
             genos = set(grp[("Result", "Genotype")].astype(str))
+            exts = set(grp[("Result", "ExtendedGenotype")].astype(str))
             a2 = grp[("Notes", "A2Trace")].astype(str)
             a2_has = set(not x.startswith("4") for x in a2 if "n/a" not in x and not x.startswith("5"))
-            members = ", ".join(
-                f"barcode{int(b):02d}={e}" for b, e in zip(grp[("", "Barcode")], grp[("Result", "ExtendedGenotype")]))
+            rows = list(zip(grp[("", "Barcode")], grp[("Result", "Genotype")].astype(str),
+                            grp[("Result", "ExtendedGenotype")].astype(str)))
+            members = ", ".join(f"barcode{int(bc):02d}={e}" for bc, _, e in rows)
             msg = None
             if len(genos) > 1:
                 stats["discordant_genotype"] += 1
@@ -2163,11 +2188,31 @@ class ABOReportParser:
             elif len(a2_has) > 1:
                 stats["discordant_a2"] += 1
                 msg = f"replicates disagree on A2 evidence ({members})"
-            if msg:
-                for i in idx:
-                    old = str(final_df.at[i, ("Notes", "QCFlags")] or "")
-                    final_df.at[i, ("Notes", "QCFlags")] = (old + "; " if old else "") + msg
-                    final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
+            elif len(exts) > 1:
+                stats["discordant_allele"] += 1
+                msg = f"replicates agree on genotype but differ at allele level ({members})"
+            if not msg:
+                continue
+
+            # ReplicateNote: every replicate with its zygosity and typing, plus what the
+            # mismatch most likely means
+            parts = [f"barcode{int(bc):02d}: {g} ({self._zygosity(g)}), {e}" for bc, g, e in rows]
+            note = f"Replicate mismatch ({len(rows)} runs of this sample): " + " | ".join(parts) + "."
+            hets = [(bc, g) for bc, g, _ in rows if self._zygosity(g) == "heterozygous"]
+            homs = [(bc, g) for bc, g, _ in rows if self._zygosity(g) == "homozygous"]
+            dropout = [f"barcode{int(bc):02d}" for bc, g in homs
+                       if any(set(g) <= set(hg) for _, hg in hets)]
+            if dropout:
+                note += (f" Homozygous call in {', '.join(dropout)} is contained in a heterozygous replicate: "
+                         "possible allele dropout; confirm with another method.")
+            unresolved = [f"barcode{int(bc):02d}" for bc, g, _ in rows if self._zygosity(g) == "unresolved"]
+            if unresolved:
+                note += f" Unresolved (no usable typing): {', '.join(unresolved)}."
+            for i in idx:
+                old = str(final_df.at[i, ("Notes", "QCFlags")] or "")
+                final_df.at[i, ("Notes", "QCFlags")] = (old + "; " if old else "") + msg
+                final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
+                final_df.at[i, ("Notes", "ReplicateNote")] = note
         self.replicate_stats = stats
 
     def _about_items(self):
@@ -2281,9 +2326,10 @@ class ABOReportParser:
                 lines.append(f"  {v:6d}  {k}")
         rs = self.replicate_stats
         if rs["groups"]:
-            bad = rs["discordant_genotype"] + rs["discordant_a2"]
+            bad = rs["discordant_genotype"] + rs["discordant_a2"] + rs.get("discordant_allele", 0)
             lines.append(f"Replicate groups: {rs['groups']}   disagreeing: {bad} "
-                         f"(genotype {rs['discordant_genotype']}, A2 evidence {rs['discordant_a2']})")
+                         f"(genotype {rs['discordant_genotype']}, A2 evidence {rs['discordant_a2']}, "
+                         f"allele level {rs.get('discordant_allele', 0)})")
 
         notes = []
         recs = self.qc_records

@@ -46,9 +46,12 @@ process ABO_SNPS2PHENO {
 
     stub:
     """
+    touch ABO_result.txt
     touch final_export.csv
     touch ABO_results.log
     touch ABO_result.xlsx
+    touch ABO_run_qc.txt
+    touch ABO_evidence_summary_mqc.tsv
     touch ABO_result.txt
     """
 }

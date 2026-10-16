@@ -156,4 +156,10 @@ process DOWNLOAD_CLAIR3_MODEL {
     wget ${url}/pileup.pt -O clair3_model_dir/pileup.pt
     wget ${url}/full_alignment.pt -O clair3_model_dir/full_alignment.pt
     """
+
+    stub:
+    """
+    mkdir -p clair3_model_dir
+    touch clair3_model_dir/pileup.pt clair3_model_dir/full_alignment.pt
+    """
 }
