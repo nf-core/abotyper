@@ -6,7 +6,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,1c6e85ed135c8ced6fe423fbfd587bb1"
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,cb819c9016bceacf9c17b3a059b7d153"
                 ]
             ],
             {
@@ -26,10 +26,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:28:54.939532158",
+        "timestamp": "2026-10-16T20:00:11.919699901",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nextflow": "26.10.2"
         }
     },
     "abotyper - ABO_AA_barcode01 - stub": {

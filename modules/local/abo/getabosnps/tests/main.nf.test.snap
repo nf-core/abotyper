@@ -77,7 +77,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.ABOPhenotype.txt:md5,8dd38d2184b38b9cd0ac6bb1a17f4aad"
+                    "ABO_AA_barcode01.ABOPhenotype.txt:md5,91af94f4d3ebfd36d797c3fd1caea0f7"
                 ]
             ],
             {
@@ -97,10 +97,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:32:01.767473606",
+        "timestamp": "2026-10-16T20:02:33.813624778",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nextflow": "26.10.2"
         }
     }
 }

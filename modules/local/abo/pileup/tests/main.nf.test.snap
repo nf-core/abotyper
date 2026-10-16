@@ -47,7 +47,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.pileup.txt:md5,446e063913edd70cd99f4ce338f5bfb5"
+                    "ABO_AA_barcode01.pileup.txt:md5,8e3953f15231e273fae4c07db1e60342"
                 ]
             ],
             {
@@ -60,7 +60,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-10-16T14:25:49.546643288",
+        "timestamp": "2026-10-16T20:04:37.309310042",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
