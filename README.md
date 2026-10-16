@@ -7,18 +7,18 @@
 
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/nf-core/abotyper)
 [![GitHub Actions CI Status](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/abotyper/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/linting.yml)[![AWS CI](<https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS>)](https://nf-co.re/abotyper/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![GitHub Actions Linting Status](https://github.com/nf-core/abotyper/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/abotyper/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/nf-core/abotyper)
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core template version](https://img.shields.io/badge/nf--core_template-4.1.0-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.1.0)
-[![run with conda](<http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda>)](https://docs.conda.io/en/latest/)
-[![run with docker](<https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker>)](https://www.docker.com/)
-[![run with singularity](<https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000>)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](<https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7>)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/abotyper)
+[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/abotyper)
 
-[![Get help on Slack](<http://img.shields.io/badge/slack-nf--core%20%23abotyper-4A154B?labelColor=000000&logo=slack>)](https://nfcore.slack.com/channels/abotyper)[![Follow on Bluesky](https://img.shields.io/badge/bluesky-%40nf__core-1185fe?labelColor=000000&logo=bluesky)](https://bsky.app/profile/nf-co.re)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23abotyper-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/abotyper)[![Follow on Bluesky](https://img.shields.io/badge/bluesky-%40nf__core-1185fe?labelColor=000000&logo=bluesky)](https://bsky.app/profile/nf-co.re)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 # ABO blood typing using Oxford Nanopore MinION sequencing
 
@@ -33,7 +33,7 @@ It takes a samplesheet and FASTQ files as input, performs quality control (QC), 
 ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
 
 - [ABO RefSeqGene (NG_006669.2)](https://www.ncbi.nlm.nih.gov/nuccore/NG_006669.2) - single combined reference used for alignment
-- [dbMHC and IHWG data](<https://ftp.ncbi.nlm.nih.gov/pub/mhc/mhc/Final%20Archive/>)
+- [dbMHC and IHWG data](https://ftp.ncbi.nlm.nih.gov/pub/mhc/mhc/Final%20Archive/)
 
 ## Pipeline steps
 
@@ -58,20 +58,20 @@ The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO ref
 
 The pipeline makes use of the following core dependencies:
 
-| Dependency                   | Minimum version | Used for                          |
-| ---------------------------- | --------------- | --------------------------------- |
+| Dependency             | Minimum version | Used for                          |
+| ---------------------- | --------------- | --------------------------------- |
 | **Core Tools**         |                 |                                   |
-| fastqc                       | 0.12.1          | raw read quality control          |
-| minimap2                     | 2.30            | long-read alignment               |
-| samtools                     | 1.23            | BAM sort, index, alignment QC     |
-| clair3                       | 2.0.0           | variant calling, phasing          |
-| bcftools                     | 1.23.1          | VCF normalize, filter (QC export) |
-| multiqc                      | 1.35            | aggregate QC report               |
+| fastqc                 | 0.12.1          | raw read quality control          |
+| minimap2               | 2.30            | long-read alignment               |
+| samtools               | 1.23            | BAM sort, index, alignment QC     |
+| clair3                 | 2.0.0           | variant calling, phasing          |
+| bcftools               | 1.23.1          | VCF normalize, filter (QC export) |
+| multiqc                | 1.35            | aggregate QC report               |
 | **Python Environment** |                 |                                   |
-| python                       | 3.13.5          | runtime for `bin/` scripts      |
-| pandas                       | 2.3.1           | tabular data handling             |
-| pyyaml                       | 6.0             | variant panel YAML parsing        |
-| xlsxwriter                   | 3.2.5           | final Excel report output         |
+| python                 | 3.13.5          | runtime for `bin/` scripts        |
+| pandas                 | 2.3.1           | tabular data handling             |
+| pyyaml                 | 6.0             | variant panel YAML parsing        |
+| xlsxwriter             | 3.2.5           | final Excel report output         |
 
 `bin/rename_samples.py` is a standalone lab-export utility, not wired into any pipeline process — if you run it manually it needs its own `pandas` + `numpy` environment, separate from the above.
 
@@ -223,7 +223,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 Results generated from this pipeline should be interpreted together with the corresponding publication and literature on ABO genotyping.
 
-To get up to speed with ABO genotyping, there is detailed reading material [here](<https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/>).
+To get up to speed with ABO genotyping, there is detailed reading material [here](https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoint/).
 
 Verified SNVs relevant to ABO blood group genotyping have also been documented extensively [here](https://bloodgroupdatabase.org/groups/details/?group_name=ABO)
 

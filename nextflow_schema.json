@@ -134,7 +134,7 @@
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.bed$",
-                    "default": "assets/refs/abo_clair3_region.bed",
+                    "default": "/data/ABO-analysis-31-Oct-2023/nf-core-abotyper/assets/refs/abo_clair3_region.bed",
                     "description": "BED file restricting Clair3 calling (and gVCF reference blocks) to the ABO exon 2-7 region of NG_006669.2.",
                     "help_text": "Passed to Clair3 as --bed_fn. Must be readable inside the container (a path under the launch directory is bind-mounted by Singularity/Apptainer; with Docker, mount it or use an absolute path that is available). Keep it wider than the panel positions so phasing has flanking variants.",
                     "fa_icon": "fas fa-align-left"
