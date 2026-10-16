@@ -20,7 +20,7 @@ abo_variant_panel.bed / abo_variant_panel.yaml already account for.
 gVCF non-variant blocks (ALT=<NON_REF>, INFO=END=...) give real
 reference-depth coverage even where no variant is called -- this is
 what recovers indel signal that Clair3's plain (non-gvcf) merge_output
-silently drops (see c.1061delC / IMM-26-23099 in the panel notes).
+silently drops (see c.1061delC in the panel notes).
 
 No-evidence positions (v1.1.0)
 ------------------------------
@@ -173,7 +173,7 @@ def bucket_for_token(tok: str) -> str:
 
 
 def find_best_match(
-    records_by_pos: Dict[int, List[VcfRecord]], center_pos: int, token: str, window: int,
+    records_by_pos: Dict[int, List[VcfRecord]], center_pos: int, token: str, lo: int, hi: int,
 ) -> Tuple[Optional[VcfRecord], float]:
     """Search +-window around center_pos for a record matching `token`'s
     length profile (del/ins/dup -> indel by REF/ALT length comparison;
@@ -182,7 +182,7 @@ def find_best_match(
     is_indel_tok = tok_l in ("del", "ins", "dup")
     best_rec, best_pct = None, 0.0
 
-    for p in range(center_pos - window, center_pos + window + 1):
+    for p in range(lo, hi + 1):
         for rec in records_by_pos.get(p, []):
             if not rec.dp:
                 continue
@@ -234,11 +234,12 @@ def marker_row(
     'fallback' (legacy only) or 'none'."""
     row = {"A": 0.0, "G": 0.0, "C": 0.0, "T": 0.0, "Del": 0.0, "Ins": 0.0}
     pos = marker.resolved_position()
-    window = 15 if needs_padding(marker) else 0
+    lo, hi = marker.search_bounds(15) if needs_padding(marker) else (pos, pos)
+    window = max(pos - lo, hi - pos)
 
     matched_rec = None
     for alt_tok in marker.alt_bases():
-        rec, pct = find_best_match(records_by_pos, pos, alt_tok, window)
+        rec, pct = find_best_match(records_by_pos, pos, alt_tok, lo, hi)
         row[bucket_for_token(alt_tok)] = pct
         if rec is not None and matched_rec is None:
             matched_rec = rec

@@ -43,7 +43,7 @@ from typing import Dict, List, Optional, Tuple
 
 from abo_panel import load_panel, VariantMarker
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 TSV_HEADER = "\t".join([
     "Ref_Position_1based", "Ref_Base", "Match_Percent", "Mismatch_Percent",
@@ -57,7 +57,7 @@ INDEL_RE = re.compile(r"[+-](\d+)")
 
 
 class PileupColumn:
-    __slots__ = ("depth", "ref", "bases", "ins", "dele")
+    __slots__ = ("depth", "ref", "bases", "ins", "dele", "ins_seqs")
 
     def __init__(self, depth: int, ref: str):
         self.depth = depth
@@ -65,6 +65,7 @@ class PileupColumn:
         self.bases = {"A": 0, "C": 0, "G": 0, "T": 0}   # reads showing each base (ref reads included)
         self.ins = 0     # reads with an insertion starting right after this base
         self.dele = 0    # reads with a deletion placeholder ('*') at this base
+        self.ins_seqs: List[str] = []   # the inserted sequence of every insertion starting right after this base
 
 
 def parse_pileup_line(line: str) -> Optional[Tuple[str, int, PileupColumn]]:
@@ -109,6 +110,7 @@ def parse_pileup_line(line: str) -> Optional[Tuple[str, int, PileupColumn]]:
             n = int(m.group(1))
             if c == "+":
                 col.ins += 1
+                col.ins_seqs.append(s[m.end():m.end() + n].upper())
             i = m.end() + n             # skip the inserted/deleted sequence
             continue
         i += 1
@@ -133,27 +135,67 @@ def fmt(v: float) -> str:
     return str(int(v)) if float(v).is_integer() else f"{v:.2f}"
 
 
+def homopolymer_span(pos: int, cols: Dict[int, PileupColumn]) -> Tuple[int, int, str]:
+    """First and last reference position of the single-base run that contains pos, and the base."""
+    here = cols.get(pos)
+    base = here.ref if here else ""
+    if base not in ("A", "C", "G", "T"):
+        return pos, pos, ""
+    first = last = pos
+    while first - 1 in cols and cols[first - 1].ref == base:
+        first -= 1
+    while last + 1 in cols and cols[last + 1].ref == base:
+        last += 1
+    return first, last, base
+
+
+def run_indel_percent(pos: int, cols: Dict[int, PileupColumn]) -> Tuple[float, float]:
+    """Insertion and deletion % for a marker that sits in a homopolymer run longer than the +-INDEL_WINDOW.
+
+    The aligner puts an indel anywhere in the run (usually at its left end: a c.804dupG insertion is anchored on the
+    base before the 7-G run and a c.804delG deletion on its first G, six bases from c.804), so the whole run is searched:
+    insertions of the run base anchored from one base before the run to its last base, and deletion placeholders on
+    the run. Insertions are summed (one anchor per insertion); for deletions the busiest column is used."""
+    first, last, base = homopolymer_span(pos, cols)
+    here = cols.get(pos)
+    if not base or here is None or not here.depth:
+        return 0.0, 0.0
+    ins = sum(1 for p in range(first - 1, last + 1) if p in cols for q in cols[p].ins_seqs if q and set(q) == {base})
+    dele = max((cols[p].dele for p in range(first, last + 1) if p in cols), default=0)   # a 3-base deletion marks 3 columns: take the busiest, not the sum
+    return min(100.0, 100.0 * ins / here.depth), min(100.0, 100.0 * dele / here.depth)
+
+
 def pileup_row(marker: VariantMarker, cols: Dict[int, PileupColumn]) -> Tuple[List[str], int]:
     """One table row (COLUMNS order) for a panel marker; returns (row, depth)."""
     pos = marker.resolved_position()
     indel_like = needs_window(marker)
     window = INDEL_WINDOW if indel_like else 0
+    lo, hi = marker.search_bounds(INDEL_WINDOW) if indel_like else (pos, pos)
     here = cols.get(pos)
     if here is None or here.depth == 0:
         return [str(pos), "N" if indel_like else (marker.ref_base or "N")] + ["0"] * 9, 0
 
     ins = dele = 0.0
-    for p in range(pos - window, pos + window + 1):
+    for p in range(lo, hi + 1):
         c = cols.get(p)
         if c and c.depth:
             ins = max(ins, 100.0 * c.ins / c.depth)
             dele = max(dele, 100.0 * c.dele / c.depth)
+    if indel_like:
+        first, last, _ = homopolymer_span(pos, cols)
+        if first - 1 < pos - window or last + 1 > pos + window:     # the run is wider than the fixed window
+            run_ins, run_del = run_indel_percent(pos, cols)
+            ins, dele = max(ins, run_ins), max(dele, run_del)
 
     depth = here.depth
     if indel_like:
         match = max(0.0, 100.0 - ins - dele)
         pct = {b: 0.0 for b in "AGCT"}
         ref_base = "N"
+        letter = (marker.ref_base or "").strip().upper()
+        if letter in pct:               # e.g. c.1061delC (ref C): the reference fraction is scored on the C column
+            pct[letter] = match
+            ref_base = letter
         mismatch = ins + dele
     else:
         ref = marker.ref_base.strip().upper() or here.ref

@@ -3,7 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// include { FASTQC                  } from '../modules/nf-core/fastqc'
 include { MULTIQC                 } from '../modules/nf-core/multiqc'
 include { NANOPLOT                } from '../modules/nf-core/nanoplot/main'
 include { paramsSummaryMap        } from 'plugin/nf-schema'
@@ -40,17 +39,6 @@ workflow ABOTYPER {
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
-
-    // //
-    // // MODULE: FASTQC
-    // //
-    // FASTQC(
-    //     ch_samplesheet
-    // )
-    // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-
-    // FASTQC is replaced by NANOPLOT following best practices for handling long-read
-    // sequencing data (like Oxford Nanopore or PacBio) in bioinformatics workflows.
 
     //
     // MODULE: NANOPLOT

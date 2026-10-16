@@ -1,6 +1,7 @@
 lint:
   files_unchanged:
     - .gitattributes
+    - .gitignore
     - .github/workflows/linting_comment.yml
     - .github/workflows/linting.yml
     - .github/workflows/branch.yml
