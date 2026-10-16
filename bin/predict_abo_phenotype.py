@@ -135,7 +135,7 @@ class ABOPhenotypePredictor:
             return {}, 0, True
 
         try:
-            df = pd.read_csv(input_path, sep="\t")
+            df = pd.read_csv(input_path, sep="\t", encoding="utf-8")
             self.logger.debug(f"Data shape: {df.shape}")
             self.logger.debug(f"Columns found: {list(df.columns)}")
 
@@ -207,7 +207,7 @@ class ABOPhenotypePredictor:
             return None
 
         try:
-            df = pd.read_csv(coverage_path, sep="\t", comment=None)
+            df = pd.read_csv(coverage_path, sep="\t", comment=None, encoding="utf-8")
 
             if df.empty:
                 self.logger.warning("Coverage file has no data rows")
@@ -310,7 +310,7 @@ class ABOPhenotypePredictor:
 
         mode = "a" if append else "w"
         try:
-            with open(output_path, mode) as f:
+            with open(output_path, mode, encoding="utf-8") as f:
                 f.write(f"{exon_label}:\n")
 
                 for marker in primary_markers:

@@ -10,7 +10,7 @@
 */
 process ABO_SNPS2PHENO {
     tag "COMPILING ABO RESULTS"
-    label 'process_single'
+    label 'process_low'
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
@@ -28,6 +28,8 @@ process ABO_SNPS2PHENO {
     path "ABO_result.xlsx", emit: xls
     path "ABO_results.log", emit: log
     path "final_export.csv", emit: csv
+    path "ABO_run_qc.txt", emit: qc, optional: true
+    path "ABO_evidence_summary_mqc.tsv", emit: mqc, optional: true
     tuple val("${task.process}"), val('python'), eval('python --version | sed "s/Python //"'), emit: versions_python, topic: versions
     tuple val("${task.process}"), val('pandas'), eval('python -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
     tuple val("${task.process}"), val('numpy'), eval('python -c "import numpy; print(numpy.__version__)"'), emit: versions_numpy, topic: versions
@@ -37,7 +39,9 @@ process ABO_SNPS2PHENO {
     def args = task.ext.args ?: ''
     """
     aggregate_abo_reports.py \\
-        ${per_sample_processing} ${args} 2>&1 | tee ABO_results.log
+        ${per_sample_processing} \\
+        --threads ${task.cpus} \\
+        ${args} 2>&1 | tee ABO_results.log
     """
 
     stub:

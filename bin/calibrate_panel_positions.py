@@ -76,7 +76,7 @@ def read_fasta(path: Path) -> Dict[str, str]:
     seqs: Dict[str, str] = {}
     name = None
     chunks: List[str] = []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.rstrip("\n")
             if not line:
@@ -308,7 +308,7 @@ def build_cdna_to_ref_map(sam_path: Path) -> Dict[int, int]:
     there, they are genuinely outside your amplicon/reference.
     """
     mapping: Dict[int, int] = {}
-    with open(sam_path) as f:
+    with open(sam_path, encoding="utf-8") as f:
         for line in f:
             if line.startswith("@"):
                 continue

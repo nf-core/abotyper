@@ -83,6 +83,9 @@
 
 meta:
   panel_version: "2.0.0"
+  isbt_allele_table_version: "v9 (blooddatabase.isbtweb.org/system/ABO)"
+  isbt_allele_table_checked: "2026-10-16"
+  isbt_allele_table_release_date: "not stated in the table file; set from the ISBT database release notes"
   source: "nf-core/abotyper legacy panel (v1.2.0) + ISBT ABO allele table v9"
   reference_transcript: "NM_020469.3"
   assay_reference: "Mobegi et al. 2025, Int J Mol Sci 26(12):5443 (doi:10.3390/ijms26125443)"

@@ -1,0 +1,112 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABO_EVIDENCE
+description: Combine the Clair3 and BAM-pileup lines of evidence for the ABO panel positions, and report their concordance
+keywords:
+  - abo
+  - evidence
+  - qc
+  - clair3
+  - pileup
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      licence: ["Python Software Foundation License"]
+  - pyyaml:
+      description: YAML parser and emitter for Python
+      homepage: https://pyyaml.org/
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information, e.g. [ id:'sample1' ]
+    - pileup:
+        type: file
+        description: samtools mpileup over the panel positions (ABO_PILEUP)
+        pattern: "*.pileup.txt"
+    - clair_metrics:
+        type: file
+        description: ABO_CLAIR2METRICS AlignmentStatistics.tsv; pass [] when Clair3 produced no gVCF
+        pattern: "*.AlignmentStatistics.tsv"
+        optional: true
+  - - panel_file:
+        type: file
+        description: ABO variant panel file
+        pattern: "*.{yaml,yml,json,csv,tsv}"
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.AlignmentStatistics.tsv":
+          type: file
+          description: Merged per-position metrics for PREDICTABOPHENOTYPE
+          pattern: "*.AlignmentStatistics.tsv"
+  status:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.evidence_status.tsv":
+          type: file
+          description: Evidence source, positions covered by each line, and discordant positions
+          pattern: "*.evidence_status.tsv"
+  concordance:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.concordance.tsv":
+          type: file
+          description: Per-position Clair3 vs BAM mismatch percentages and flag
+          pattern: "*.concordance.tsv"
+  pileup_tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.pileup_metrics.tsv":
+          type: file
+          description: BAM-derived metrics table on its own
+          pattern: "*.pileup_metrics.tsv"
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+  versions_pyyaml:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pyyaml:
+          type: string
+          description: Name of the library
+      - python3 -c "import yaml; print(yaml.__version__)":
+          type: eval
+          description: The expression to obtain the version of pyyaml
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - python:
+          type: string
+          description: Name of the tool
+      - python3 --version | sed "s/Python //":
+          type: eval
+          description: The expression to obtain the version of Python
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pyyaml:
+          type: string
+          description: Name of the library
+      - python3 -c "import yaml; print(yaml.__version__)":
+          type: eval
+          description: The expression to obtain the version of pyyaml
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
