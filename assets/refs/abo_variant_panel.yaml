@@ -1,7 +1,7 @@
 %YAML 1.1
 ---
 # ===========================================================================
-# ABO Variant Panel — nf-core/abotyper v2.0.0
+# ABO Variant Panel — nf-core/abotyper
 # ===========================================================================
 #
 # This file is the SINGLE SOURCE OF TRUTH for every diagnostic position used
@@ -82,10 +82,11 @@
 # ---------------------------------------------------------------------------
 
 meta:
-  panel_version: "2.0.0"
+  panel_version: "2.3.0"
   isbt_allele_table_version: "v9 (blooddatabase.isbtweb.org/system/ABO)"
   isbt_allele_table_checked: "2026-10-16"
   isbt_allele_table_release_date: "not stated in the table file; set from the ISBT database release notes"
+  isbt_coverage_table: "assets/refs/abo_isbt_v9_coverage.tsv (every ISBT v9 / v1.1 DNA change and where the panel handles it)"
   source: "nf-core/abotyper legacy panel (v1.2.0) + ISBT ABO allele table v9"
   reference_transcript: "NM_020469.3"
   assay_reference: "Mobegi et al. 2025, Int J Mol Sci 26(12):5443 (doi:10.3390/ijms26125443)"
@@ -111,6 +112,7 @@ variants:
     legacy_exon7_pos: ""
     amplicon_pos: 22694
     ng006669_2_pos: 22694
+    search_window: "22692-22696"
     category: primary
     call_rule: primary_biallelic
     ref_call_label: "A or B or O"
@@ -192,7 +194,7 @@ variants:
     ref_threshold_pct: 70
     alt_threshold_pct: 25
     variant_threshold_pct: 25
-    associated_alleles: "ABO*A2.01;ABO*A2.04;ABO*B.*;ABO*O.01.05;ABO*O.02.*"
+    associated_alleles: "ABO*A2.04;ABO*B.*;ABO*O.01.05;ABO*AW.08;ABO*AW.31.01;ABO*O.01.02;ABO*O.01.07;ABO*O.01.11;ABO*O.01.12;ABO*O.01.13;ABO*O.01.23;ABO*O.01.24;ABO*O.01.31;ABO*O.01.32;ABO*O.01.33;ABO*O.01.34;ABO*O.01.35;ABO*O.01.36;ABO*O.01.39;ABO*O.01.40;ABO*O.01.41;ABO*O.01.44;ABO*O.01.58;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.01.83;ABO*O.02.01;ABO*O.02.02;ABO*O.02.03;ABO*O.02.04;ABO*O.09.02;ABO*O.11;ABO*O.12"
     interpretation_ref: "A nucleotide: reference (A1/O)."
     interpretation_alt: "G nucleotide: A2.01 subtype marker / B-lineage backbone SNP (c.297A>G)."
     notes: >
@@ -284,6 +286,7 @@ variants:
     legacy_exon7_pos: 431
     amplicon_pos: 24290
     ng006669_2_pos: 24290
+    search_window: "24288-24292"
     category: primary
     call_rule: primary_biallelic
     ref_call_label: "A or B or O"
@@ -319,7 +322,7 @@ variants:
     ref_threshold_pct: 80
     alt_threshold_pct: 80
     het_band_pct: 60
-    associated_alleles: "ABO*A1.02;ABO*A2.*"
+    associated_alleles: "ABO*A1.02;ABO*A2.01;ABO*A2.05;ABO*A2.08;ABO*A2.09;ABO*A2.10;ABO*A2.11;ABO*A2.13;ABO*A2.16;ABO*A2.17;ABO*A2.18;ABO*A2.19;ABO*A2.20;ABO*A3.04;ABO*A3.06;ABO*A3.07;ABO*AEL.02;ABO*AEL.05;ABO*AEL.06;ABO*AEL.07;ABO*AEL.08;ABO*AM.01;ABO*AW.01;ABO*AW.02;ABO*AW.03;ABO*AW.07;ABO*AW.09;ABO*AW.12;ABO*AW.14;ABO*AW.16;ABO*AW.17;ABO*AW.18;ABO*AW.19;ABO*AW.20;ABO*AW.21;ABO*AW.22;ABO*AW.23;ABO*AW.24;ABO*AW.25;ABO*AW.26;ABO*AW.33;ABO*AW.34;ABO*AW.35;ABO*AW.42;ABO*AW.43;ABO*AW.45;ABO*BEL.04;ABO*O.01.09;ABO*O.01.22;ABO*O.01.27;ABO*O.03;ABO*O.04.02;ABO*O.07;ABO*cisAB.01;ABO*cisAB.04"
     interpretation_ref: "C nucleotide: A1 subtype."
     interpretation_alt: "T nucleotide: A1.02 or A2 subtype."
     notes: "Primary A1 vs A2-lineage discriminator."
@@ -335,6 +338,7 @@ variants:
     legacy_exon7_pos: 685
     amplicon_pos: 24544
     ng006669_2_pos: 24544
+    search_window: "24542-24547"
     category: primary
     call_rule: primary_biallelic
     ref_call_label: "A1"
@@ -342,7 +346,7 @@ variants:
     ref_threshold_pct: 80
     alt_threshold_pct: 80
     het_band_pct: 60
-    associated_alleles: "ABO*A2.01;ABO*A2.06;ABO*A2.09;ABO*A2.12;ABO*A2.16"
+    associated_alleles: "ABO*A2.01;ABO*A2.06;ABO*A2.09;ABO*A2.12;ABO*A2.16;ABO*A3.02;ABO*A3.04;ABO*AW.01;ABO*AW.02;ABO*AW.03;ABO*AW.07;ABO*AW.09;ABO*AW.16;ABO*AW.17;ABO*AW.18;ABO*AW.19;ABO*AW.20;ABO*AW.21;ABO*AW.22;ABO*AW.23;ABO*AW.24;ABO*AW.25;ABO*AW.26;ABO*AW.27;ABO*AW.45;ABO*O.01.22;ABO*O.03"
     interpretation_ref: "C nucleotide: A1 subtype."
     interpretation_alt: "Deletion: A2."
     notes: "Primary A2.01-defining indel."
@@ -366,7 +370,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.17",
+      associated_alleles: "ABO*A2.17;ABO*AW.01",
       interpretation_ref: "C nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.407).",
       source: legacy_v1.2.0,
@@ -386,7 +390,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.04;ABO*B.*",
+      associated_alleles: "ABO*A2.04;ABO*B.*;ABO*AW.08;ABO*O.01.24;ABO*O.01.41;ABO*O.02.01;ABO*O.02.02;ABO*O.02.03;ABO*O.02.04;ABO*O.11;ABO*O.12",
       interpretation_ref: "C nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.526); also B-lineage backbone.",
       source: legacy_v1.2.0,
@@ -406,7 +410,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.09;ABO*A2.12",
+      associated_alleles: "ABO*A2.09;ABO*A2.12;ABO*AW.26;ABO*AW.27",
       interpretation_ref: "G nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.527).",
       source: legacy_v1.2.0,
@@ -414,10 +418,10 @@ variants:
   - {
       id: a2p_539,
       cdna_pos: 539,
-      cdna_change: "c.539G>C",
+      cdna_change: "c.539G>C / c.539G>A",
       exon: "Exon 7",
       ref_base: G,
-      alt_base: C,
+      alt_base: C_or_A,
       variant_type: snp,
       legacy_exon7_pos: 165,
       amplicon_pos: 24024,
@@ -426,9 +430,9 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.07;ABO*A2.08",
+      associated_alleles: "ABO*A2.07 (c.539G>C);ABO*A2.08 (c.539G>C);ABO*A3.04 (c.539G>A);ABO*BW.05 (c.539G>A)",
       interpretation_ref: "G nucleotide: reference.",
-      interpretation_alt: "Variant: A2 diagnostic position (c.539).",
+      interpretation_alt: "Variant: A2 diagnostic position (c.539). G>C: A2.07/A2.08; G>A: A3.04/BW.05.",
       source: legacy_v1.2.0,
     }
   - {
@@ -446,7 +450,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.04;ABO*B.*",
+      associated_alleles: "ABO*A2.04;ABO*B.*;ABO*O.01.10;ABO*O.01.24;ABO*O.01.41;ABO*O.11;ABO*O.12",
       interpretation_ref: "C nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.657); also B-lineage backbone SNP (present in nearly all B/Bw/Bel/cisAB/BA alleles — do not use alone to call Bw.06).",
       source: legacy_v1.2.0,
@@ -466,7 +470,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.04;ABO*B.*",
+      associated_alleles: "ABO*A2.04;ABO*B.*;ABO*O.01.24;ABO*O.01.41;ABO*O.11;ABO*O.12",
       interpretation_ref: "G nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.703); also B-lineage backbone.",
       source: legacy_v1.2.0,
@@ -486,7 +490,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.18;ABO*BA.04(via linked haplotype)",
+      associated_alleles: "ABO*A2.18;ABO*AW.23",
       interpretation_ref: "G nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.722).",
       source: legacy_v1.2.0,
@@ -506,7 +510,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.13;ABO*A3.07(distinct allele, verify)",
+      associated_alleles: "ABO*A2.13;ABO*AW.24",
       interpretation_ref: "C nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.742).",
       source: legacy_v1.2.0,
@@ -526,7 +530,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "part of 646/681/771/829 cassette (see cassette_646_681 below)",
+      associated_alleles: "ABO*AEL.07;ABO*AW.31.01;ABO*AW.31.02-05;ABO*BEL.04;ABO*O.01.02;ABO*O.01.06;ABO*O.01.07;ABO*O.01.11;ABO*O.01.12;ABO*O.01.13;ABO*O.01.23;ABO*O.01.31;ABO*O.01.32;ABO*O.01.33;ABO*O.01.34;ABO*O.01.35;ABO*O.01.39;ABO*O.01.44;ABO*O.01.45;ABO*O.01.46;ABO*O.01.58;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.09.01;ABO*O.09.02",
       interpretation_ref: "C nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.771).",
       source: legacy_v1.2.0,
@@ -566,7 +570,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.20; part of 646/681/771/829 cassette",
+      associated_alleles: "ABO*A2.20;ABO*A3.02;ABO*AEL.07;ABO*AW.25;ABO*AW.31.01;ABO*AW.31.02-05;ABO*AW.34;ABO*BEL.04;ABO*O.01.02;ABO*O.01.06;ABO*O.01.07;ABO*O.01.11;ABO*O.01.12;ABO*O.01.13;ABO*O.01.23;ABO*O.01.31;ABO*O.01.32;ABO*O.01.33;ABO*O.01.34;ABO*O.01.35;ABO*O.01.36;ABO*O.01.39;ABO*O.01.40;ABO*O.01.44;ABO*O.01.46;ABO*O.01.58;ABO*O.01.67;ABO*O.01.68;ABO*O.01.71;ABO*O.01.75;ABO*O.09.01;ABO*O.09.02",
       interpretation_ref: "G nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.829).",
       source: legacy_v1.2.0,
@@ -584,11 +588,11 @@ variants:
       ng006669_2_pos: 24392,
       category: a2,
       call_rule: named_marker,
-      alt_call_label: "A2.06",
+      alt_call_label: "c.907G>A (background marker)",
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.06",
+      associated_alleles: "pipeline-defined background marker, not allele-defining in ISBT",
       interpretation_ref: "G nucleotide: reference.",
-      interpretation_alt: "A nucleotide: A2.06 subtype marker (c.907G>A).",
+      interpretation_alt: "A nucleotide: c.907G>A, a pipeline background marker that is not part of any ISBT allele definition (ABO*A2.06 is c.1061delC alone); reported but not used for allele naming.",
       source: legacy_v1.2.0,
     }
   - {
@@ -606,7 +610,7 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.05",
+      associated_alleles: "ABO*A2.05;ABO*AW.34",
       interpretation_ref: "A nucleotide: reference.",
       interpretation_alt: "Variant: A2 diagnostic position (c.1009).",
       source: legacy_v1.2.0,
@@ -624,20 +628,20 @@ variants:
       ng006669_2_pos: 24517,
       category: a2,
       call_rule: named_marker,
-      alt_call_label: "A2.01",
+      alt_call_label: "c.1032G>A (background marker)",
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.01",
+      associated_alleles: "pipeline-defined background marker, not allele-defining in ISBT",
       interpretation_ref: "G nucleotide: reference.",
-      interpretation_alt: "A nucleotide: A2.01 subtype marker (c.1032G>A).",
+      interpretation_alt: "A nucleotide: c.1032G>A, a pipeline background marker that is not part of any ISBT allele definition; reported but not used for allele naming.",
       source: legacy_v1.2.0,
     }
   - {
       id: a2p_1054,
       cdna_pos: 1054,
-      cdna_change: "c.1054C>T",
+      cdna_change: "c.1054C>T / c.1054C>G",
       exon: "Exon 7",
       ref_base: C,
-      alt_base: T,
+      alt_base: T_or_G,
       variant_type: snp,
       legacy_exon7_pos: 680,
       amplicon_pos: 24539,
@@ -646,9 +650,9 @@ variants:
       call_rule: named_marker,
       alt_call_label: variant,
       variant_threshold_pct: 25,
-      associated_alleles: "ABO*A2.02;ABO*AW.04(distinct, verify)",
+      associated_alleles: "ABO*A2.02 (c.1054C>T);ABO*A2.03 (c.1054C>G);ABO*B3.01 (c.1054C>T);ABO*O.01.23 (c.1054C>T)",
       interpretation_ref: "C nucleotide: reference.",
-      interpretation_alt: "Variant: A2 diagnostic position (c.1054); also Bw.04 marker on a B backbone.",
+      interpretation_alt: "Variant: A2 diagnostic position (c.1054). C>T: A2.02 (p.Arg352Trp); C>G: A2.03 (p.Arg352Gly).",
       source: legacy_v1.2.0,
     }
 
@@ -670,7 +674,7 @@ variants:
     alt_call_label: "646/681/771/829 cassette"
     variant_threshold_pct: 15
     min_reads: 30
-    associated_alleles: "ABO*O.01.06;O.01.07;O.01.11-13;O.01.31-36;O.01.39;O.01.40;O.01.44-46;O.01.58;O.01.67;O.01.68;O.01.75;ABO*AW.30.02;AW.31.01;AW.31.02-05;ABO*BEL.04;ABO*B3.02;ABO*BW.19;ABO*AEL.02;AEL.07"
+    associated_alleles: "ABO*O.01.06;ABO*AW.30.02;ABO*BEL.04;ABO*B3.02;ABO*BW.19;ABO*AEL.02;ABO*AW.30.01;ABO*AW.31.01;ABO*AW.31.02-05;ABO*O.01.02;ABO*O.01.07;ABO*O.01.11;ABO*O.01.12;ABO*O.01.13;ABO*O.01.23;ABO*O.01.31;ABO*O.01.32;ABO*O.01.33;ABO*O.01.34;ABO*O.01.36;ABO*O.01.40;ABO*O.01.44;ABO*O.01.45;ABO*O.01.46;ABO*O.01.58;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.09.01;ABO*O.09.02"
     interpretation_ref: "T nucleotide: reference."
     interpretation_alt: "A nucleotide: shared null/weak/el cassette marker (c.646T>A) — combine with c.681, c.771, c.829 to resolve the O1v/Ael-like backbone."
     notes: >
@@ -695,7 +699,7 @@ variants:
     alt_call_label: "646/681/771/829 cassette"
     variant_threshold_pct: 15
     min_reads: 30
-    associated_alleles: "same cassette as c.646 (see cassette_646); 27 ISBT alleles"
+    associated_alleles: "ABO*AEL.02;ABO*AEL.07;ABO*AW.30.02;ABO*AW.31.01;ABO*AW.31.02-05;ABO*BEL.04;ABO*BW.19;ABO*O.01.02;ABO*O.01.06;ABO*O.01.07;ABO*O.01.11;ABO*O.01.12;ABO*O.01.13;ABO*O.01.31;ABO*O.01.32;ABO*O.01.33;ABO*O.01.34;ABO*O.01.35;ABO*O.01.36;ABO*O.01.39;ABO*O.01.40;ABO*O.01.58;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.09.01;ABO*O.09.02"
     interpretation_ref: "G nucleotide: reference."
     interpretation_alt: "A nucleotide: shared null/weak/el cassette marker (c.681G>A)."
     notes: "Second half of the highest-priority cassette addition (see cassette_646)."
@@ -775,14 +779,15 @@ variants:
       variant_type: indel,
       amplicon_pos: 24289,
       ng006669_2_pos: 24289,
+      search_window: "24282-24291",
       category: ael,
       call_rule: named_marker,
       alt_call_label: "Ael/O.03",
-      variant_threshold_pct: 15,
+      variant_threshold_pct: 25,
       min_reads: 30,
-      associated_alleles: "ABO*AEL.01(dup);AEL.03(del);AEL.08(dup);ABO*O.03(dup)",
+      associated_alleles: "ABO*AEL.01 (c.804dupG);ABO*AEL.03 (c.804delG);ABO*AEL.08 (c.804dupG);ABO*O.03 (c.804dupG)",
       interpretation_alt: "Homopolymer indel — dup gives Ael.01/AEL.08/O.03, del gives Ael.03. Ael is serologically silent/very weak A: transfusion-safety relevant.",
-      notes: "Shares the homopolymer run flagged at o34_homopolymer_804 — cross-check both before reporting.",
+      notes: "Shares the homopolymer run flagged at o34_homopolymer_804 — cross-check both before reporting. The 7-G run (NG 24283-24289) gives 9% median and up to 13% deletion signal in reference runs, so the calling threshold is 25%.",
       source: ISBT_v9,
     }
   - {
@@ -800,7 +805,7 @@ variants:
       alt_call_label: "A3.01/Bx",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*A3.01;ABO*BW.01(Bx)",
+      associated_alleles: "ABO*A3.01;ABO*BW.01",
       interpretation_alt: "A3/Bx marker — associated with mixed-field agglutination, a classic reason for molecular referral.",
       source: ISBT_v9,
     }
@@ -819,7 +824,7 @@ variants:
       alt_call_label: "Aweak.06/Bel.03",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*AW.06(G);ABO*BEL.03(T)",
+      associated_alleles: "ABO*AW.06 (c.502C>G);ABO*BEL.03 (c.502C>T)",
       source: ISBT_v9,
     }
   - {
@@ -891,7 +896,7 @@ variants:
       alt_call_label: "Aweak.04/43,Ax.11,Bweak.03,O.01.07",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*AW.04;AW.43;AW.11;ABO*BW.03;ABO*O.01.07",
+      associated_alleles: "ABO*AW.04;ABO*BW.03;ABO*O.01.07;ABO*AW.11;ABO*AW.43",
       source: ISBT_v9,
     }
   - {
@@ -992,7 +997,7 @@ variants:
       alt_call_label: "O-null/A2/Aweak backbone",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "12 ISBT alleles incl. ABO*O.01.02/24/35/36/40/67/68/75/83",
+      associated_alleles: "ABO*AW.09;ABO*O.01.02;ABO*O.01.24;ABO*O.01.35;ABO*O.01.36;ABO*O.01.40;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.01.83;ABO*O.16",
       notes: "Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
@@ -1011,7 +1016,7 @@ variants:
       alt_call_label: "O-null/A2/Aweak backbone",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "12 ISBT alleles, same cassette as c.106",
+      associated_alleles: "ABO*AW.09;ABO*O.01.02;ABO*O.01.24;ABO*O.01.35;ABO*O.01.36;ABO*O.01.40;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75;ABO*O.01.83;ABO*O.16",
       notes: "Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
@@ -1030,7 +1035,7 @@ variants:
       alt_call_label: "O-null/A2 backbone",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "9 ISBT alleles, same cassette as c.106/188",
+      associated_alleles: "ABO*O.01.02;ABO*O.01.24;ABO*O.01.35;ABO*O.01.36;ABO*O.01.40;ABO*O.01.67;ABO*O.01.68;ABO*O.01.75",
       notes: "Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
@@ -1049,7 +1054,7 @@ variants:
       alt_call_label: "O-null/Aweak backbone",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "12 ISBT alleles incl. ABO*O.02.* series",
+      associated_alleles: "ABO*AW.08;ABO*AW.09;ABO*O.01.02;ABO*O.01.35;ABO*O.01.36;ABO*O.01.39;ABO*O.01.67;ABO*O.01.75;ABO*O.02.01;ABO*O.02.02;ABO*O.02.03;ABO*O.02.04",
       notes: "Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
@@ -1068,7 +1073,7 @@ variants:
       alt_call_label: "O.02 backbone",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*O.02.01-04;ABO*BW.26",
+      associated_alleles: "ABO*BW.26;ABO*O.02.01;ABO*O.02.02;ABO*O.02.03;ABO*O.02.04",
       notes: "Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
@@ -1082,12 +1087,13 @@ variants:
       variant_type: insertion,
       amplicon_pos: 18106,
       ng006669_2_pos: 18106,
+      search_window: "18104-18108",
       category: onull,
       call_rule: named_marker,
       alt_call_label: "O.04 subfamily",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*O.04.01;O.04.02",
+      associated_alleles: "ABO*O.04.01;ABO*O.04.02",
       notes: "Requires combined exon2-7 amplicon. Population-relevant O subtype.",
       source: ISBT_v9,
     }
@@ -1101,12 +1107,13 @@ variants:
       variant_type: snp,
       amplicon_pos: 22811,
       ng006669_2_pos: 22811,
+      search_window: "22809-22813",
       category: ael,
       call_rule: named_marker,
       alt_call_label: "Ael/Afinn/Aweak splice variant",
       variant_threshold_pct: 15,
       min_reads: 30,
-      associated_alleles: "ABO*AEL.04;ABO*AW.44(Afinn);ABO*AW.15",
+      associated_alleles: "ABO*AEL.04;ABO*AW.15;ABO*AW.44 (c.374+4A>G)",
       notes: "Splice-site variant — causes unexpectedly weak/negative serology. Requires combined exon2-7 amplicon (intron 6 already within existing exon7 amplicon flank in some designs — verify coverage).",
       source: ISBT_v9,
     }
@@ -1120,6 +1127,7 @@ variants:
       variant_type: snp,
       amplicon_pos: 18118,
       ng006669_2_pos: 18118,
+      search_window: "18116-18120",
       category: aweak,
       call_rule: named_marker,
       alt_call_label: "Aweak.28",
@@ -1139,6 +1147,7 @@ variants:
       variant_type: snp,
       amplicon_pos: 18902,
       ng006669_2_pos: 18902,
+      search_window: "18900-18904",
       category: b3,
       call_rule: named_marker,
       alt_call_label: "B3.03",
@@ -1158,6 +1167,7 @@ variants:
       variant_type: deletion,
       amplicon_pos: 20397,
       ng006669_2_pos: 20397,
+      search_window: "20395-20399",
       category: aweak,
       call_rule: named_marker,
       alt_call_label: "Abantu/Aweak.45",
@@ -1167,6 +1177,1942 @@ variants:
       notes: "Splice-site variant. Requires combined exon2-7 amplicon.",
       source: ISBT_v9,
     }
+
+  - id: onull_542
+    cdna_pos: 542
+    cdna_change: "c.542G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 168
+    amplicon_pos: 24027
+    ng006669_2_pos: 24027
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O null (p.Trp181Ter)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.11;ABO*O.01.75;ABO*O.06"
+    interpretation_ref: "G nucleotide: reference."
+    interpretation_alt: "A nucleotide: nonsense variant c.542G>A (p.Trp181Ter). Defines ABO*O.06 on its own; on a c.261delG background with the 297/646/681/771/829 cassette it is ABO*O.01.11 (O.01.75 when c.106/188/189/220 are also present)."
+    notes: >
+      Added from ISBT v9 and confirmed in two independent replicate runs of a
+      reference sample, which carried c.542G>A at about 50% together with
+      c.261delG, c.297A>G, c.106/188/189/220 and the c.646/681/771/829 cassette
+      (the ABO*O.01.75 pattern).
+    report: detected
+    source: ISBT_v9
+
+  - id: o1_768
+    cdna_pos: 768
+    cdna_change: "c.768C>A"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 394
+    amplicon_pos: 24253
+    ng006669_2_pos: 24253
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O1 subtype (p.Ile256=)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.26"
+    interpretation_ref: "C nucleotide: reference."
+    interpretation_alt: "A nucleotide: synonymous c.768C>A, defines ABO*O.01.26 together with c.261delG."
+    notes: >
+      Added from ISBT v9 and confirmed in two independent replicate runs of a
+      reference sample, which carried c.768C>A at about 50% with c.261delG and
+      no other O-allele marker.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_46_GA
+    cdna_pos: 46
+    cdna_change: "c.46G>A"
+    exon: "Exon 2"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    amplicon_pos: 18064
+    ng006669_2_pos: 18064
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.09 (c.46G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.09"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.46G>A p.(Ala16Thr): defines AW.09."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_66_insG
+    cdna_pos: 66
+    cdna_change: "c.66_67insG"
+    exon: "Exon 2"
+    ref_base: REF
+    alt_base: ins
+    variant_type: insertion
+    amplicon_pos: 18084
+    ng006669_2_pos: 18084
+    search_window: "18082-18087"
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.10 (c.66_67insG)"
+    variant_threshold_pct: 25
+    min_reads: 30
+    associated_alleles: "ABO*O.10"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.66_67insG p.(Phe23ValfsTer34): defines O.10."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it. Indel: the pileup searches the homopolymer run and the calling threshold is 25%.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_103_GA
+    cdna_pos: 103
+    cdna_change: "c.103G>A"
+    exon: "Exon 3"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    amplicon_pos: 18845
+    ng006669_2_pos: 18845
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "BW.25 +1 (c.103G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.25;ABO*O.01.67"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.103G>A p.(Gly35Arg): defines BW.25, O.01.67."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_190_GA
+    cdna_pos: 190
+    cdna_change: "c.190G>A"
+    exon: "Exon 4"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    amplicon_pos: 20383
+    ng006669_2_pos: 20383
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "A2.12 +1 (c.190G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*A2.12;ABO*O.01.82"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.190G>A p.(Val64Ile): defines A2.12, O.01.82."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_203_GC
+    cdna_pos: 203
+    cdna_change: "c.203G>C"
+    exon: "Exon 4"
+    ref_base: G
+    alt_base: C
+    variant_type: snp
+    amplicon_pos: 20396
+    ng006669_2_pos: 20396
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.03 (c.203G>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.03"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.203G>C p.(Arg68Thr): defines AW.03."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_236_CT
+    cdna_pos: 236
+    cdna_change: "c.236C>T"
+    exon: "Exon 5"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    amplicon_pos: 22115
+    ng006669_2_pos: 22115
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.17 (c.236C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.17"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.236C>T p.(Pro79Leu): defines AW.17."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_247_GT
+    cdna_pos: 247
+    cdna_change: "c.247G>T"
+    exon: "Exon 6"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon6_pos: 8
+    amplicon_pos: 22680
+    ng006669_2_pos: 22680
+    category: b3
+    call_rule: named_marker
+    alt_call_label: "B3.04 (c.247G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B3.04"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.247G>T p.(Asp83Tyr): defines B3.04."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_278_CT
+    cdna_pos: 278
+    cdna_change: "c.278C>T"
+    exon: "Exon 6"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon6_pos: 39
+    amplicon_pos: 22711
+    ng006669_2_pos: 22711
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.12 (c.278C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.12"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.278C>T p.(Pro93Leu): defines BW.12."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_311_TA
+    cdna_pos: 311
+    cdna_change: "c.311T>A"
+    exon: "Exon 6"
+    ref_base: T
+    alt_base: A
+    variant_type: snp
+    legacy_exon6_pos: 72
+    amplicon_pos: 22744
+    ng006669_2_pos: 22744
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.29 (c.311T>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.29"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.311T>A p.(Ile104Asn): defines AW.29."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_318_CT
+    cdna_pos: 318
+    cdna_change: "c.318C>T"
+    exon: "Exon 6"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon6_pos: 79
+    amplicon_pos: 22751
+    ng006669_2_pos: 22751
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.09 +2 (c.318C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.09;ABO*O.01.27;ABO*O.01.29"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.318C>T p.(Thr88ProfsTer31): defines O.01.09, O.01.27, O.01.29."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_322_CT
+    cdna_pos: 322
+    cdna_change: "c.322C>T"
+    exon: "Exon 6"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon6_pos: 83
+    amplicon_pos: 22755
+    ng006669_2_pos: 22755
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.05 (c.322C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.05"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.322C>T p.(Gln108Ter): defines O.05."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_347_TC
+    cdna_pos: 347
+    cdna_change: "c.347T>C"
+    exon: "Exon 6"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon6_pos: 108
+    amplicon_pos: 22780
+    ng006669_2_pos: 22780
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.18 (c.347T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.18"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.347T>C p.(Ile116Thr): defines AW.18."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_350_GC
+    cdna_pos: 350
+    cdna_change: "c.350G>C"
+    exon: "Exon 6"
+    ref_base: G
+    alt_base: C
+    variant_type: snp
+    legacy_exon6_pos: 111
+    amplicon_pos: 22783
+    ng006669_2_pos: 22783
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.02 (c.350G>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.350G>C p.(Gly117Ala): defines AW.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_351_GA
+    cdna_pos: 351
+    cdna_change: "c.351G>A"
+    exon: "Exon 6"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon6_pos: 112
+    amplicon_pos: 22784
+    ng006669_2_pos: 22784
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.34 (c.351G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.34"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.351G>A p.(Thr88ProfsTer31): defines O.01.34."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_370_AG
+    cdna_pos: 370
+    cdna_change: "c.370A>G"
+    exon: "Exon 6"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon6_pos: 131
+    amplicon_pos: 22803
+    ng006669_2_pos: 22803
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.41 (c.370A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.41"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.370A>G p.(Lys124Glu): defines AW.41."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_385_TC
+    cdna_pos: 385
+    cdna_change: "c.385T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 11
+    amplicon_pos: 23870
+    ng006669_2_pos: 23870
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.39 (c.385T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.39"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.385T>C p.(Phe129Leu): defines AW.39."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_410_CT
+    cdna_pos: 410
+    cdna_change: "c.410C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 36
+    amplicon_pos: 23895
+    ng006669_2_pos: 23895
+    category: b3
+    call_rule: named_marker
+    alt_call_label: "B3.07 (c.410C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B3.07"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.410C>T p.(Thr99=): defines B3.07."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_426_GC
+    cdna_pos: 426
+    cdna_change: "c.426G>C"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 52
+    amplicon_pos: 23911
+    ng006669_2_pos: 23911
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.38 (c.426G>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.38"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.426G>C p.(Met142Ile): defines AW.38."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_434_AG
+    cdna_pos: 434
+    cdna_change: "c.434A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 60
+    amplicon_pos: 23919
+    ng006669_2_pos: 23919
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.19 (c.434A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.19"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.434A>G p.(His145Arg): defines AW.19."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_452_TG
+    cdna_pos: 452
+    cdna_change: "c.452T>G"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 78
+    amplicon_pos: 23937
+    ng006669_2_pos: 23937
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.13 (c.452T>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.13"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.452T>G p.(Val151Gly): defines O.13."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_454_TC
+    cdna_pos: 454
+    cdna_change: "c.454T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 80
+    amplicon_pos: 23939
+    ng006669_2_pos: 23939
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.25 (c.454T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.25"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.454T>C p.(Thr88ProfsTer31): defines O.01.25."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_488_CT
+    cdna_pos: 488
+    cdna_change: "c.488C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 114
+    amplicon_pos: 23973
+    ng006669_2_pos: 23973
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "AW.08 +1 (c.488C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.08;ABO*O.02.04"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.488C>T p.(Pro74Ser): defines AW.08, O.02.04."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_496_delA
+    cdna_pos: 496
+    cdna_change: "c.496delA"
+    exon: "Exon 7"
+    ref_base: REF
+    alt_base: del
+    variant_type: deletion
+    legacy_exon7_pos: 122
+    amplicon_pos: 23981
+    ng006669_2_pos: 23981
+    search_window: "23979-23983"
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.56 (c.496delA)"
+    variant_threshold_pct: 25
+    min_reads: 30
+    associated_alleles: "ABO*O.01.56"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.496delA p.(Thr88ProfsTer31): defines O.01.56."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it. Indel: the pileup searches the homopolymer run and the calling threshold is 25%.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_498_CT
+    cdna_pos: 498
+    cdna_change: "c.498C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 124
+    amplicon_pos: 23983
+    ng006669_2_pos: 23983
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.33 (c.498C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.33"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.498C>T p.(Thr88ProfsTer31): defines O.01.33."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_499_GT
+    cdna_pos: 499
+    cdna_change: "c.499G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 125
+    amplicon_pos: 23984
+    ng006669_2_pos: 23984
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.40 (c.499G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.40"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.499G>T p.(Gly167Cys): defines AW.40."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_503_GT
+    cdna_pos: 503
+    cdna_change: "c.503G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 129
+    amplicon_pos: 23988
+    ng006669_2_pos: 23988
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.22 (c.503G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.22"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.503G>T p.(Thr99=): defines BW.22."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_506_delAGC
+    cdna_pos: 506
+    cdna_change: "c.506_508delAGC"
+    exon: "Exon 7"
+    ref_base: REF
+    alt_base: del
+    variant_type: deletion
+    legacy_exon7_pos: 132
+    amplicon_pos: 23991
+    ng006669_2_pos: 23991
+    search_window: "23989-23994"
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.11 (c.506_508delAGC)"
+    variant_threshold_pct: 25
+    min_reads: 30
+    associated_alleles: "ABO*O.11"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.506_508delAGC p.(Thr99=): defines O.11."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it. also written c.505_507delCAG in ISBT v1.1. Indel: the pileup searches the homopolymer run and the calling threshold is 25%.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_529_GA
+    cdna_pos: 529
+    cdna_change: "c.529G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 155
+    amplicon_pos: 24014
+    ng006669_2_pos: 24014
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.31 (c.529G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.31"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.529G>A p.(Thr88ProfsTer31): defines O.01.31."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_538_CT
+    cdna_pos: 538
+    cdna_change: "c.538C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 164
+    amplicon_pos: 24023
+    ng006669_2_pos: 24023
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.32 (c.538C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.32"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.538C>T p.(Thr88ProfsTer31): defines O.01.32."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_541_TC
+    cdna_pos: 541
+    cdna_change: "c.541T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 167
+    amplicon_pos: 24026
+    ng006669_2_pos: 24026
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.28 (c.541T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.28"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.541T>C p.(Thr99=): defines BW.28."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_543_GT
+    cdna_pos: 543
+    cdna_change: "c.543G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 169
+    amplicon_pos: 24028
+    ng006669_2_pos: 24028
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.33 (c.543G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.33"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.543G>T p.(Pro156Leu): defines AW.33."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_547_GA
+    cdna_pos: 547
+    cdna_change: "c.547G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 173
+    amplicon_pos: 24032
+    ng006669_2_pos: 24032
+    category: b3
+    call_rule: named_marker
+    alt_call_label: "B3.06 (c.547G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B3.06"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.547G>A p.(Thr99=): defines B3.06."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_548_AG
+    cdna_pos: 548
+    cdna_change: "c.548A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 174
+    amplicon_pos: 24033
+    ng006669_2_pos: 24033
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.04 (c.548A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.04"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.548A>G p.(Thr99=): defines BW.04."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_550_GA
+    cdna_pos: 550
+    cdna_change: "c.550G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 176
+    amplicon_pos: 24035
+    ng006669_2_pos: 24035
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.33 (c.550G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.33"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.550G>A p.(Thr99=): defines BW.33."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_558_GT
+    cdna_pos: 558
+    cdna_change: "c.558G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 184
+    amplicon_pos: 24043
+    ng006669_2_pos: 24043
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.24 (c.558G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.24"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.558G>T p.(Thr99=): defines BW.24."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_559_CT
+    cdna_pos: 559
+    cdna_change: "c.559C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 185
+    amplicon_pos: 24044
+    ng006669_2_pos: 24044
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "B.03 (c.559C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B.03"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.559C>T p.(Thr99=): defines B.03."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_563_GA
+    cdna_pos: 563
+    cdna_change: "c.563G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 189
+    amplicon_pos: 24048
+    ng006669_2_pos: 24048
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.12 (c.563G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.12"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.563G>A p.(Thr99=): defines O.12."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_565_AG
+    cdna_pos: 565
+    cdna_change: "c.565A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 191
+    amplicon_pos: 24050
+    ng006669_2_pos: 24050
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.15 (c.565A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.15"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.565A>G p.(Thr99=): defines BW.15."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_575_TC
+    cdna_pos: 575
+    cdna_change: "c.575T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 201
+    amplicon_pos: 24060
+    ng006669_2_pos: 24060
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.16 (c.575T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.16"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.575T>C p.(Thr99=): defines BW.16."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_579_TC
+    cdna_pos: 579
+    cdna_change: "c.579T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 205
+    amplicon_pos: 24064
+    ng006669_2_pos: 24064
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.04 +1 (c.579T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.04;ABO*O.01.76"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.579T>C p.(Thr88ProfsTer31): defines O.01.04, O.01.76."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_588_CG
+    cdna_pos: 588
+    cdna_change: "c.588C>G"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 214
+    amplicon_pos: 24073
+    ng006669_2_pos: 24073
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.29 (c.588C>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.29"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.588C>G p.(Thr99=): defines BW.29."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_592_CT
+    cdna_pos: 592
+    cdna_change: "c.592C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 218
+    amplicon_pos: 24077
+    ng006669_2_pos: 24077
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.07 (c.592C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.07"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.592C>T p.(Pro156Leu): defines AW.07."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_595_CT
+    cdna_pos: 595
+    cdna_change: "c.595C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 221
+    amplicon_pos: 24080
+    ng006669_2_pos: 24080
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.12 (c.595C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.12"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.595C>T p.(Thr88ProfsTer31): defines O.01.12."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_619_CG
+    cdna_pos: 619
+    cdna_change: "c.619C>G"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 245
+    amplicon_pos: 24104
+    ng006669_2_pos: 24104
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.25 (c.619C>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.25"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.619C>G p.(Gly35Arg): defines BW.25."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_634_GA
+    cdna_pos: 634
+    cdna_change: "c.634G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 260
+    amplicon_pos: 24119
+    ng006669_2_pos: 24119
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.22 (c.634G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.22"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.634G>A p.(Pro156Leu): defines AW.22."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_635_TA
+    cdna_pos: 635
+    cdna_change: "c.635T>A"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 261
+    amplicon_pos: 24120
+    ng006669_2_pos: 24120
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.14 (c.635T>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.14"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.635T>A p.(Val212Glu): defines O.14."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_649_CT
+    cdna_pos: 649
+    cdna_change: "c.649C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 275
+    amplicon_pos: 24134
+    ng006669_2_pos: 24134
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.02.02 (c.649C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.02.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.649C>T p.(Arg18Leu): defines O.02.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_664_GA
+    cdna_pos: 664
+    cdna_change: "c.664G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 290
+    amplicon_pos: 24149
+    ng006669_2_pos: 24149
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AM.02 (c.664G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AM.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.664G>A p.(Val222Met): defines AM.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_669_GT
+    cdna_pos: 669
+    cdna_change: "c.669G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 295
+    amplicon_pos: 24154
+    ng006669_2_pos: 24154
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BEL.02 (c.669G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BEL.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.669G>T p.(Thr99=): defines BEL.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_687_CT
+    cdna_pos: 687
+    cdna_change: "c.687C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 313
+    amplicon_pos: 24172
+    ng006669_2_pos: 24172
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.58 (c.687C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.58"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.687C>T p.(Thr88ProfsTer31): defines O.01.58."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_688_GC
+    cdna_pos: 688
+    cdna_change: "c.688G>C"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 314
+    amplicon_pos: 24173
+    ng006669_2_pos: 24173
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.21 (c.688G>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.21"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.688G>C p.(Thr99=): defines BW.21."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_689_GA
+    cdna_pos: 689
+    cdna_change: "c.689G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 315
+    amplicon_pos: 24174
+    ng006669_2_pos: 24174
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.02.02 +1 (c.689G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.02.02;ABO*O.02.03"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.689G>A p.(Arg18Leu): defines O.02.02, O.02.03."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_695_TC
+    cdna_pos: 695
+    cdna_change: "c.695T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 321
+    amplicon_pos: 24180
+    ng006669_2_pos: 24180
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.11 (c.695T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.11"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.695T>C p.(Thr99=): defines BW.11."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_699_CA
+    cdna_pos: 699
+    cdna_change: "c.699C>A"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 325
+    amplicon_pos: 24184
+    ng006669_2_pos: 24184
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.14 (c.699C>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.14"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.699C>A p.(Pro156Leu): defines AW.14."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_729_CT
+    cdna_pos: 729
+    cdna_change: "c.729C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 355
+    amplicon_pos: 24214
+    ng006669_2_pos: 24214
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.27 (c.729C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.27"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.729C>T p.(Thr88ProfsTer31): defines O.01.27."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_745_CT
+    cdna_pos: 745
+    cdna_change: "c.745C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 371
+    amplicon_pos: 24230
+    ng006669_2_pos: 24230
+    category: a3
+    call_rule: named_marker
+    alt_call_label: "A3.07 (c.745C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*A3.07"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.745C>T p.(Pro156Leu): defines A3.07."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_761_CT
+    cdna_pos: 761
+    cdna_change: "c.761C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 387
+    amplicon_pos: 24246
+    ng006669_2_pos: 24246
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AM.01 (c.761C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AM.01"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.761C>T p.(Pro156Leu): defines AM.01."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_767_TC
+    cdna_pos: 767
+    cdna_change: "c.767T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 393
+    amplicon_pos: 24252
+    ng006669_2_pos: 24252
+    category: ael
+    call_rule: named_marker
+    alt_call_label: "AEL.05 (c.767T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AEL.05"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.767T>C p.(Pro156Leu): defines AEL.05."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_793_TC
+    cdna_pos: 793
+    cdna_change: "c.793T>C"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 419
+    amplicon_pos: 24278
+    ng006669_2_pos: 24278
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.15 (c.793T>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.15"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.793T>C p.(Tyr265His): defines O.15."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_808_TA
+    cdna_pos: 808
+    cdna_change: "c.808T>A"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 434
+    amplicon_pos: 24293
+    ng006669_2_pos: 24293
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.32 (c.808T>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.32"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.808T>A p.(Thr99=): defines BW.32."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_816_dup
+    cdna_pos: 816
+    cdna_change: "c.816dup"
+    exon: "Exon 7"
+    ref_base: REF
+    alt_base: dup
+    variant_type: insertion
+    legacy_exon7_pos: 442
+    amplicon_pos: 24301
+    ng006669_2_pos: 24301
+    search_window: "24295-24303"
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.20 (c.816dup)"
+    variant_threshold_pct: 25
+    min_reads: 30
+    associated_alleles: "ABO*BW.20"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.816dup p.(Thr99=): defines BW.20."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it. also written c.815_816insG in ISBT v1.1. Indel: the pileup searches the homopolymer run and the calling threshold is 25%.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_820_GA
+    cdna_pos: 820
+    cdna_change: "c.820G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 446
+    amplicon_pos: 24305
+    ng006669_2_pos: 24305
+    category: a3
+    call_rule: named_marker
+    alt_call_label: "A3.05 +1 (c.820G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*A3.05;ABO*A3.06"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.820G>A p.(Val274Met): defines A3.05, A3.06."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_838_CT
+    cdna_pos: 838
+    cdna_change: "c.838C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 464
+    amplicon_pos: 24323
+    ng006669_2_pos: 24323
+    category: a3
+    call_rule: named_marker
+    alt_call_label: "A3.03 (c.838C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*A3.03"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.838C>T p.(Leu280Phe): defines A3.03."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_860_CT
+    cdna_pos: 860
+    cdna_change: "c.860C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 486
+    amplicon_pos: 24345
+    ng006669_2_pos: 24345
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.35 (c.860C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.35"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.860C>T p.(Pro156Leu): defines AW.35."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_863_TG
+    cdna_pos: 863
+    cdna_change: "c.863T>G"
+    exon: "Exon 7"
+    ref_base: T
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 489
+    amplicon_pos: 24348
+    ng006669_2_pos: 24348
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.08 (c.863T>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.08"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.863T>G p.(Thr99=): defines BW.08."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_873_CG
+    cdna_pos: 873
+    cdna_change: "c.873C>G"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 499
+    amplicon_pos: 24358
+    ng006669_2_pos: 24358
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.02 (c.873C>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.873C>G p.(Thr99=): defines BW.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_889_GA
+    cdna_pos: 889
+    cdna_change: "c.889G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 515
+    amplicon_pos: 24374
+    ng006669_2_pos: 24374
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.34 (c.889G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.34"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.889G>A p.(Thr99=): defines BW.34."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_892_GT
+    cdna_pos: 892
+    cdna_change: "c.892G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 518
+    amplicon_pos: 24377
+    ng006669_2_pos: 24377
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "B.02 (c.892G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B.02"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.892G>T p.(Thr99=): defines B.02."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_893_CT
+    cdna_pos: 893
+    cdna_change: "c.893C>T"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 519
+    amplicon_pos: 24378
+    ng006669_2_pos: 24378
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.07 (c.893C>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.07"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.893C>T p.(Pro156Leu): defines O.07."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_900_GC
+    cdna_pos: 900
+    cdna_change: "c.900G>C"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 526
+    amplicon_pos: 24385
+    ng006669_2_pos: 24385
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.31 (c.900G>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.31"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.900G>C p.(Thr99=): defines BW.31."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_926_AG
+    cdna_pos: 926
+    cdna_change: "c.926A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 552
+    amplicon_pos: 24411
+    ng006669_2_pos: 24411
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.28 (c.926A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.01.28"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.926A>G p.(Thr88ProfsTer31): defines O.01.28."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_927_CA
+    cdna_pos: 927
+    cdna_change: "c.927C>A"
+    exon: "Exon 7"
+    ref_base: C
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 553
+    amplicon_pos: 24412
+    ng006669_2_pos: 24412
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.08 (c.927C>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*O.08"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.927C>A p.(Tyr309Ter): defines O.08."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_938_AC
+    cdna_pos: 938
+    cdna_change: "c.938A>C"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: C
+    variant_type: snp
+    legacy_exon7_pos: 564
+    amplicon_pos: 24423
+    ng006669_2_pos: 24423
+    category: b3
+    call_rule: named_marker
+    alt_call_label: "B3.08 (c.938A>C)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*B3.08"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.938A>C p.(Thr99=): defines B3.08."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_940_AG
+    cdna_pos: 940
+    cdna_change: "c.940A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 566
+    amplicon_pos: 24425
+    ng006669_2_pos: 24425
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.37 (c.940A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.37"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.940A>G p.(Lys314Glu): defines AW.37."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_952_GA
+    cdna_pos: 952
+    cdna_change: "c.952G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 578
+    amplicon_pos: 24437
+    ng006669_2_pos: 24437
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BEL.05 (c.952G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BEL.05"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.952G>A p.(Thr99=): defines BEL.05."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_965_AG
+    cdna_pos: 965
+    cdna_change: "c.965A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 591
+    amplicon_pos: 24450
+    ng006669_2_pos: 24450
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.05 (c.965A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.05"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.965A>G p.(Glu322Gly): defines AW.05."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_976_GT
+    cdna_pos: 976
+    cdna_change: "c.976G>T"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 602
+    amplicon_pos: 24461
+    ng006669_2_pos: 24461
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.30 (c.976G>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.30"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.976G>T p.(Thr99=): defines BW.30."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_996_GA
+    cdna_pos: 996
+    cdna_change: "c.996G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 622
+    amplicon_pos: 24481
+    ng006669_2_pos: 24481
+    category: aweak
+    call_rule: named_marker
+    alt_call_label: "AW.32 (c.996G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*AW.32"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.996G>A p.(Trp332Ter): defines AW.32."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_1036_AG
+    cdna_pos: 1036
+    cdna_change: "c.1036A>G"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: G
+    variant_type: snp
+    legacy_exon7_pos: 662
+    amplicon_pos: 24521
+    ng006669_2_pos: 24521
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.06 (c.1036A>G)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.06"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.1036A>G p.(Thr99=): defines BW.06."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_1037_AT
+    cdna_pos: 1037
+    cdna_change: "c.1037A>T"
+    exon: "Exon 7"
+    ref_base: A
+    alt_base: T
+    variant_type: snp
+    legacy_exon7_pos: 663
+    amplicon_pos: 24522
+    ng006669_2_pos: 24522
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.09 (c.1037A>T)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.09"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.1037A>T p.(Thr99=): defines BW.09."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_1046_delAGG
+    cdna_pos: 1046
+    cdna_change: "c.1046_1048delAGG"
+    exon: "Exon 7"
+    ref_base: REF
+    alt_base: del
+    variant_type: deletion
+    legacy_exon7_pos: 672
+    amplicon_pos: 24531
+    ng006669_2_pos: 24531
+    search_window: "24529-24534"
+    category: onull
+    call_rule: named_marker
+    alt_call_label: "O.01.76 (c.1046_1048delAGG)"
+    variant_threshold_pct: 25
+    min_reads: 30
+    associated_alleles: "ABO*O.01.76"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.1046_1048delAGG p.(Thr88ProfsTer31): defines O.01.76."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it. Indel: the pileup searches the homopolymer run and the calling threshold is 25%.
+    report: detected
+    source: ISBT_v9
+
+  - id: isbt_1055_GA
+    cdna_pos: 1055
+    cdna_change: "c.1055G>A"
+    exon: "Exon 7"
+    ref_base: G
+    alt_base: A
+    variant_type: snp
+    legacy_exon7_pos: 681
+    amplicon_pos: 24540
+    ng006669_2_pos: 24540
+    category: bweak
+    call_rule: named_marker
+    alt_call_label: "BW.07 (c.1055G>A)"
+    variant_threshold_pct: 15
+    min_reads: 30
+    associated_alleles: "ABO*BW.07"
+    interpretation_ref: "Reference."
+    interpretation_alt: "ISBT v9 c.1055G>A p.(Thr99=): defines BW.07."
+    notes: >
+      Added so that the allele can be named exactly; none of the reference-run samples carried it.
+    report: detected
+    source: ISBT_v9
 
 # ===========================================================================
 # STRUCTURAL VARIANTS — too large for per-base pileup calling.

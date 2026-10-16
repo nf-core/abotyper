@@ -27,6 +27,7 @@ to regenerate the flat table from the YAML source after editing.
 from __future__ import annotations
 
 import argparse
+import re
 import csv
 import json
 from dataclasses import dataclass, field, fields
@@ -52,6 +53,7 @@ FIELD_NAMES = [
     "ref_threshold_pct", "alt_threshold_pct", "het_band_pct",
     "variant_threshold_pct", "min_reads", "associated_alleles",
     "interpretation_ref", "interpretation_alt", "notes", "source",
+    "search_window", "report",
 ]
 
 _INT_FIELDS = {
@@ -110,6 +112,19 @@ class VariantMarker:
     interpretation_alt: str = ""
     notes: str = ""
     source: str = ""
+    # indel / homopolymer rows: the reference span "lo-hi" (NG_006669.2) in which an aligner or caller may anchor the
+    # indel; neighbouring markers get disjoint spans so that one marker never reads another's indel
+    search_window: str = ""
+    # "always" (default): the position gets columns in the Variants sheet; "detected": only when a sample carries it
+    report: str = ""
+
+    def search_bounds(self, default_pad: int):
+        """(lo, hi) reference positions to search for this marker's indel."""
+        pos = self.resolved_position()
+        m = re.fullmatch(r"\s*(\d+)\s*-\s*(\d+)\s*", self.search_window or "")
+        if m:
+            return int(m.group(1)), int(m.group(2))
+        return pos - default_pad, pos + default_pad
 
     # -- convenience -------------------------------------------------
     def ng_ref_base_matches(self, ng_seq: str) -> Optional[bool]:

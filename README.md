@@ -83,13 +83,13 @@ Ensure that all input fastq files have a naming convention that matches this reg
 
 ```python
 ## python regex for matching samples
-pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
+pattern = r"^[A-Z0-9]+(-[A-Z0-9]+){0,2}_barcode\d+$"
 ```
 
 The regex does the following:
 
-- `^(IMM|INGS|NGS|[A-Z0-9]+)` allows for files strating with the prefixes IMM, INGS, NGS, or any combination of letters `A-to-Z` and digits `0-to-9`.
-- `(-[0-9]+-[0-9]+)?` handles optional segments of digits separated by a dash(-).
+- `^[A-Z0-9]+` allows a sample name that starts with any combination of letters `A-to-Z` and digits `0-to-9` (matching is case-insensitive).
+- `(-[A-Z0-9]+){0,2}` handles up to two optional segments of letters or digits separated by a dash(-).
 - `_barcode\d+$` ensures the filename ends with_barcode followed by digits to denote barcode numbers.
 
 There is a file handling logic in the code `filename.split("_")` that assumes the barcode is always the last part of the filename.
@@ -98,10 +98,8 @@ The names are split into `basename` and `barcode` which are then used in later r
 Here are a few examples of acceptable input file names:
 
 ```txt
-NGSPOS_barcode13.fastq
-NGSNEG_barcode12.fastq
-INGSPOS_barcode01.fastq
-INGSNEG_barcode96.fastq
+POSCTRL_barcode13.fastq
+NEGCTRL_barcode12.fastq
 CONTROLPOS_barcode19.fastq
 2025705_barcode14.fastq
 Sample-45-44874_barcode25.fastq
@@ -200,7 +198,7 @@ OUTDIR/
         └── multiqc_report.html
 ```
 
-`ABO_result.xlsx` has three sheets: `Typing` (one row per sample with read, mapping and depth metrics, the evidence source, the ISBT-style typing result, phenotype, genotype and QC status), `Variants` (all SNVs and metrics used to deduce the ABO phenotype for each sample) and `About` (script, panel and ISBT-table versions and the research-use statement).
+`ABO_result.xlsx` has three sheets: `Typing` (one row per sample with read, mapping and depth metrics, the evidence source, the ISBT-style typing result, phenotype, genotype, the variants detected, a depth check and QC status), `Variants` (one column per panel position with the call and depth, for example `A 50% (215x)`, `ref (215x)` or `no data`; the rare positions marked `report: detected` in the panel appear only when a sample carries them; the full pileup counts are in `ABO_result.txt`) and `About` (script, panel and ISBT-table versions and the research-use statement).
 
 A summary of the ABO typing results is provided in `final_export.csv`
 

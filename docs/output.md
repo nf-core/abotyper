@@ -60,7 +60,7 @@ OUTDIR/
         └── multiqc_report.html
 ```
 
-`ABO_result.xlsx` has three sheets: `Typing` (one row per sample with read, mapping and depth metrics, the evidence source, the ISBT-style typing result, phenotype, genotype and QC status), `Variants` (all SNVs and metrics used to deduce the ABO phenotype for each sample) and `About` (script, panel and ISBT-table versions and the research-use statement).
+`ABO_result.xlsx` has three sheets: `Typing` (one row per sample with read, mapping and depth metrics, the evidence source, the ISBT-style typing result, phenotype, genotype, the variants detected, a depth check and QC status), `Variants` (one column per panel position with the call and depth, for example `A 50% (215x)`, `ref (215x)` or `no data`; the rare positions marked `report: detected` in the panel appear only when a sample carries them; the full pileup counts are in `ABO_result.txt`) and `About` (script, panel and ISBT-table versions and the research-use statement).
 
 A summary of the ABO typing results is provided in `final_export.csv`
 

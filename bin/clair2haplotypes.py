@@ -118,15 +118,14 @@ def parse_phased_vcf(path: Path) -> Dict[int, PhasedRecord]:
 
 
 def find_phased_record(records: Dict[int, PhasedRecord], center_pos: int,
-                        window: int) -> Optional[PhasedRecord]:
-    """Closest phased record within +-window of center_pos (0 offset first)."""
+                        lo: int, hi: int) -> Optional[PhasedRecord]:
+    """Closest phased record to center_pos inside [lo, hi] (0 offset first)."""
     if center_pos in records:
         return records[center_pos]
-    for offset in range(1, window + 1):
-        if center_pos - offset in records:
-            return records[center_pos - offset]
-        if center_pos + offset in records:
-            return records[center_pos + offset]
+    for offset in range(1, max(center_pos - lo, hi - center_pos) + 1):
+        for p in (center_pos - offset, center_pos + offset):
+            if lo <= p <= hi and p in records:
+                return records[p]
     return None
 
 
@@ -160,8 +159,8 @@ def build_rows(panel: Panel, records: Dict[int, PhasedRecord], window: int = 15)
 
     for marker in panel.calibrated():
         pos = marker.resolved_position()
-        marker_window = window if needs_padding(marker) else 0
-        rec = find_phased_record(records, pos, marker_window)
+        lo, hi = marker.search_bounds(window) if needs_padding(marker) else (pos, pos)
+        rec = find_phased_record(records, pos, lo, hi)
         if rec is None:
             continue
         ps_key = rec.ps if rec.ps else f"unnamed_ps_at_{rec.pos}"
