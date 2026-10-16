@@ -27,7 +27,9 @@ process ABO_EVIDENCE {
         : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
 
     input:
-    tuple val(meta), path(pileup), path(clair_metrics)
+    // staged in clair3/ so its name (<id>.AlignmentStatistics.tsv) does not collide with the
+    // merged output of the same name: Nextflow never matches input files as outputs
+    tuple val(meta), path(pileup), path(clair_metrics, stageAs: "clair3/*")
     path panel_file
 
     output:
