@@ -31,10 +31,16 @@ nextflow_process {
                 { assert process.success },
                 // the merged table keeps its name; the Clair3 input is staged in clair3/ so they do not collide
                 { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
-                { assert path(process.out.tsv[0][1]).readLines().size() == 52 },
+                // header + one row per calibrated panel position (135 in panel v2.3.0)
+                { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
+                { assert row.positions == '135' },
                 { assert row.evidence_source == 'CLAIR3+BAM' },
+                // the fixture was made before the rare positions were added: the 51 original positions are covered by both
+                // lines, the others have no Clair3 row; the pileup covers a few of them through the padded indel windows
                 { assert row.both == '51' },
-                { assert row.discordant == '0' },
+                { assert row.clair3_only == '0' },
+                // at most one non-primary position may disagree (the synthetic reads carry indel noise in the c.804 7-G run)
+                { assert row.discordant.toInteger() <= 1 },
                 { assert row.discordant_primary == '0' },
                 { assert snapshot(
                     process.out.tsv,
@@ -67,9 +73,10 @@ nextflow_process {
             assertAll(
                 { assert process.success },
                 { assert row.evidence_source == 'BAM_ONLY' },
-                { assert row.bam_only == '51' },
+                // the pileup covers the 51 original positions and 10 more inside the padded indel windows
+                { assert row.bam_only == '61' },
                 { assert row.clair3_only == '0' },
-                { assert path(process.out.tsv[0][1]).readLines().size() == 52 },
+                { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
                 { assert snapshot(process.out.tsv, process.out.status).match() }
             )
         }

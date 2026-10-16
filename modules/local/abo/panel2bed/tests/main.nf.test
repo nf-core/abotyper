@@ -23,8 +23,8 @@ nextflow_process {
             def bed = path(process.out.bed[0])
             assertAll(
                 { assert process.success },
-                // one interval per calibrated panel position (51 in the shipped panel)
-                { assert bed.readLines().size() == 51 },
+                // one interval per calibrated panel position (135 in the shipped panel v2.3.0)
+                { assert bed.readLines().size() == 135 },
                 // 4 columns: chrom, start, end, id; chrom is the NG_006669.2 reference
                 { assert bed.readLines().every { it.split('\t').size() == 4 && it.startsWith('NG_006669.2\t') } },
                 { assert snapshot(bed, process.out.findAll { key, val -> key.startsWith('versions') }).match() }
