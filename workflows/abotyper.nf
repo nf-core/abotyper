@@ -107,7 +107,12 @@ workflow ABOTYPER {
         ch_prediction_input.metrics,
         ch_prediction_input.coverage,
         VARIANTS_QUANTIFICATION.out.haplotypes,
+        VARIANTS_QUANTIFICATION.out.evidence_status,
+        VARIANTS_QUANTIFICATION.out.concordance,
     )
+
+    // Per-sample evidence summary (Clair3 + BAM pileup) as a MultiQC table
+    ch_multiqc_files = ch_multiqc_files.mix(PREDICTABOPHENOTYPE.out.evidence_summary)
 
     //
     // Collate and save software versions

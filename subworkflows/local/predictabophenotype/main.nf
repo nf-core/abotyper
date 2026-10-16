@@ -14,6 +14,8 @@ workflow PREDICTABOPHENOTYPE {
     ch_variants_freq // channel: [ val(meta), [ freq ] ]
     ch_bam_coverage  // channel: [ val(meta), [ cov ] ]
     ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from ABO_CLAIR2HAPLOTYPES
+    ch_evidence_status // channel: [ val(meta), path(*.evidence_status.tsv) ] - from ABO_EVIDENCE
+    ch_concordance     // channel: [ val(meta), path(*.concordance.tsv) ]     - from ABO_EVIDENCE
 
     main:
 
@@ -38,6 +40,16 @@ workflow PREDICTABOPHENOTYPE {
         .mix(
             ch_haplotypes.map { meta, file ->
                 [meta.id, [file: file, type: 'haplotype']]
+            }
+        )
+        .mix(
+            ch_evidence_status.map { meta, file ->
+                [meta.id, [file: file, type: 'evidence_status']]
+            }
+        )
+        .mix(
+            ch_concordance.map { meta, file ->
+                [meta.id, [file: file, type: 'concordance']]
             }
         )
         .groupTuple()
@@ -65,5 +77,6 @@ workflow PREDICTABOPHENOTYPE {
     )
 
     emit:
-    abo_results = ABO_SNPS2PHENO.out.txt
+    abo_results      = ABO_SNPS2PHENO.out.txt
+    evidence_summary = ABO_SNPS2PHENO.out.mqc
 }

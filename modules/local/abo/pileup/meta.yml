@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABO_PILEUP
+description: samtools mpileup over the ABO panel BED, as the second line of evidence alongside Clair3
+keywords:
+  - abo
+  - pileup
+  - samtools
+tools:
+  - samtools:
+      description: Tools for dealing with SAM, BAM and CRAM files
+      homepage: http://www.htslib.org/
+      documentation: http://www.htslib.org/doc/samtools.html
+      licence: ["MIT"]
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information, e.g. [ id:'sample1' ]
+    - bam:
+        type: file
+        description: Sorted BAM
+        pattern: "*.bam"
+    - bai:
+        type: file
+        description: BAM index
+        pattern: "*.bai"
+  - - meta2:
+        type: map
+        description: Groovy Map containing reference information
+    - fasta:
+        type: file
+        description: Reference FASTA
+    - fai:
+        type: file
+        description: Reference FASTA index
+  - - bed:
+        type: file
+        description: ABO panel BED (ABO_PANEL2BED)
+        pattern: "*.bed"
+output:
+  pileup:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.pileup.txt":
+          type: file
+          description: samtools mpileup text over the panel positions
+          pattern: "*.pileup.txt"
+  versions_samtools:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - samtools:
+          type: string
+          description: Name of the tool
+      - "samtools version | sed '1!d;s/.* //'":
+          type: eval
+          description: The expression to obtain the version of samtools
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - samtools:
+          type: string
+          description: Name of the tool
+      - "samtools version | sed '1!d;s/.* //'":
+          type: eval
+          description: The expression to obtain the version of samtools
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

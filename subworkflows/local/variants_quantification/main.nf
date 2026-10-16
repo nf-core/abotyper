@@ -13,6 +13,8 @@ include { CLAIR3                } from '../../../modules/nf-core/clair3/main'
 include { ABO_PANEL2BED         } from '../../../modules/local/abo/panel2bed/main'
 include { ABO_CLAIR2METRICS     } from '../../../modules/local/abo/clair2metrics/main'
 include { ABO_CLAIR2HAPLOTYPES  } from '../../../modules/local/abo/clair2haplotypes/main'
+include { ABO_PILEUP            } from '../../../modules/local/abo/pileup/main'
+include { ABO_EVIDENCE          } from '../../../modules/local/abo/evidence/main'
 
 workflow VARIANTS_QUANTIFICATION {
     take:
@@ -54,6 +56,13 @@ workflow VARIANTS_QUANTIFICATION {
         ch_fai.map { meta1, fai -> [meta1, fai] }.first(), // convert to value channel
     )
 
+    // CLAIR3 runs with errorStrategy 'ignore': say so at run time when a sample gets no gVCF.
+    // (Such samples are still typed from the BAM pileup by ABO_EVIDENCE, and flagged REVIEW.)
+    ch_bam_bai
+        .join(CLAIR3.out.gvcf, by: 0, remainder: true)
+        .filter { it[3] == null }
+        .subscribe { log.warn "Clair3 produced no gVCF for sample '${it[0].id}': relying on the BAM pileup alone (flagged REVIEW)" }
+
     //
     // MODULE: ABO_PANEL2BED
     //
@@ -81,8 +90,38 @@ workflow VARIANTS_QUANTIFICATION {
         panel_file,
     )
 
+    //
+    // MODULE: ABO_PILEUP
+    //
+    // Second, independent line of evidence: a BAM pileup over the panel positions, for
+    // every sample. (CLAIR3 also runs with errorStrategy 'ignore', so a failed Clair3 job
+    // emits nothing; the pileup keeps such a sample from silently disappearing.)
+    ABO_PILEUP(
+        ch_bam_bai,
+        ch_fasta_fai,
+        ABO_PANEL2BED.out.bed,
+    )
+
+    //
+    // MODULE: ABO_EVIDENCE
+    //
+    // Compares the two lines of evidence at every panel position (concordance table and
+    // status file) and writes the table that is scored: Clair3 is the primary line, the
+    // BAM pileup fills positions Clair3 had no evidence for. remainder:true keeps samples
+    // with no Clair3 metrics (clair_metrics -> null -> []), which are then BAM-only.
+    ch_evidence_input = ABO_PILEUP.out.pileup
+        .join(ABO_CLAIR2METRICS.out.tsv, by: 0, remainder: true)
+        .map { meta, pileup, clair_tsv -> [meta, pileup, clair_tsv ?: []] }
+
+    ABO_EVIDENCE(
+        ch_evidence_input,
+        panel_file,
+    )
+
     emit:
-    metrics    = ABO_CLAIR2METRICS.out.tsv
+    metrics         = ABO_EVIDENCE.out.tsv
+    evidence_status = ABO_EVIDENCE.out.status
+    concordance     = ABO_EVIDENCE.out.concordance
     haplotypes = ABO_CLAIR2HAPLOTYPES.out.tsv
 
     clair3_vcf        = CLAIR3.out.vcf
