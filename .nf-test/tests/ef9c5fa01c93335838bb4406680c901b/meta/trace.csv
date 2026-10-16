@@ -1,2 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	72/cf6976	1886348	ABO_GETABOSNPS (ABO_AA_barcode01)	COMPLETED	0	2026-10-16 14:32:32.020	6.8s	4s	163.5%	65.4 MB	955.1 MB	44.8 MB	21.9 KB

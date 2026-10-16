@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -80,12 +83,10 @@
             "type": "boolean"
         },
         "abo_bed": {
-            "type": "string",
-            "default": "/mnt/storage_c2/bioinformatics/abotyper/assets/refs/abo_variant_panel.bed"
+            "type": "string"
         },
         "abo_clair3_region_bed": {
-            "type": "string",
-            "default": "/mnt/storage_c2/bioinformatics/abotyper/assets/refs/abo_clair3_region.bed"
+            "type": "string"
         },
         "abo_reference_fai": {
             "type": "string"
@@ -110,8 +111,7 @@
             "type": "string"
         },
         "multiqc_logo": {
-            "type": "string",
-            "default": "/mnt/storage_c2/bioinformatics/abotyper/assets/pathwest_logo.png"
+            "type": "string"
         },
         "max_multiqc_email_size": {
             "type": "string",

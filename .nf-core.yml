@@ -9,6 +9,12 @@ lint:
         - params.fasta
         - params.fai
         - params.multiqc_logo
+        - params.logo
+        - params.abo_bed
+        - params.abo_clair3_region_bed
+        - params.abo_panel
+        - params.abo_reference_fasta
+        - params.abo_reference_fai
   nf_test_content: false
   files_exist:
     - .github/workflows/linting_comment.yml

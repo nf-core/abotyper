@@ -1,2 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	3f/fc8ec1	1882590	ABO_CLAIR2METRICS (ABO_AA_barcode01)	COMPLETED	0	2026-10-16 14:30:19.464	2s	840ms	98.1%	12.2 MB	17.2 MB	2.6 MB	2.2 KB

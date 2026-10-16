@@ -1,6 +1,0 @@
-N E X T F L O W  ~  version 26.10.2
-Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-897931422534f8a777472f56dfa1af2e.nf` [agitated_liskov] - revision: eb00f53458
-WARN: Unrecognized config option 'validation.defaultIgnoreParams'
-WARN: Unrecognized config option 'validation.monochromeLogs'
-[63/c623c2] Submitted process > ABO_SNPS2PHENO (COMPILING ABO RESULTS)
-WARN: Process `ABO_SNPS2PHENO` publishDir path contains a variable with a null value

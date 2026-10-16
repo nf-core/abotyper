@@ -1,6 +1,0 @@
-N E X T F L O W  ~  version 26.10.2
-Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-d09154131d9fef53facc2cc59f689781.nf` [berserk_cuvier] - revision: cbe0e443d4
-WARN: Unrecognized config option 'validation.defaultIgnoreParams'
-WARN: Unrecognized config option 'validation.monochromeLogs'
-[76/97a13e] Submitted process > ABO_GETABOSNPS (ABO_AA_barcode01)
-WARN: Process `ABO_GETABOSNPS` publishDir path contains a variable with a null value

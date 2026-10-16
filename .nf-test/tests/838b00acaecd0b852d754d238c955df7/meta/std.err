@@ -1,6 +1,0 @@
-N E X T F L O W  ~  version 26.10.2
-Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-838b00acaecd0b852d754d238c955df7.nf` [lethal_stonebraker] - revision: 49cb0a9851
-WARN: Unrecognized config option 'validation.defaultIgnoreParams'
-WARN: Unrecognized config option 'validation.monochromeLogs'
-[82/ac1608] Submitted process > PREDICTABOPHENOTYPE:ABO_GETABOSNPS (ABO_AA_barcode01)
-[06/e74b7a] Submitted process > PREDICTABOPHENOTYPE:ABO_SNPS2PHENO (COMPILING ABO RESULTS)

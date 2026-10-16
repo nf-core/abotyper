@@ -1,6 +1,0 @@
-N E X T F L O W  ~  version 26.10.2
-Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-e2d73e8ac5d08dda6cebee78c2c6650c.nf` [tiny_boltzmann] - revision: 782c1f6e36
-WARN: Unrecognized config option 'validation.defaultIgnoreParams'
-WARN: Unrecognized config option 'validation.monochromeLogs'
-[e4/2ed381] Submitted process > ABO_PANEL2BED (abo_variant_panel)
-WARN: Process `ABO_PANEL2BED` publishDir path contains a variable with a null value
