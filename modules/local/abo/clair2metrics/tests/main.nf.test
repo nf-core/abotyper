@@ -29,8 +29,8 @@ nextflow_process {
                 { assert process.success },
                 { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
                 { assert lines[0].startsWith("Ref_Position_1based\tRef_Base\tMatch_Percent") },
-                // header + one row per calibrated panel position
-                { assert lines.size() == 52 },
+                // header + one row per calibrated panel position (135 in panel v2.3.0)
+                { assert lines.size() == 136 },
                 // the fixture was called over the ABO region: every panel position has depth
                 { assert lines.drop(1).every { it.split('\t')[10].toInteger() > 0 } },
                 { assert snapshot(
