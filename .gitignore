@@ -6,6 +6,8 @@ results/
 testing/
 testing*
 .nf-test/
+.nf-test.log
+.claude/
 *.pyc
 null/
 .lineage/
