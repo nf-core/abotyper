@@ -25,7 +25,7 @@ __credits__ = [
     "Claude Sonnet 5",
 ]
 __license__ = "GPL"
-__version__ = "2.0.0"
+__version__ = "2.3.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
@@ -44,6 +44,19 @@ the shared B-lineage 7-SNP backbone present in nearly all B/B3/Bweak/Bel/
 cisAB/BA alleles. Bw.06's actual private variant is c.1036A>G (not yet in
 the exon6/7 amplicon's position set -- add via the panel once calibrated
 against the combined amplicon).
+
+Typing sheet and ISBT allele names (v2.2.0)
+-------------------------------------------
+ABO_result.xlsx now has two sheets: "Typing" (one NGSengine-style row per
+sample: reads, read length, insert size, mappability, median depth, median
+analysed depth, number of unresolved ("?") primary positions, typing result,
+phenotype, genotype, QC) and "Variants" (the per-position table, formerly
+"ABO_Result"). ExtendedGenotype is written with ISBT-style names (A1 ->
+ABO*A1.01, O1 -> ABO*O.01.01, B -> ABO*B.01 are only reference defaults; when
+non-primary panel markers fire, the allele is narrowed to the one they point
+to). The decision tree and QC logic still work on the internal tokens and only the written value is encoded.
+Alignment metrics are read from samtools stats / flagstat files found under
+each sample directory; a missing file leaves the cell blank.
 
 QC / failure capture (v2.1.0)
 -----------------------------
@@ -88,6 +101,297 @@ Part of the nf-core/abotyper pipeline: https://github.com/fmobegi/nf-core-abotyp
 
 
 # ===========================================================================
+# ISBT allele names and alignment metrics (v2.2.0)
+# ===========================================================================
+
+# Reference (default) ISBT allele per internal token: used only when no panel marker
+# points to a more specific allele of the same family. Checked against the ISBT ABO allele
+# table v9 (blooddatabase.isbtweb.org/system/ABO): ABO*A1.01 (reference, no changes),
+# ABO*B.01 (B backbone), ABO*O.01.01 (c.261delG only), ABO*O.02.01 (c.53G>T, c.220C>T,
+# c.297A>G, c.526C>G, c.802G>A) and ABO*O.03 (no numeric suffix in the table).
+RESEARCH_USE_STATEMENT = (
+    "RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or "
+    "transfusion decisions; confirm results with an accredited method before any clinical use."
+)
+ISBT_ALLELE_NAMES = {
+    "A1": "ABO*A1.01",
+    "A2.01": "ABO*A2.01",
+    "A2.06": "ABO*A2.06",
+    "A2": "ABO*A2",
+    "A": "ABO*A",
+    "B": "ABO*B.01",
+    "O1": "ABO*O.01.01",
+    "O2": "ABO*O.02.01",
+    "O3": "ABO*O.03",
+}
+
+# Family prefix an allele name must start with to be a candidate for a token.
+_ISBT_FAMILY = {
+    "A1": "ABO*A1.", "A2.01": "ABO*A2.", "A2.06": "ABO*A2.", "A2": "ABO*A2.",
+    "B": "ABO*B.", "O1": "ABO*O.01.", "O2": "ABO*O.02.", "O3": "ABO*O.03",
+}
+_ISBT_NAME_RE = re.compile(r"(?:ABO\*)?([A-Za-z]+[0-9]*\.\d+(?:\.\d+)?)(?![\d-])")
+
+
+def _marker_candidate_alleles(marker) -> set:
+    """Exact (non-wildcard) ISBT allele names listed in a panel marker's associated_alleles."""
+    out = set()
+    for m in _ISBT_NAME_RE.finditer(getattr(marker, "associated_alleles", "") or ""):
+        out.add("ABO*" + m.group(1).upper())
+    return out
+
+
+def encode_allele(token: str, fired_markers=()) -> str:
+    """Internal allele token (A1, O2, ...) -> ISBT-style name.
+
+    Starts from the reference allele of the token's family, then narrows using the
+    non-primary panel markers that actually fired in this sample: the allele names
+    those markers are associated with, restricted to the token's family. One surviving
+    candidate -> that allele; several -> the family name only (not resolved further);
+    none -> the reference allele. Unknown tokens pass through.
+    """
+    t = str(token).strip()
+    default = ISBT_ALLELE_NAMES.get(t, t)
+    fam = _ISBT_FAMILY.get(t)
+    if not fam:
+        return default
+    sets = []
+    for mk in fired_markers:
+        cand = {a for a in _marker_candidate_alleles(mk) if a.startswith(fam) or a == fam.rstrip(".")}
+        if cand:
+            sets.append(cand)
+    if not sets:
+        return default
+    common = set.intersection(*sets)
+    cands = common if common else set.union(*sets)
+    if len(cands) == 1:
+        return next(iter(cands))
+    return fam.rstrip(".")   # ambiguous: family only, e.g. ABO*O.01
+
+
+def encode_extended_genotype(ext: str, fired_markers=()) -> str:
+    """'A2.01/O1' -> 'ABO*A2.01/ABO*O.01.01'. 'Unknown', 'Error' and empty values are left untouched."""
+    if not isinstance(ext, str) or ext in ("", "Unknown", "Error"):
+        return ext
+    tokens = ext.split("/")
+    markers = list(fired_markers)
+    if "B" in tokens:
+        # B-lineage backbone SNPs (associated alleles include ABO*B.*) come from the B
+        # allele of an AB/BO sample; they must not rename the non-B allele (e.g. to A2.04)
+        backbone = [m for m in markers if "ABO*B.*" in (getattr(m, "associated_alleles", "") or "")]
+        non_b = [m for m in markers if m not in backbone]
+        return "/".join(encode_allele(t, markers if t == "B" else non_b) for t in tokens)
+    return "/".join(encode_allele(t, markers) for t in tokens)
+
+
+def _first_file(sample_dir: str, patterns) -> Optional[str]:
+    """First non-empty file under sample_dir matching any glob pattern (recursive).
+    Prefers a combined/ location, then the shallowest path, then alphabetical."""
+    found = []
+    for pat in patterns:
+        found.extend(glob.glob(os.path.join(sample_dir, "**", pat), recursive=True))
+    found = [f for f in found if os.path.isfile(f) and os.path.getsize(f) > 0]
+    if not found:
+        return None
+
+    def rank(path):
+        rel = os.path.relpath(path, sample_dir)
+        parts = rel.replace("\\", "/").split("/")
+        return (0 if "combined" in parts[:-1] else 1, len(parts), rel)
+
+    return sorted(found, key=rank)[0]
+
+
+def _weighted_median(pairs) -> Optional[float]:
+    """Median of values given as (value, count) pairs."""
+    pairs = sorted((v, c) for v, c in pairs if c > 0)
+    total = sum(c for _, c in pairs)
+    if total <= 0:
+        return None
+    half = total / 2.0
+    running = 0
+    for i, (v, c) in enumerate(pairs):
+        running += c
+        if running > half:
+            return float(v)
+        if running == half:
+            nxt = pairs[i + 1][0] if i + 1 < len(pairs) else v
+            return (v + nxt) / 2.0
+    return float(pairs[-1][0])
+
+
+def parse_alignment_metrics(sample_dir: str) -> Dict[str, Optional[float]]:
+    """Per-sample alignment metrics from samtools stats (preferred) and flagstat (fallback).
+
+    Keys: reads, read_length, insert_size, mappability, median_depth (None when unavailable).
+    Never raises. Note samtools stats caps the COV histogram at its last bin
+    (default 1000+), so a median depth above the cap is reported as the cap.
+    """
+    m: Dict[str, Optional[float]] = {
+        "reads": None, "read_length": None, "insert_size": None,
+        "mappability": None, "median_depth": None,
+    }
+    mapped = None
+    try:
+        stats_file = _first_file(sample_dir, ["*.stats"])
+        if stats_file:
+            cov = []
+            with open(stats_file, "r", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if line.startswith("SN\t"):
+                        parts = line.rstrip("\n").split("\t")
+                        if len(parts) < 3:
+                            continue
+                        key, val = parts[1].rstrip(":").strip(), parts[2].strip()
+                        try:
+                            if key == "raw total sequences":
+                                m["reads"] = float(val)
+                            elif key == "reads mapped":
+                                mapped = float(val)
+                            elif key == "average length":
+                                m["read_length"] = float(val)
+                            elif key == "insert size average":
+                                m["insert_size"] = float(val)
+                        except ValueError:
+                            pass
+                    elif line.startswith("COV\t"):
+                        parts = line.rstrip("\n").split("\t")
+                        if len(parts) >= 4:
+                            try:
+                                cov.append((int(parts[2]), int(parts[3])))
+                            except ValueError:
+                                pass
+            m["median_depth"] = _weighted_median(cov)
+    except Exception:
+        pass
+
+    try:
+        if m["reads"] is None or mapped is None:
+            flag_file = _first_file(sample_dir, ["*.flagstat"])
+            if flag_file:
+                with open(flag_file, "r", encoding="utf-8", errors="replace") as fh:
+                    for line in fh:
+                        t = re.match(r"^(\d+) \+ \d+ in total", line)
+                        if t and m["reads"] is None:
+                            m["reads"] = float(t.group(1))
+                        g = re.match(r"^(\d+) \+ \d+ mapped \(", line)
+                        if g and mapped is None:
+                            mapped = float(g.group(1))
+    except Exception:
+        pass
+
+    m["mapped"] = mapped
+    if m["reads"] and mapped is not None:
+        m["mappability"] = 100.0 * mapped / m["reads"]
+    if m["insert_size"] is not None and m["insert_size"] <= 0:
+        m["insert_size"] = None   # 0 = unpaired/long reads: not meaningful
+    return m
+
+
+def parse_coverage_file(sample_dir: str) -> Dict[str, Optional[float]]:
+    """ABO-specific figures from a samtools coverage table (*.coverage.txt, one row per contig).
+
+    abo_reads     reads mapped to the ABO reference (numreads)
+    covered_depth mean depth over the bases that have any coverage (meandepth * length / covbases)
+    Both None when the file is absent. In an ABO-HLA duplex run the HLA reads do not map to the
+    ABO reference, so these describe the ABO amplicon rather than the whole library.
+    """
+    out: Dict[str, Optional[float]] = {"abo_reads": None, "covered_depth": None}
+    try:
+        f = _first_file(sample_dir, ["*.coverage.txt"])
+        if not f:
+            return out
+        with open(f, "r", encoding="utf-8", errors="replace") as fh:
+            rows = [l.rstrip("\n").split("\t") for l in fh if l.strip() and not l.startswith("#")]
+        reads = depth_x_len = cov = 0.0
+        for r in rows:
+            if len(r) < 7:
+                continue
+            start, end, numreads, covbases, meandepth = (float(r[1]), float(r[2]), float(r[3]),
+                                                         float(r[4]), float(r[6]))
+            reads += numreads
+            cov += covbases
+            depth_x_len += meandepth * (end - start + 1)
+        out["abo_reads"] = reads
+        if cov > 0:
+            out["covered_depth"] = depth_x_len / cov
+    except (OSError, ValueError):
+        pass
+    return out
+
+
+def parse_evidence_status(sample_dir: str) -> Dict[str, object]:
+    """Two-line evidence summary written by the pipeline's ABO_EVIDENCE step (*.evidence_status.tsv).
+
+    evidence_source  CLAIR3+BAM | CLAIR3_ONLY | BAM_ONLY | NONE ('' when no file was found)
+    filled_primary   primary typing positions taken from the BAM pileup (Clair3 had no evidence)
+    discordant       panel positions where Clair3 and the BAM pileup disagree
+    primary_names    the primary typing positions among them
+    """
+    out: Dict[str, object] = {"evidence_source": "", "filled_primary": None, "bam_only": None,
+                              "discordant": None, "discordant_primary": None, "primary_names": "",
+                              "bam_max_depth": None}
+    try:
+        f = _first_file(sample_dir, ["*.evidence_status.tsv"])
+        if not f:
+            return out
+        with open(f, "r", encoding="utf-8", errors="replace") as fh:
+            lines = [l.rstrip("\n").split("\t") for l in fh if l.strip()]
+        if len(lines) >= 2:
+            row = dict(zip(lines[0], lines[1]))
+            out["evidence_source"] = row.get("evidence_source", "")
+            out["filled_primary"] = int(row.get("filled_primary_from_bam", "0"))
+            out["bam_only"] = int(row.get("bam_only", "0"))
+            if row.get("bam_max_depth", "") != "":
+                out["bam_max_depth"] = int(row["bam_max_depth"])
+            out["discordant"] = int(row.get("discordant", "0"))
+            out["discordant_primary"] = int(row.get("discordant_primary", "0"))
+            out["primary_names"] = row.get("discordant_primary_names", "").replace(";", ", ")
+    except (OSError, ValueError):
+        pass
+    return out
+
+
+def parse_nanostats(path: str) -> Dict[str, Optional[float]]:
+    """Read count and mean read length from a NanoPlot NanoStats.txt (None when absent)."""
+    out: Dict[str, Optional[float]] = {"reads": None, "read_length": None}
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                key, _, val = line.partition(":")
+                val = val.strip().replace(",", "")
+                try:
+                    if key.strip() == "Number of reads":
+                        out["reads"] = float(val)
+                    elif key.strip() == "Mean read length":
+                        out["read_length"] = float(val)
+                except ValueError:
+                    pass
+    except OSError:
+        pass
+    return out
+
+
+def find_nanostats(sample_dir: str, nanoplot_dir: Optional[str], sample_name: str,
+                   barcode: str) -> Optional[str]:
+    """NanoStats.txt inside the sample folder, else under nanoplot_dir in a path that
+    contains the sample name (preferred) or the barcode token."""
+    found = _first_file(sample_dir, ["*NanoStats.txt"])
+    if found or not nanoplot_dir or not os.path.isdir(nanoplot_dir):
+        return found
+    cands = [f for f in glob.glob(os.path.join(nanoplot_dir, "**", "*NanoStats.txt"), recursive=True)
+             if os.path.getsize(f) > 0]
+    for token in (sample_name, barcode):
+        hits = sorted(f for f in cands if token and token.lower() in
+                      os.path.relpath(f, nanoplot_dir).lower())
+        if token == barcode and len(hits) > 1:
+            continue   # barcode alone is ambiguous across runs
+        if hits:
+            return hits[0]
+    return None
+
+
+# ===========================================================================
 # Phase Confidence Scoring — reads Haplotypes.tsv from pysam_haploscan.py
 # ===========================================================================
 
@@ -109,7 +413,7 @@ def parse_haplotypes_tsv(haplo_file: str) -> Optional[PhaseEvidence]:
         return None
 
     try:
-        df = pd.read_csv(haplo_file, sep="\t")
+        df = pd.read_csv(haplo_file, sep="\t", encoding="utf-8")
         if df.empty:
             return None
 
@@ -214,6 +518,30 @@ def phase_relationship(evidence: Optional[PhaseEvidence], pos_a: int, pos_b: int
 # ===========================================================================
 
 
+_WORKER_PARSER = None
+
+
+def _init_worker(parser):
+    """Pool initializer: each worker process keeps its own copy of the configured parser."""
+    global _WORKER_PARSER
+    _WORKER_PARSER = parser
+
+
+def _process_one(filename):
+    """Run process_file for one sample in a worker; return everything it recorded plus its log."""
+    import contextlib
+    import io
+    p = _WORKER_PARSER
+    p.results, p.qc_records, p.sample_metrics, p.failed_samples = [], [], {}, []
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        try:
+            p.process_file(filename)
+        except Exception as e:    # process_file handles its own errors; this is a backstop
+            p.failed_samples.append({"sample": filename, "reason": f"Processing error: {e}"})
+    return filename, buf.getvalue(), p.results, p.qc_records, p.sample_metrics, p.failed_samples
+
+
 class ABOReportParser:
     """
     Collates all ABO phenotype results from each sample into a general table
@@ -224,7 +552,7 @@ class ABOReportParser:
     """
 
     def __init__(self, input_dir, panel: Panel, default_barcode="barcode00",
-                 min_depth=100, qc_report="ABO_run_qc.txt"):
+                 min_depth=30, qc_report="ABO_run_qc.txt", nanoplot_dir=None, threads=1):
         self.input_dir = input_dir
         self.panel = panel
         self.default_barcode = default_barcode
@@ -233,6 +561,10 @@ class ABOReportParser:
         self.min_depth = min_depth            # reads below which an A1 call is flagged
         self.qc_report_path = qc_report       # run-level QC text report ("" disables)
         self.qc_records = []                  # one dict per sample, for the run summary
+        self.threads = max(1, int(threads or 1))   # worker processes for per-sample parsing
+        self.nanoplot_dir = nanoplot_dir      # optional folder of NanoPlot output (NanoStats.txt)
+        self._fired_markers = []
+        self.sample_metrics = {}             # (sample_name, int barcode) -> Typing-sheet metrics
         self.replicate_stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
 
         # Positions actually usable in THIS run (resolved via amplicon_pos
@@ -586,6 +918,7 @@ class ABOReportParser:
             result = call_named_marker(marker, row_values, nreads=nreads)
             if result and result.get("fired"):
                 fired.append(result["text"])
+                self._fired_markers.append(marker)
             elif result and result.get("reason") == "low_coverage":
                 warnings.append(
                     f"Low coverage at {marker.cdna_change} — {marker.category} "
@@ -713,6 +1046,7 @@ class ABOReportParser:
             Genotype = "Unknown"
             ExtendedGenotype = "Unknown"
             BwSubtype = ""
+            self._fired_markers = []   # non-primary markers that fired; refine ISBT allele names
 
             def determine_a2_subtype(markers_found: List[str]):
                 has_del = "c.1061del" in markers_found
@@ -797,6 +1131,8 @@ class ABOReportParser:
 
                 o1v_fired = has_297 and not has_del and not has_907 and not has_1032
                 if o1v_fired:
+                    if a297_marker:
+                        self._fired_markers.append(a297_marker)   # points at the O1v-type allele
                     for m_ in ("c.297G", "c.266T", "c.268C"):
                         if m_ in markers:
                             markers.remove(m_)
@@ -816,6 +1152,7 @@ class ABOReportParser:
                             r = call_named_marker(m_marker, row_values, nreads=row.get("#Reads", 0))
                             if r and r.get("fired"):
                                 markers.append(label)
+                                self._fired_markers.append(m_marker)
 
                 if nreads_exon7_p422 >= 500 and not o1v_fired:
                     for m_ in self.panel.by_category("a2_panel"):
@@ -831,6 +1168,7 @@ class ABOReportParser:
                         if r and r.get("fired"):
                             label = "c." + str(m_.cdna_pos) + "var"
                             markers.append(label)
+                            self._fired_markers.append(m_)
 
                 return markers, warns
 
@@ -895,66 +1233,66 @@ class ABOReportParser:
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O.01"
+                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O.02"
+                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O.03"
+                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O3"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.01"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O3"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O2"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O3"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O3"
 
             elif (type_exon6 == "O1" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.01"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.03/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O3/O3"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
@@ -1200,7 +1538,7 @@ class ABOReportParser:
 
             df[("Result", "Phenotype")] = Phenotype
             df[("Result", "Genotype")] = Genotype
-            df[("Result", "ExtendedGenotype")] = ExtendedGenotype
+            df[("Result", "ExtendedGenotype")] = encode_extended_genotype(ExtendedGenotype, self._fired_markers)
             df[("Notes", "ASubtype")] = ASubtype
             df[("Notes", "ReadReliability")] = Reliability
             df[("Notes", "PhaseConfidence")] = PhaseConfidence
@@ -1326,6 +1664,8 @@ class ABOReportParser:
                 result_df, phase_evidence_by_exon=phase_evidence_by_exon,
             )
 
+            self._record_sample_metrics(result_df, sample_name, barcode, sample_dir)
+
             self.results.append(result_df)
             print(f"Successfully processed {filename}")
 
@@ -1333,6 +1673,144 @@ class ABOReportParser:
             print(f"Error processing {filename}: {str(e)}")
             import traceback
             traceback.print_exc()
+
+    def _record_sample_metrics(self, result_df, sample_name, barcode, sample_dir):
+        """Collect the Typing-sheet metrics for one sample (never raises)."""
+        try:
+            metrics = parse_alignment_metrics(sample_dir)
+        except Exception:
+            metrics = {}
+        # Duplex (ABO-HLA) runs: HLA reads never map to the ABO reference, so whole-library
+        # mappability is misleading. Report reads in the library (NanoPlot, else samtools),
+        # reads on the ABO reference (samtools coverage) and on-target % between them.
+        try:
+            metrics.update(parse_coverage_file(sample_dir))
+        except Exception:
+            pass
+        try:
+            status = parse_evidence_status(sample_dir)
+            metrics.update({"evidence_source": status["evidence_source"], "evidence_label": None,
+                            "bam_only": status["bam_only"], "discordant": status["discordant"],
+                            "discordant_primary": status["discordant_primary"]})
+            msgs = []
+            label = "OK"
+            if status["evidence_source"] == "NONE":
+                mx = status["bam_max_depth"]
+                if mx == 0:
+                    label = "No reads over ABO region (likely amplicon dropout)"
+                elif mx is not None:
+                    label = f"ABO region barely covered (max pileup depth {mx})"
+                else:
+                    label = "No evidence from either Clair3 or BAM pileup"
+                # replace the generic per-position message with the specific cause
+                old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
+                kept = [f for f in old.split("; ") if f and not f.startswith("no evidence at primary position")]
+                result_df.at[0, ("Notes", "QCFlags")] = "; ".join([label] + kept)
+                result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
+            elif status["evidence_source"] == "BAM_ONLY":
+                label = "Typed from BAM pileup only (Clair3 produced no usable calls)"
+            if status["evidence_source"] == "BAM_ONLY":
+                msgs.append("Clair3 produced no usable calls; typed from BAM pileup only")
+            elif status["filled_primary"]:
+                msgs.append(f"{status['filled_primary']} primary position(s) rest on BAM pileup "
+                            f"alone (no Clair3 evidence)")
+            if status["discordant_primary"]:
+                msgs.append(f"Clair3 and BAM pileup disagree at primary position(s): "
+                            f"{status['primary_names']}")
+            metrics["evidence_label"] = label
+            if msgs:
+                # the two lines of evidence do not support the call equally: always review
+                old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
+                result_df.at[0, ("Notes", "QCFlags")] = (old + "; " if old else "") + "; ".join(msgs)
+                result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
+        except Exception:
+            pass
+        try:
+            # NanoPlot runs on the raw reads, so it is the better source for read count/length
+            ns_file = find_nanostats(sample_dir, self.nanoplot_dir, str(sample_name), str(barcode))
+            if ns_file:
+                ns = parse_nanostats(ns_file)
+                for k in ("reads", "read_length"):
+                    if ns.get(k) is not None:
+                        metrics[k] = ns[k]
+        except Exception:
+            pass
+        try:
+            # the coverage table counts secondary/supplementary alignments; samtools stats'
+            # primary mapped-read count is the ceiling when we have it
+            if metrics.get("abo_reads") is not None and metrics.get("mapped") is not None:
+                metrics["abo_reads"] = min(metrics["abo_reads"], metrics["mapped"])
+            if metrics.get("abo_reads") is not None and metrics.get("reads"):
+                metrics["mappability"] = min(100.0, 100.0 * metrics["abo_reads"] / metrics["reads"])
+        except Exception:
+            pass
+        try:
+            depths = []
+            for col_label in self.position_columns:
+                v = pd.to_numeric(result_df.at[0, (col_label, "#Reads")], errors="coerce")
+                if pd.notna(v) and v > 0:
+                    depths.append(float(v))
+            metrics["median_analyzed_depth"] = float(pd.Series(depths).median()) if depths else None
+
+            qmarks = 0
+            for marker in self.primary_markers:
+                t = result_df.at[0, (marker.column_label(), "Type")]
+                if pd.isna(t) or not str(t).strip():
+                    qmarks += 1
+            metrics["question_marks"] = qmarks
+        except Exception:
+            metrics.setdefault("median_analyzed_depth", None)
+            metrics.setdefault("question_marks", None)
+        try:
+            key = (str(sample_name), int(str(barcode).replace("barcode", "")))
+        except ValueError:
+            return
+        self.sample_metrics[key] = metrics
+
+    def _build_typing_df(self, final_df) -> pd.DataFrame:
+        """One NGSengine-style row per sample, same order as final_df (single-level columns)."""
+        def num(v, nd=None):
+            if v is None or pd.isna(v):
+                return None
+            return round(float(v), nd) if nd is not None else int(round(float(v)))
+
+        rows = []
+        for _, r in final_df.iterrows():
+            sid = str(r["Sequencing_ID"])
+            try:
+                bc = int(r["Barcode"])
+            except (TypeError, ValueError):
+                bc = None
+            m = self.sample_metrics.get((sid, bc), {})
+            rows.append({
+                "Sample name": sid,
+                "Barcode": f"barcode{bc:02d}" if bc is not None else "",
+                "Number of reads": num(m.get("reads")),
+                "Read Length": num(m.get("read_length")),
+                "Insert Size": num(m.get("insert_size")),
+                "ABO reads": num(m.get("abo_reads")),
+                "Mappability %": num(m.get("mappability"), 1),
+                "Mean depth (covered bases)": num(m.get("covered_depth")),
+                "Median Read depth": num(m.get("median_depth")),
+                "Median analyzed Read depth": num(m.get("median_analyzed_depth")),
+                "Number of question mark positions": m.get("question_marks"),
+                "Evidence source": m.get("evidence_source") or "",
+                "BAM-only positions": m.get("bam_only"),
+                "Clair3/BAM discordant": m.get("discordant"),
+                "Discordant primary positions": m.get("discordant_primary"),
+                "Typing Result": r["ExtendedGenotype"],
+                "Phenotype": r["Phenotype"],
+                "Genotype": r["Genotype"],
+                "QCStatus": r["QCStatus"],
+                "QCFlags": r["QCFlags"],
+            })
+        return pd.DataFrame(rows, columns=[
+            "Sample name", "Barcode", "Number of reads", "Read Length", "Insert Size",
+            "ABO reads", "Mappability %", "Mean depth (covered bases)", "Median Read depth",
+            "Median analyzed Read depth",
+            "Number of question mark positions", "Evidence source", "BAM-only positions",
+            "Clair3/BAM discordant", "Discordant primary positions", "Typing Result", "Phenotype", "Genotype",
+            "QCStatus", "QCFlags"]).astype(object)
 
     def process_files(self):
         """Process all files in the input directory that match expected patterns."""
@@ -1357,7 +1835,11 @@ class ABOReportParser:
 
         print("\033[92m\n ********* Started combining samples to single file ********* \033[0m\n")
 
-        for filename in valid_directories:
+        parallel = self.threads > 1 and len(valid_directories) > 1
+        if parallel:
+            self._process_files_parallel(valid_directories)
+
+        for filename in ([] if parallel else valid_directories):
             try:
                 self.processing_stats["pattern_matched"] += 1
                 print(f"\nProcessing file: {filename}")
@@ -1389,6 +1871,33 @@ class ABOReportParser:
         print(f"Pattern match failures: {self.processing_stats['pattern_failed']}")
         print(f"----------------------------")
 
+    def _process_files_parallel(self, valid_directories):
+        """Parse samples in a process pool (--threads N). Output order does not matter: the
+        merged table is sorted by sample and barcode, and each sample's log is printed whole,
+        in directory order, once its worker finishes."""
+        from concurrent.futures import ProcessPoolExecutor
+
+        for filename in valid_directories:        # cheap bookkeeping stays serial
+            self.processing_stats["pattern_matched"] += 1
+            try:
+                _, _, pattern_type = self.extract_sample_info(filename)
+                self.processing_stats["with_barcode" if pattern_type == "explicit" else "without_barcode"] += 1
+            except Exception:
+                pass
+
+        workers = min(self.threads, len(valid_directories))
+        print(f"Parsing {len(valid_directories)} samples with {workers} worker processes")
+        with ProcessPoolExecutor(max_workers=workers, initializer=_init_worker, initargs=(self,)) as ex:
+            for filename, log, results, qc_records, sample_metrics, failed in ex.map(
+                    _process_one, valid_directories):
+                print(f"\nProcessing file: {filename}")
+                print(log, end="")
+                print(f"Finished processing file: {filename}")
+                self.results.extend(results)
+                self.qc_records.extend(qc_records)
+                self.sample_metrics.update(sample_metrics)
+                self.failed_samples.extend(failed)
+
     def merge_dataframes(self):
         if not self.results:
             print("Warning: No sample results to merge.")
@@ -1403,7 +1912,7 @@ class ABOReportParser:
     def save_results_to_file(self, final_df):
         """Save results to text and Excel files; column count/labels are dynamic."""
         try:
-            final_df.to_csv("./ABO_result.txt", sep="\t", index=False)
+            final_df.to_csv("./ABO_result.txt", sep="\t", index=False, encoding="utf-8")
             print("Results saved successfully to text file.")
         except Exception as txt_err:
             print(f"Error saving to text file: {txt_err}")
@@ -1425,17 +1934,71 @@ class ABOReportParser:
             if isinstance(final_df.columns, pd.MultiIndex):
                 final_df.columns = final_df.columns.droplevel()
 
-            final_df.to_excel(writer, sheet_name="ABO_Result", header=True, index=False, startrow=1)
-
             workbook = writer.book
-            worksheet = writer.sheets["ABO_Result"]
-
             data_format = workbook.add_format({"bg_color": "white", "font_color": "black", "border": 1})
             header_format = workbook.add_format({"bold": True, "fg_color": "#007399", "border": 1, "font_color": "white"})
             red_bg_format = workbook.add_format({"bg_color": "#e2725b", "font_color": "black"})
             orange_bg_format = workbook.add_format({"bg_color": "#ff9a00", "font_color": "black"})
             header_format.set_align("center")
             header_format.set_align("vcenter")
+
+            # Sheet 1: Typing (one NGSengine-style row per sample). Sheet order = creation order.
+            try:
+                typing_df = self._build_typing_df(final_df)
+                typing_df.to_excel(writer, sheet_name="Typing", index=False)
+                ws_t = writer.sheets["Typing"]
+                for c, name in enumerate(typing_df.columns):
+                    ws_t.write(0, c, name, header_format)
+                int_fmt = workbook.add_format({"border": 1, "num_format": "#,##0"})
+                dec_fmt = workbook.add_format({"border": 1, "num_format": "0.0"})
+                for r in range(len(typing_df)):
+                    for c, name in enumerate(typing_df.columns):
+                        v = typing_df.iat[r, c]
+                        if v is None or (not isinstance(v, str) and pd.isna(v)):
+                            ws_t.write_blank(r + 1, c, None, data_format)
+                        elif name == "Mappability %":
+                            ws_t.write_number(r + 1, c, float(v), dec_fmt)
+                        elif name in ("Number of reads", "Read Length", "Insert Size", "Median Read depth",
+                                      "ABO reads", "Mean depth (covered bases)",
+                                      "Median analyzed Read depth", "Number of question mark positions",
+                                      "BAM-only positions", "Clair3/BAM discordant",
+                                      "Discordant primary positions"):
+                            ws_t.write_number(r + 1, c, float(v), int_fmt)
+                        else:
+                            ws_t.write(r + 1, c, v, data_format)
+                for c, name in enumerate(typing_df.columns):
+                    longest = max([len(str(name))] + [len(str(x)) for x in typing_df[name] if x is not None])
+                    ws_t.set_column(c, c, min(max(longest + 2, 10), 60 if name == "QCFlags" else 40))
+                ws_t.set_row(0, 45, header_format)
+                ws_t.freeze_panes(1, 0)
+                last = len(typing_df)
+                if last:
+                    qc_t = xl_col_to_name(list(typing_df.columns).index("QCStatus"))
+                    ws_t.conditional_format(
+                        f"{qc_t}2:{qc_t}{last + 1}",
+                        {"type": "cell", "criteria": "==", "value": '"REVIEW"', "format": orange_bg_format},
+                    )
+                    rd_t = xl_col_to_name(list(typing_df.columns).index("Number of reads"))
+                    ws_t.conditional_format(
+                        f"{rd_t}2:{rd_t}{last + 1}",
+                        {"type": "cell", "criteria": "<=", "value": self.min_depth, "format": orange_bg_format},
+                    )
+            except Exception as typing_err:
+                print(f"Warning: could not write Typing sheet: {typing_err}")
+
+            # Sheet 2: Variants (per-position table)
+            final_df.to_excel(writer, sheet_name="Variants", header=True, index=False, startrow=1)
+            worksheet = writer.sheets["Variants"]
+
+            about = workbook.add_worksheet("About")
+            bold = workbook.add_format({"bold": True})
+            about.set_column(0, 0, 34)
+            about.set_column(1, 1, 110)
+            about.write(0, 0, "ABO typing results", bold)
+            about.write(1, 0, RESEARCH_USE_STATEMENT, bold)
+            for r_, (k_, v_) in enumerate(self._about_items(), start=3):
+                about.write(r_, 0, k_, bold)
+                about.write(r_, 1, v_)
 
             num_rows, num_cols = final_df.shape
             # locate by name: the Notes block now has 8 columns, so a fixed offset from the end is unsafe
@@ -1607,10 +2170,73 @@ class ABOReportParser:
                     final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
         self.replicate_stats = stats
 
+    def _about_items(self):
+        """Version / provenance lines for the About sheet and the QC report."""
+        meta = getattr(self.panel, "meta", {}) or {}
+        items = [("aggregate_abo_reports.py", __version__),
+                 ("Panel version", str(meta.get("panel_version", "unknown"))),
+                 ("Panel source", str(meta.get("source", "unknown")))]
+        if meta.get("isbt_allele_table_version"):
+            items.append(("ISBT ABO allele table", str(meta["isbt_allele_table_version"])))
+        if meta.get("isbt_allele_table_checked"):
+            items.append(("ISBT table checked", str(meta["isbt_allele_table_checked"])))
+        if meta.get("isbt_allele_table_release_date"):
+            items.append(("ISBT table release date", str(meta["isbt_allele_table_release_date"])))
+        return items
+
+    def _evidence_summary(self, final_df):
+        """Per-sample evidence rows (None when no sample carries an evidence status)."""
+        rows = []
+        for _, r in final_df.iterrows():
+            try:
+                key = (str(r["Sequencing_ID"]), int(r["Barcode"]))
+            except (TypeError, ValueError):
+                continue
+            m = self.sample_metrics.get(key, {})
+            if not m.get("evidence_source"):
+                continue
+            rows.append({
+                "Sample": key[0],
+                "Barcode": f"barcode{key[1]:02d}",
+                "Evidence source": m["evidence_source"],
+                "Evidence status": m.get("evidence_label") or "OK",
+                "BAM-only positions": m.get("bam_only"),
+                "Clair3/BAM discordant": m.get("discordant"),
+                "Discordant primary positions": m.get("discordant_primary"),
+                "QC status": r.get("QCStatus", ""),
+                "Typing result": r.get("ExtendedGenotype", ""),
+            })
+        return rows or None
+
+    def write_evidence_summary(self, final_df, path="ABO_evidence_summary_mqc.tsv"):
+        """MultiQC custom-content table: where each sample's evidence came from, and which
+        samples had failed or empty Clair3 output, no reads over the ABO region, or disagreement
+        between Clair3 and the BAM pileup."""
+        rows = self._evidence_summary(final_df)
+        if not rows:
+            return
+        cols = list(rows[0].keys())
+        try:
+            with open(path, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write("# id: 'abo_evidence_summary'\n")
+                fh.write("# section_name: 'ABO evidence summary'\n")
+                fh.write("# description: 'Agreement between the two lines of evidence (Clair3 and BAM pileup) "
+                         "per sample. Samples with no reads over the ABO region, Clair3-only or BAM-only "
+                         "evidence, or discordant primary positions need review. "
+                         + RESEARCH_USE_STATEMENT.replace("'", "") + "'\n")
+                fh.write("# plot_type: 'table'\n")
+                fh.write("\t".join(cols) + "\n")
+                for row in rows:
+                    fh.write("\t".join("" if row[c] is None else str(row[c]) for c in cols) + "\n")
+            print(f"Evidence summary written to {path}")
+        except OSError as e:
+            print(f"Could not write evidence summary: {e}")
+
     def report_qc(self, final_df):
         """Print (and optionally write) a run-level QC summary. Called after
         the results are saved, so final_df has single-level column names."""
-        lines = ["=== QC SUMMARY ==="]
+        lines = ["=== QC SUMMARY ===", RESEARCH_USE_STATEMENT]
+        lines += [f"{k}: {v}" for k, v in self._about_items()]
         n = len(final_df)
         if n == 0:
             return
@@ -1632,6 +2258,19 @@ class ABOReportParser:
                 lines.append("Flags (a sample can carry more than one):")
                 for f, c in tally.most_common():
                     lines.append(f"  {c:6d}  {f}")
+
+        ev_rows = self._evidence_summary(final_df)
+        if ev_rows:
+            lines.append("Evidence (Clair3 + BAM pileup):")
+            for k, v in Counter(r["Evidence source"] for r in ev_rows).most_common():
+                lines.append(f"  {v:6d}  {k}")
+            problems = [r for r in ev_rows if r["Evidence status"] != "OK" or r["Discordant primary positions"]]
+            if problems:
+                lines.append("Samples needing attention:")
+                for r in problems:
+                    extra = (f"; discordant at {r['Discordant primary positions']} primary position(s)"
+                             if r["Discordant primary positions"] else "")
+                    lines.append(f"  {r['Sample']} ({r['Barcode']}): {r['Evidence status']}{extra}")
 
         if "EvidenceBasis" in final_df.columns:
             lines.append("Evidence basis: " + ", ".join(
@@ -1706,6 +2345,7 @@ class ABOReportParser:
         print(final_df.to_string(index=False))
         print("-" * 336)
         self.save_results_to_file(final_df)
+        self.write_evidence_summary(final_df)
 
         if self.failed_samples:
             print("\n\nFailed Samples Summary:")
@@ -1738,11 +2378,14 @@ class ABOReportParser:
                     print(f"\nExtended Genotype Distribution (with A subtypes):")
                     a_subtypes, ab_subtypes, other_genotypes = {}, {}, {}
                     for genotype, count in extended_genotype_counts.items():
-                        if "A1" in str(genotype) or "A2" in str(genotype):
-                            if "B" in str(genotype):
-                                ab_subtypes[genotype] = count
-                            else:
-                                a_subtypes[genotype] = count
+                        # tokens are ISBT names (ABO*A1.01, ABO*B.01, ...); "ABO*" itself contains a "B"
+                        toks = str(genotype).split("/")
+                        has_a = any(t.startswith("ABO*A") for t in toks)
+                        has_b = any(t.startswith("ABO*B") for t in toks)
+                        if has_a and has_b:
+                            ab_subtypes[genotype] = count
+                        elif has_a:
+                            a_subtypes[genotype] = count
                         else:
                             other_genotypes[genotype] = count
                     if a_subtypes:
@@ -1818,6 +2461,10 @@ subfolders are picked up automatically):
 
 OUTPUT FILES:
   - ABO_result.txt / ABO_result.xlsx / final_export.csv
+  - ABO_result.xlsx has two sheets: "Typing" (one row per sample with read /
+    mappability / depth metrics from samtools stats + flagstat, the ISBT-style
+    typing result and QC) and "Variants" (per-position table)
+  - ExtendedGenotype uses ISBT-style names, e.g. ABO*A2.01/ABO*O.01
 
 Column layout and position parsing are driven by --panel; add a new
 diagnostic position by editing the panel file, not this script.
@@ -1832,7 +2479,13 @@ For more information, see: https://github.com/fmobegi/nf-core-abotyper
                          help="Path to the variant panel file (.yaml/.json/.csv/.tsv). Default: %(default)s")
     parser.add_argument("--default-barcode", "-b", default="barcode00", metavar="BARCODE",
                          help="Default barcode for samples without explicit barcode suffix (default: %(default)s)")
-    parser.add_argument("--min-depth", type=int, default=100, metavar="N",
+    parser.add_argument("--nanoplot-dir", default=None, metavar="DIR",
+                         help="Folder holding NanoPlot output (*NanoStats.txt); used for Number of reads / Read Length "
+                              "in the Typing sheet when a sample folder has no NanoStats.txt of its own")
+    parser.add_argument("--threads", "-t", type=int, default=1, metavar="N",
+                         help="Worker processes for per-sample parsing (default: %(default)s, serial). "
+                              "Useful for large runs; results are identical.")
+    parser.add_argument("--min-depth", type=int, default=30, metavar="N",
                          help="Flag A1 calls made on fewer than N reads at c.467/c.1061delC (default: %(default)s)")
     parser.add_argument("--qc-report", default="ABO_run_qc.txt", metavar="FILE",
                          help="Write the run-level QC summary here; use '' to disable (default: %(default)s)")
@@ -1878,6 +2531,7 @@ if __name__ == "__main__":
           f"({len(panel.calibrated())} usable now, {len(panel.uncalibrated())} awaiting calibration)")
 
     parser_instance = ABOReportParser(args.input_directory, panel, args.default_barcode,
-                                      min_depth=args.min_depth, qc_report=args.qc_report)
+                                      min_depth=args.min_depth, qc_report=args.qc_report,
+                                      nanoplot_dir=args.nanoplot_dir, threads=args.threads)
     parser_instance.run()
     print("All done!\n")
