@@ -128,6 +128,17 @@
                     "help_text": "Defines the diagnostic variant positions, calling thresholds, and ISBT allele associations used by the ABO_PANEL2BED, ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES, ABO_GETABOSNPS and ABO_SNPS2PHENO modules. Positions are given as ng006669_2_pos (verified against NG_006669.2, the default abo_reference_fasta) alongside legacy_exon6_pos/legacy_exon7_pos for backward compatibility. Run bin/calibrate_panel_positions.py to populate amplicon_pos if a different combined reference FASTA is used instead.",
                     "fa_icon": "fas fa-table"
                 },
+                "abo_clair3_region_bed": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.bed$",
+                    "default": "assets/refs/abo_clair3_region.bed",
+                    "description": "BED file restricting Clair3 calling (and gVCF reference blocks) to the ABO exon 2-7 region of NG_006669.2.",
+                    "help_text": "Passed to Clair3 as --bed_fn. Must be readable inside the container (a path under the launch directory is bind-mounted by Singularity/Apptainer; with Docker, mount it or use an absolute path that is available). Keep it wider than the panel positions so phasing has flanking variants.",
+                    "fa_icon": "fas fa-align-left"
+                },
                 "abo_bed": {
                     "type": "string",
                     "format": "file-path",
