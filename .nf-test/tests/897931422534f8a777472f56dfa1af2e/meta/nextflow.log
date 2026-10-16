@@ -1,0 +1,93 @@
+Oct-16 14:34:54.801 [main] DEBUG nextflow.cli.Launcher - $> nextflow -log /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/meta/nextflow.log run /mnt/storage_c2/bioinformatics/abotyper/.nf-test-897931422534f8a777472f56dfa1af2e.nf -c /mnt/storage_c2/bioinformatics/abotyper/nextflow.config -c /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config -params-file /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/meta/params.json -ansi-log false -profile test,docker -with-trace /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/meta/trace.csv -w /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/work
+Oct-16 14:34:55.083 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 26.10.2
+Oct-16 14:34:55.174 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/fmobegi/.nextflow/plugins; core-plugins: nf-agent-pi@0.6.0,nf-agent@0.2.0,nf-amazon@3.12.1,nf-azure@1.24.2,nf-cloudcache@0.6.2,nf-codecommit@0.6.1,nf-console@1.3.1,nf-google@1.29.1,nf-k8s@1.6.1,nf-seqera@0.26.0,nf-tower@1.32.1,nf-wave@1.22.3
+Oct-16 14:34:55.266 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-16 14:34:55.269 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-16 14:34:55.281 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.14.1 in 'deployment' mode
+Oct-16 14:34:55.340 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
+Oct-16 14:34:55.806 [main] DEBUG nextflow.plugin.PluginUpdater - Using plugin repository: HttpPluginRepository [registry]; url=https://registry.nextflow.io/api
+Oct-16 14:34:55.824 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-16 14:34:55.936 [main] DEBUG nextflow.config.ConfigCmdAdapter - Found config base: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:34:55.952 [main] DEBUG nextflow.config.ConfigCmdAdapter - User config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:34:55.953 [main] DEBUG nextflow.config.ConfigCmdAdapter - User config file: /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config
+Oct-16 14:34:55.960 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:34:55.963 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:34:55.964 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config
+Oct-16 14:34:55.981 [main] DEBUG nextflow.config.ConfigParserFactory - Using config parser v2
+Oct-16 14:34:56.011 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:35:01.339 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:35:03.028 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:35:03.061 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [debug, conda, mamba, docker, arm64, emulate_amd64, singularity, podman, shifter, charliecloud, apptainer, wave, gpu, test, test_full, abims, adcra, alice, alliance_canada, apollo, arcc, aws_tower, awsbatch, azurebatch, bi, bigpurple, bih, binac2, biohpc_gen, biowulf, bluebear, cambridge, cannon, cbe, ccga_dx, ccga_cau, ceci_dragon2, ceci_nic5, cedars, ceres, cfc, cfc_dev, cheaha, computerome, create, crg, crick, cropdiversityhpc, crukmi, csiro_petrichor, czbiohub_aws, daisybio, denbi_qbic, dkfz, dirac, ebc, eddie, ebi_codon, ebi_codon_slurm, einstein, embl_hd, engaging, ethz_euler, eva, eva_grace, fgcz, fred_hutch, fsu_draco, fub_curta, genotoul, genouest, giga, gis, googlebatch, hasta, hazel, hki_genie, hypatia, humantechnopole, icr_alma, ifb_core, imb, imperial, incliva, ipop_up, iris, janelia, jax, jex, unsw_katana, ku_sund_danhead, kaust, kelvin2, ki_luria, leicester, lovelace, lrz_cm4, lugh, m3c, maestro, mahuika, mana, marjorie, marvin, mccleary, mcw_rcc, medair, mjolnir_globe, mpcdf, mpcdf_viper, mssm, munin, naiss, nci_gadi, nu_genomics, nygc, nyu_hpc, oist, palmetto, pasteur, pawsey_setonix, pdc_kth, phoenix, psmn, purdue_bell, purdue_gautschi, purdue_negishi, qmul_apocrita, rki, rosalind, rosalind_uge, roslin, saga_sigma2, sage, sahmri, sanger, ilifu, seadragon, seattlechildrens, seawulf, seg_globe, self_hosted_runner, shu_bmrc, stjude, tes, tigem, tubingen_apg, tufts, tuos_stanage, ucd_sonic, ucl_cscluster, ucl_myriad, uct_hpc, uge, unc_lccc, unc_longleaf, unibe_ibu, unity, uod_hpc, uppmax, utd_juno, uw_hyak_pedslabs, uzh, uzl_omics, vai, verily_workbench, vsc_calcua, vsc_kul_uhasselt, vsc_ugent, wehi, xanadu, york_viking]
+Oct-16 14:35:03.225 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.5.1]
+Oct-16 14:35:03.227 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Oct-16 14:35:03.229 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.5.1]
+Oct-16 14:35:03.238 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.5.1
+Oct-16 14:35:03.266 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.5.1' resolved
+Oct-16 14:35:03.267 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.5.1'
+Oct-16 14:35:03.284 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.5.1
+Oct-16 14:35:03.307 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/fmobegi/.nextflow/secrets/store.json
+Oct-16 14:35:03.317 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@7bd38fed] - activable => nextflow.secret.LocalSecretsProvider@7bd38fed
+Oct-16 14:35:03.368 [main] INFO  nextflow.cli.CmdRun - Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-897931422534f8a777472f56dfa1af2e.nf` [agitated_liskov] - revision: eb00f53458
+Oct-16 14:35:03.377 [main] ERROR org.pf4j.AbstractExtensionFinder - Different class loaders: 'org.pf4j.PluginClassLoader@497ed877' (E) and 'jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487' (EP)
+Oct-16 14:35:03.607 [main] WARN  nextflow.config.ConfigValidator - Unrecognized config option 'validation.defaultIgnoreParams'
+Oct-16 14:35:03.608 [main] WARN  nextflow.config.ConfigValidator - Unrecognized config option 'validation.monochromeLogs'
+Oct-16 14:35:03.796 [main] DEBUG nextflow.Session - Session UUID: ddee90be-5e43-430b-8240-924a629ed2a0
+Oct-16 14:35:03.797 [main] DEBUG nextflow.Session - Run name: agitated_liskov
+Oct-16 14:35:03.800 [main] DEBUG nextflow.Session - Executor pool size: 6
+Oct-16 14:35:03.835 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Oct-16 14:35:03.855 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:35:03.919 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 26.10.2 build 14160
+  Created: 15-10-2026 18:24 UTC (16-10-2026 02:24 AWDT)
+  System: Linux 7.0.0-38-generic
+  Runtime: Groovy 4.0.33 on OpenJDK 64-Bit Server VM 25.0.4.1+1-1-26.04.4-Ubuntu
+  Encoding: UTF-8 (UTF-8)
+  Process: 1893040@FredrickMedia [127.0.1.1]
+  CPUs: 6 - Mem: 14.9 GB (568.5 MB) - Swap: 4 GB (2.1 GB)
+Oct-16 14:35:03.959 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Oct-16 14:35:03.992 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 7; maxThreads: 1000
+Oct-16 14:35:04.518 [main] DEBUG nextflow.Session - Work-dir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/work [ext2/ext3]
+Oct-16 14:35:04.674 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[K8sExecutor]
+Oct-16 14:35:04.714 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Oct-16 14:35:04.719 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
+Oct-16 14:35:04.779 [main] DEBUG nextflow.Session - Observer factory (v2): ValidationObserverFactory
+Oct-16 14:35:04.860 [main] DEBUG nextflow.Session - Session start
+Oct-16 14:35:04.881 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/meta/trace.csv
+Oct-16 14:35:04.890 [main] DEBUG nextflow.script.ScriptLoaderFactory - Using script parser v2
+Oct-16 14:35:06.864 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Oct-16 14:35:07.520 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_low` matches labels `process_low` for process with name ABO_SNPS2PHENO
+Oct-16 14:35:07.534 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_SNPS2PHENO` matches process ABO_SNPS2PHENO
+Oct-16 14:35:07.590 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:35:07.591 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:35:07.612 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Oct-16 14:35:07.639 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=6; memory=14.9 GB; capacity=6; pollInterval=100ms; dumpInterval=5m
+Oct-16 14:35:07.664 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Oct-16 14:35:07.791 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'ABO_SNPS2PHENO': maxForks=0; fair=false; array=0
+Oct-16 14:35:08.175 [main] DEBUG nextflow.Session - Config process names validation disabled as requested
+Oct-16 14:35:08.193 [main] DEBUG nextflow.Session - Igniting dataflow network (1)
+Oct-16 14:35:08.195 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ABO_SNPS2PHENO
+Oct-16 14:35:08.197 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  _nf_script_11af8e9ce5e52e0d: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/snps2pheno/main.nf
+  Main: /mnt/storage_c2/bioinformatics/abotyper/.nf-test-897931422534f8a777472f56dfa1af2e.nf
+Oct-16 14:35:08.197 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Oct-16 14:35:08.198 [main] DEBUG nextflow.Session - Session await
+Oct-16 14:35:08.860 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:35:08.870 [Task submitter] INFO  nextflow.Session - [63/c623c2] Submitted process > ABO_SNPS2PHENO (COMPILING ABO RESULTS)
+Oct-16 14:35:16.852 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: ABO_SNPS2PHENO (COMPILING ABO RESULTS); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/897931422534f8a777472f56dfa1af2e/work/63/c623c296d61adab9908f2f1a0c4ee3]
+Oct-16 14:35:16.856 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:35:17.014 [TaskFinalizer-1] WARN  nextflow.processor.PublishDir - Process `ABO_SNPS2PHENO` publishDir path contains a variable with a null value
+Oct-16 14:35:17.039 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:35:17.088 [main] DEBUG nextflow.Session - Session await > all processes finished
+Oct-16 14:35:17.146 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Oct-16 14:35:17.147 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Oct-16 14:35:17.166 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Oct-16 14:35:17.169 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Oct-16 14:35:17.222 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=1; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=12.8s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=2; peakMemory=6 GB; ]
+Oct-16 14:35:17.304 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Oct-16 14:35:19.928 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Oct-16 14:35:20.265 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+Oct-16 14:35:20.286 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Oct-16 14:35:20.320 [main] INFO  org.pf4j.AbstractPluginManager - Stop plugin 'nf-schema@2.5.1'
+Oct-16 14:35:20.321 [main] DEBUG nextflow.plugin.BasePlugin - Plugin stopped nf-schema
+Oct-16 14:35:20.324 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Oct-16 14:35:20.325 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

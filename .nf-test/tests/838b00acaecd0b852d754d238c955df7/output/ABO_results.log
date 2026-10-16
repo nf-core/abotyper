@@ -1,0 +1,82 @@
+Using default barcode: barcode00
+Loaded panel v2.0.0 with 51 variants (51 usable now, 0 awaiting calibration)
+Scanning directory: per_sample_processing
+[92m
+ ********* Started combining samples to single file ********* [0m
+
+
+Processing file: ABO_AA_barcode01
+Extracted Sample: ABO_AA, Barcode: barcode01
+  Phase data (Exon 6): 69 reads, 2 distinct haplotypes
+  Phase data (Exon 7): 69 reads, 2 distinct haplotypes
+  Phase data (Exon 3): 69 reads, 2 distinct haplotypes
+  Phase data (Exon 4): 69 reads, 2 distinct haplotypes
+  Phase data (Exon 5): 69 reads, 2 distinct haplotypes
+  Phase data (Exon 2): 69 reads, 2 distinct haplotypes
+  Phase data (Intron 6): 69 reads, 2 distinct haplotypes
+  Phase data (Intron 2): 69 reads, 2 distinct haplotypes
+  Phase data (Intron 3): 69 reads, 2 distinct haplotypes
+  Phase data (Intron 4): 69 reads, 2 distinct haplotypes
+Successfully processed ABO_AA_barcode01
+Done adding Sample ABO_AA with barcode barcode01 to merged data frame
+Finished processing file: ABO_AA_barcode01
+
+--- Processing Statistics ---
+Files with explicit barcode: 1
+Files using default barcode: 0
+Total pattern matches: 1
+Pattern match failures: 0
+----------------------------
+
+
+Final Results:
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                         Result                              Exon6_pos22694                                                       Exon6_pos22699                                                  Exon6_pos22701                                                  Exon6_pos22730                                                  Exon7_pos23892                                                  Exon7_pos23910                                                  Exon7_pos23952                                                                 Exon7_pos23987                                                  Exon7_pos24008                                                  Exon7_pos24011                                                  Exon7_pos24012                                                  Exon7_pos24024                                                  Exon7_pos24041                                                  Exon7_pos24092                                                  Exon7_pos24125                                                  Exon7_pos24126                                                  Exon7_pos24131                                                  Exon7_pos24142                                                  Exon7_pos24166                                                  Exon7_pos24185                                                  Exon7_pos24188                                                  Exon7_pos24206                                                  Exon7_pos24207                                                  Exon7_pos24227                                                  Exon7_pos24228                                                  Exon7_pos24256                                                  Exon7_pos24263                                                  Exon7_pos24269                                                  Exon7_pos24281                                                    Exon7_pos24287                                                         Exon7_pos24288                                                    Exon7_pos24289                                                Exon7_pos24290                                                       Exon7_pos24314                                                  Exon7_pos24356                                                  Exon7_pos24390                                                  Exon7_pos24392                                                  Exon7_pos24494                                                  Exon7_pos24517                                                  Exon7_pos24539                                                  Exon7_pos24544                                                        Exon3_pos18848                                                  Exon4_pos20381                                                  Exon4_pos20382                                                  Exon5_pos22099                                                  Exon2_pos18071                                                  Exon2_pos18106                                                Exon6_pos22811                                                Exon2_pos18118                                                Exon3_pos18902                                                Exon4_pos20397                                                   Notes                                                                                                                                                            
+Barcode Sequencing_ID Phenotype Genotype    ExtendedGenotype         #Reads    Mat  Mis  Ins  Del    A    G    C    T        Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C      T Type         #Reads    Mat  Mis  Ins  Del      A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C      T Type         #Reads   Mat   Mis  Ins  Del    A    G      C     T               Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del      A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del      A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C      T Type         #Reads    Mat  Mis  Ins  Del    A    G    C      T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T   Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T        Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T   Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T        Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del      A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del      A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads   Mat   Mis  Ins   Del    A    G      C    T      Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A    G      C    T Type         #Reads    Mat  Mis  Ins  Del    A      G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type         #Reads    Mat  Mis  Ins  Del    A    G    C    T Type ASubtype ReadReliability                               PhaseConfidence BwSubtype                             A2Trace    EvidenceBasis QCStatus QCFlags ReplicateNote
+      1        ABO_AA         A       AA ABO*A1.01/ABO*A2.01             87  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0 A or B or O             87  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  87  100.0  0.0  0.0  0.0  0.0  0.0  0.0  100.0                  87  100.0  0.0  0.0  0.0  100.0  0.0  0.0  0.0                  84  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  84  100.0  0.0  0.0  0.0  0.0  0.0  0.0  100.0                  71  49.3  50.7  0.0  0.0  0.0  0.0  47.89  50.7 A1 and A1.02 or A2             86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  100.0  0.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  100.0  0.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  0.0  100.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  0.0  100.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0 A or O             72  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0 A or B or O             72  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0 A or O             72  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                  72  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0 A or B or O             89  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  90  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  90  100.0  0.0  0.0  0.0  100.0  0.0  0.0  0.0                  90  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  88  100.0  0.0  0.0  0.0  100.0  0.0  0.0  0.0                  88  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  88  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  71  49.3  50.7  0.0  50.7  0.0  0.0  46.48  0.0 A1 and A2             79  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  85  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  85  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  85  100.0  0.0  0.0  0.0  0.0  0.0  100.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  100.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                  88  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                  86  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                  85  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                  85  100.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0                        Normal High: Top 2 haplotypes cover 100% of 69 reads           1 A2 confirmed (c.467 + c.1061delC) variant evidence     PASS                   NaN
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Results saved successfully to text file.
+Data has 1 rows, starting at row 3 with two header rows
+Applying read count conditional formatting to columns: ['F', 'P', 'Z', 'AJ', 'AT', 'BD', 'BN', 'BX', 'CH', 'CR', 'DB', 'DL', 'DV', 'EF', 'EP', 'EZ', 'FJ', 'FT', 'GD', 'GN', 'GX', 'HH', 'HR', 'IB', 'IL', 'IV', 'JF', 'JP', 'JZ', 'KJ', 'KT', 'LD', 'LN', 'LX', 'MH', 'MR', 'NB', 'NL', 'NV', 'OF', 'OP', 'OZ', 'PJ', 'PT', 'QD', 'QN', 'QX', 'RH', 'RR', 'SB', 'SL']
+Results saved successfully to Excel file.
+LIS export file created successfully with 1 samples
+Evidence summary written to ABO_evidence_summary_mqc.tsv
+
+All samples processed successfully.
+
+=== PROCESSING SUMMARY ===
+Total directories scanned: 1
+Successfully processed: 1
+Samples with explicit barcode: 1
+Samples with default barcode (barcode00): 0
+Failed samples: 0
+Pattern recognition failures: 0
+
+Phenotype Distribution:
+  A: 1
+
+Extended Genotype Distribution (with A subtypes):
+  A Subtypes:
+    ABO*A1.01/ABO*A2.01: 1
+
+Phase Confidence Distribution:
+    High: Top 2 haplotypes cover 100% of 69 reads: 1
+============================
+
+=== QC SUMMARY ===
+RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or transfusion decisions; confirm results with an accredited method before any clinical use.
+aggregate_abo_reports.py: 2.4.0
+Panel version: 2.0.0
+Panel source: nf-core/abotyper legacy panel (v1.2.0) + ISBT ABO allele table v9
+ISBT ABO allele table: v9 (blooddatabase.isbtweb.org/system/ABO)
+ISBT table checked: 2026-10-16
+ISBT table release date: not stated in the table file; set from the ISBT database release notes
+Samples: 1   flagged REVIEW: 0 (0.0%)
+Evidence (Clair3 + BAM pileup):
+       1  CLAIR3+BAM
+Evidence basis: variant evidence=1
+A2 trace:
+       1  1 A2 confirmed (c.467 + c.1061delC)
+QC report written to ABO_run_qc.txt
+All done!
+

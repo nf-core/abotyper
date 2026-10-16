@@ -1,0 +1,6 @@
+N E X T F L O W  ~  version 26.10.2
+Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-bdd0529aa709c488c8162b250817fa3f.nf` [amazing_brattain] - revision: 1380542169
+WARN: Unrecognized config option 'validation.defaultIgnoreParams'
+WARN: Unrecognized config option 'validation.monochromeLogs'
+[3f/fc8ec1] Submitted process > ABO_CLAIR2METRICS (ABO_AA_barcode01)
+WARN: Process `ABO_CLAIR2METRICS` publishDir path contains a variable with a null value

@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	63/c623c2	1893979	ABO_SNPS2PHENO (COMPILING ABO RESULTS)	COMPLETED	0	2026-10-16 14:35:08.866	8s	6.4s	181.5%	220.3 MB	3 GB	53.8 MB	216 KB

@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	bf/778ba6	1885476	ABO_EVIDENCE (ABO_AA_barcode01)	COMPLETED	0	2026-10-16 14:32:05.965	2.5s	259ms	100.0%	3.3 MB	4.2 MB	784.3 KB	401 B

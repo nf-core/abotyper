@@ -1,0 +1,158 @@
+Oct-16 14:38:19.971 [main] DEBUG nextflow.cli.Launcher - $> nextflow -log /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/meta/nextflow.log run /mnt/storage_c2/bioinformatics/abotyper/.nf-test-da176640a7c4c65e5498274e0be23ab9.nf -c /mnt/storage_c2/bioinformatics/abotyper/nextflow.config -c /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config -params-file /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/meta/params.json -ansi-log false -profile test,docker -with-trace /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/meta/trace.csv -w /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work -stub
+Oct-16 14:38:20.256 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 26.10.2
+Oct-16 14:38:20.354 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/fmobegi/.nextflow/plugins; core-plugins: nf-agent-pi@0.6.0,nf-agent@0.2.0,nf-amazon@3.12.1,nf-azure@1.24.2,nf-cloudcache@0.6.2,nf-codecommit@0.6.1,nf-console@1.3.1,nf-google@1.29.1,nf-k8s@1.6.1,nf-seqera@0.26.0,nf-tower@1.32.1,nf-wave@1.22.3
+Oct-16 14:38:20.439 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-16 14:38:20.442 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-16 14:38:20.455 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.14.1 in 'deployment' mode
+Oct-16 14:38:20.519 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
+Oct-16 14:38:21.049 [main] DEBUG nextflow.plugin.PluginUpdater - Using plugin repository: HttpPluginRepository [registry]; url=https://registry.nextflow.io/api
+Oct-16 14:38:21.066 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-16 14:38:21.175 [main] DEBUG nextflow.config.ConfigCmdAdapter - Found config base: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:38:21.191 [main] DEBUG nextflow.config.ConfigCmdAdapter - User config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:38:21.192 [main] DEBUG nextflow.config.ConfigCmdAdapter - User config file: /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config
+Oct-16 14:38:21.198 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:38:21.202 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/nextflow.config
+Oct-16 14:38:21.203 [main] DEBUG nextflow.config.ConfigCmdAdapter - Parsing config file: /mnt/storage_c2/bioinformatics/abotyper/tests/nextflow.config
+Oct-16 14:38:21.216 [main] DEBUG nextflow.config.ConfigParserFactory - Using config parser v2
+Oct-16 14:38:21.246 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:38:26.214 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:38:27.926 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Oct-16 14:38:27.956 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [debug, conda, mamba, docker, arm64, emulate_amd64, singularity, podman, shifter, charliecloud, apptainer, wave, gpu, test, test_full, abims, adcra, alice, alliance_canada, apollo, arcc, aws_tower, awsbatch, azurebatch, bi, bigpurple, bih, binac2, biohpc_gen, biowulf, bluebear, cambridge, cannon, cbe, ccga_dx, ccga_cau, ceci_dragon2, ceci_nic5, cedars, ceres, cfc, cfc_dev, cheaha, computerome, create, crg, crick, cropdiversityhpc, crukmi, csiro_petrichor, czbiohub_aws, daisybio, denbi_qbic, dkfz, dirac, ebc, eddie, ebi_codon, ebi_codon_slurm, einstein, embl_hd, engaging, ethz_euler, eva, eva_grace, fgcz, fred_hutch, fsu_draco, fub_curta, genotoul, genouest, giga, gis, googlebatch, hasta, hazel, hki_genie, hypatia, humantechnopole, icr_alma, ifb_core, imb, imperial, incliva, ipop_up, iris, janelia, jax, jex, unsw_katana, ku_sund_danhead, kaust, kelvin2, ki_luria, leicester, lovelace, lrz_cm4, lugh, m3c, maestro, mahuika, mana, marjorie, marvin, mccleary, mcw_rcc, medair, mjolnir_globe, mpcdf, mpcdf_viper, mssm, munin, naiss, nci_gadi, nu_genomics, nygc, nyu_hpc, oist, palmetto, pasteur, pawsey_setonix, pdc_kth, phoenix, psmn, purdue_bell, purdue_gautschi, purdue_negishi, qmul_apocrita, rki, rosalind, rosalind_uge, roslin, saga_sigma2, sage, sahmri, sanger, ilifu, seadragon, seattlechildrens, seawulf, seg_globe, self_hosted_runner, shu_bmrc, stjude, tes, tigem, tubingen_apg, tufts, tuos_stanage, ucd_sonic, ucl_cscluster, ucl_myriad, uct_hpc, uge, unc_lccc, unc_longleaf, unibe_ibu, unity, uod_hpc, uppmax, utd_juno, uw_hyak_pedslabs, uzh, uzl_omics, vai, verily_workbench, vsc_calcua, vsc_kul_uhasselt, vsc_ugent, wehi, xanadu, york_viking]
+Oct-16 14:38:28.107 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.5.1]
+Oct-16 14:38:28.110 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Oct-16 14:38:28.111 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.5.1]
+Oct-16 14:38:28.120 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.5.1
+Oct-16 14:38:28.149 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.5.1' resolved
+Oct-16 14:38:28.150 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.5.1'
+Oct-16 14:38:28.167 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.5.1
+Oct-16 14:38:28.189 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/fmobegi/.nextflow/secrets/store.json
+Oct-16 14:38:28.199 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@42a0786f] - activable => nextflow.secret.LocalSecretsProvider@42a0786f
+Oct-16 14:38:28.250 [main] INFO  nextflow.cli.CmdRun - Launching `/mnt/storage_c2/bioinformatics/abotyper/.nf-test-da176640a7c4c65e5498274e0be23ab9.nf` [adoring_kirch] - revision: 2a6519937a
+Oct-16 14:38:28.258 [main] ERROR org.pf4j.AbstractExtensionFinder - Different class loaders: 'org.pf4j.PluginClassLoader@7b6141f0' (E) and 'jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487' (EP)
+Oct-16 14:38:28.494 [main] WARN  nextflow.config.ConfigValidator - Unrecognized config option 'validation.defaultIgnoreParams'
+Oct-16 14:38:28.495 [main] WARN  nextflow.config.ConfigValidator - Unrecognized config option 'validation.monochromeLogs'
+Oct-16 14:38:28.678 [main] DEBUG nextflow.Session - Session UUID: bc48d314-627e-4ba8-8999-fa627becdb99
+Oct-16 14:38:28.680 [main] DEBUG nextflow.Session - Run name: adoring_kirch
+Oct-16 14:38:28.682 [main] DEBUG nextflow.Session - Executor pool size: 6
+Oct-16 14:38:28.718 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Oct-16 14:38:28.737 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:38:28.802 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 26.10.2 build 14160
+  Created: 15-10-2026 18:24 UTC (16-10-2026 02:24 AWDT)
+  System: Linux 7.0.0-38-generic
+  Runtime: Groovy 4.0.33 on OpenJDK 64-Bit Server VM 25.0.4.1+1-1-26.04.4-Ubuntu
+  Encoding: UTF-8 (UTF-8)
+  Process: 1903620@FredrickMedia [127.0.1.1]
+  CPUs: 6 - Mem: 14.9 GB (971 MB) - Swap: 4 GB (2.1 GB)
+Oct-16 14:38:28.846 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Oct-16 14:38:28.880 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 7; maxThreads: 1000
+Oct-16 14:38:29.324 [main] DEBUG nextflow.Session - Work-dir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work [ext2/ext3]
+Oct-16 14:38:29.485 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[K8sExecutor]
+Oct-16 14:38:29.524 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Oct-16 14:38:29.530 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
+Oct-16 14:38:29.588 [main] DEBUG nextflow.Session - Observer factory (v2): ValidationObserverFactory
+Oct-16 14:38:29.668 [main] DEBUG nextflow.Session - Session start
+Oct-16 14:38:29.689 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/meta/trace.csv
+Oct-16 14:38:29.698 [main] DEBUG nextflow.script.ScriptLoaderFactory - Using script parser v2
+Oct-16 14:38:33.120 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Oct-16 14:38:34.202 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:DOWNLOAD_CLAIR3_MODEL` matches process VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL
+Oct-16 14:38:34.236 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.237 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.260 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Oct-16 14:38:34.287 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=6; memory=14.9 GB; capacity=6; pollInterval=100ms; dumpInterval=5m
+Oct-16 14:38:34.318 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Oct-16 14:38:34.445 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.584 [main] WARN  nextflow.extension.OperatorImpl - The operator `first` is useless when applied to a value channel which returns a single value by definition
+Oct-16 14:38:34.595 [main] WARN  nextflow.extension.OperatorImpl - The operator `first` is useless when applied to a value channel which returns a single value by definition
+Oct-16 14:38:34.635 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_high` matches labels `process_high` for process with name VARIANTS_QUANTIFICATION:CLAIR3
+Oct-16 14:38:34.638 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:CLAIR3` matches process VARIANTS_QUANTIFICATION:CLAIR3
+Oct-16 14:38:34.653 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.653 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.656 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:CLAIR3': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.772 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_single` matches labels `process_single` for process with name VARIANTS_QUANTIFICATION:ABO_PANEL2BED
+Oct-16 14:38:34.774 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_PANEL2BED` matches process VARIANTS_QUANTIFICATION:ABO_PANEL2BED
+Oct-16 14:38:34.783 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.783 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.785 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:ABO_PANEL2BED': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.811 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_single` matches labels `process_single` for process with name VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS
+Oct-16 14:38:34.813 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_CLAIR2METRICS` matches process VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS
+Oct-16 14:38:34.833 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.833 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.835 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.863 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_single` matches labels `process_single` for process with name VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES
+Oct-16 14:38:34.866 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_CLAIR2HAPLOTYPES` matches process VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES
+Oct-16 14:38:34.877 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.878 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.881 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.906 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_single` matches labels `process_single` for process with name VARIANTS_QUANTIFICATION:ABO_PILEUP
+Oct-16 14:38:34.908 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_PILEUP` matches process VARIANTS_QUANTIFICATION:ABO_PILEUP
+Oct-16 14:38:34.919 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.919 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.921 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:ABO_PILEUP': maxForks=0; fair=false; array=0
+Oct-16 14:38:34.963 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withLabel:process_single` matches labels `process_single` for process with name VARIANTS_QUANTIFICATION:ABO_EVIDENCE
+Oct-16 14:38:34.966 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:ABO_EVIDENCE` matches process VARIANTS_QUANTIFICATION:ABO_EVIDENCE
+Oct-16 14:38:34.973 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Oct-16 14:38:34.973 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Oct-16 14:38:34.975 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VARIANTS_QUANTIFICATION:ABO_EVIDENCE': maxForks=0; fair=false; array=0
+Oct-16 14:38:35.119 [main] DEBUG nextflow.Session - Config process names validation disabled as requested
+Oct-16 14:38:35.141 [main] DEBUG nextflow.Session - Igniting dataflow network (11)
+Oct-16 14:38:35.148 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL
+Oct-16 14:38:35.153 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:CLAIR3
+Oct-16 14:38:35.156 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:ABO_PANEL2BED
+Oct-16 14:38:35.158 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS
+Oct-16 14:38:35.158 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES
+Oct-16 14:38:35.159 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:ABO_PILEUP
+Oct-16 14:38:35.162 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VARIANTS_QUANTIFICATION:ABO_EVIDENCE
+Oct-16 14:38:35.166 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  _nf_script_47f1541a9b150b2e: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/clair2metrics/main.nf
+  _nf_script_ffbc017d9500e420: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/pileup/main.nf
+  _nf_script_31d0be9cc6e62d04: /mnt/storage_c2/bioinformatics/abotyper/subworkflows/local/variants_quantification/main.nf
+  _nf_script_a76de21e5ded587a: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/panel2bed/main.nf
+  _nf_script_4bde3f49a8000982: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/evidence/main.nf
+  _nf_script_06e3517d9b10e6bc: /mnt/storage_c2/bioinformatics/abotyper/modules/nf-core/clair3/main.nf
+  _nf_script_e7f2a6abad5d9d37: /mnt/storage_c2/bioinformatics/abotyper/modules/local/abo/clair2haplotypes/main.nf
+  Main: /mnt/storage_c2/bioinformatics/abotyper/.nf-test-da176640a7c4c65e5498274e0be23ab9.nf
+Oct-16 14:38:35.166 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Oct-16 14:38:35.167 [main] DEBUG nextflow.Session - Session await
+Oct-16 14:38:35.759 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:35.767 [Task submitter] INFO  nextflow.Session - [04/83a326] Submitted process > VARIANTS_QUANTIFICATION:ABO_PANEL2BED (abo_variant_panel)
+Oct-16 14:38:35.825 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:35.827 [Task submitter] INFO  nextflow.Session - [b6/d23aa2] Submitted process > VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL (clair3_model)
+Oct-16 14:38:36.286 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: VARIANTS_QUANTIFICATION:DOWNLOAD_CLAIR3_MODEL (clair3_model); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/b6/d23aa24fcab518e125064e7e6faa03]
+Oct-16 14:38:36.290 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:38:36.622 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:36.626 [Task submitter] INFO  nextflow.Session - [79/9ea825] Submitted process > VARIANTS_QUANTIFICATION:CLAIR3 (ABO_AA_barcode01)
+Oct-16 14:38:38.067 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: VARIANTS_QUANTIFICATION:ABO_PANEL2BED (abo_variant_panel); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/04/83a3260ec49b1c6aaa809329420c77]
+Oct-16 14:38:38.129 [TaskFinalizer-2] WARN  nextflow.processor.PublishDir - Process `VARIANTS_QUANTIFICATION:ABO_PANEL2BED` publishDir path contains a variable with a null value
+Oct-16 14:38:38.163 [TaskFinalizer-2] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=18; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-16 14:38:38.370 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:38.377 [Task submitter] INFO  nextflow.Session - [4f/bcca49] Submitted process > VARIANTS_QUANTIFICATION:ABO_PILEUP (ABO_AA_barcode01)
+Oct-16 14:38:38.444 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: VARIANTS_QUANTIFICATION:CLAIR3 (ABO_AA_barcode01); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/79/9ea82528ae581949d51e1ed2945f4e]
+Oct-16 14:38:38.491 [TaskFinalizer-3] WARN  nextflow.processor.PublishDir - Process `VARIANTS_QUANTIFICATION:CLAIR3` publishDir path contains a variable with a null value
+Oct-16 14:38:38.585 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:38.587 [Task submitter] INFO  nextflow.Session - [29/6471e2] Submitted process > VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES (ABO_AA_barcode01)
+Oct-16 14:38:40.531 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: VARIANTS_QUANTIFICATION:ABO_PILEUP (ABO_AA_barcode01); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/4f/bcca49c2842908036943eea334f7e0]
+Oct-16 14:38:40.574 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:40.577 [Task submitter] INFO  nextflow.Session - [30/cbf3b1] Submitted process > VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS (ABO_AA_barcode01)
+Oct-16 14:38:40.609 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES (ABO_AA_barcode01); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/29/6471e259cf41f4189e63ec8ae74ee4]
+Oct-16 14:38:40.630 [TaskFinalizer-5] WARN  nextflow.processor.PublishDir - Process `VARIANTS_QUANTIFICATION:ABO_CLAIR2HAPLOTYPES` publishDir path contains a variable with a null value
+Oct-16 14:38:42.252 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS (ABO_AA_barcode01); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/30/cbf3b1bef479e1b029a31ee2536fd8]
+Oct-16 14:38:42.269 [TaskFinalizer-6] WARN  nextflow.processor.PublishDir - Process `VARIANTS_QUANTIFICATION:ABO_CLAIR2METRICS` publishDir path contains a variable with a null value
+Oct-16 14:38:42.323 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Oct-16 14:38:42.324 [Task submitter] INFO  nextflow.Session - [22/db5061] Submitted process > VARIANTS_QUANTIFICATION:ABO_EVIDENCE (ABO_AA_barcode01)
+Oct-16 14:38:44.040 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: VARIANTS_QUANTIFICATION:ABO_EVIDENCE (ABO_AA_barcode01); status: COMPLETED; exit: 0; error: -; workDir: /mnt/storage_c2/bioinformatics/abotyper/.nf-test/tests/da176640a7c4c65e5498274e0be23ab9/work/22/db5061e0035bfa6adc3cbcc6bbc527]
+Oct-16 14:38:44.072 [TaskFinalizer-7] WARN  nextflow.processor.PublishDir - Process `VARIANTS_QUANTIFICATION:ABO_EVIDENCE` publishDir path contains a variable with a null value
+Oct-16 14:38:44.081 [main] DEBUG nextflow.Session - Session await > all processes finished
+Oct-16 14:38:44.138 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Oct-16 14:38:44.139 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Oct-16 14:38:44.149 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Oct-16 14:38:44.151 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Oct-16 14:38:44.196 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=7; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=1.9s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=2; peakCpus=3; peakMemory=12 GB; ]
+Oct-16 14:38:44.293 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Oct-16 14:38:46.816 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Oct-16 14:38:47.117 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+Oct-16 14:38:47.135 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Oct-16 14:38:47.163 [main] INFO  org.pf4j.AbstractPluginManager - Stop plugin 'nf-schema@2.5.1'
+Oct-16 14:38:47.163 [main] DEBUG nextflow.plugin.BasePlugin - Plugin stopped nf-schema
+Oct-16 14:38:47.166 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Oct-16 14:38:47.166 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

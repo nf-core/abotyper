@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	fa/f24008	1892280	ABO_PILEUP (ABO_AA_barcode01)	COMPLETED	0	2026-10-16 14:34:43.788	2.4s	87ms	109.1%	3.5 MB	4.2 MB	133.6 KB	2.6 KB
