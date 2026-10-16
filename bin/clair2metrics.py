@@ -89,7 +89,7 @@ def parse_gvcf(path: Path) -> Tuple[Dict[int, List[VcfRecord]], RefBlocks]:
     records: Dict[int, List[VcfRecord]] = {}
     block_starts, block_ends, block_dp = [], [], []
 
-    with gzip.open(path, "rt") as fh:
+    with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
             if line.startswith("#"):
                 continue

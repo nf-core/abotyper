@@ -72,7 +72,7 @@ class PhasedRecord:
 def parse_phased_vcf(path: Path) -> Dict[int, PhasedRecord]:
     """Return {POS: PhasedRecord} for every phased, heterozygous record."""
     records: Dict[int, PhasedRecord] = {}
-    with gzip.open(path, "rt") as fh:
+    with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
             if line.startswith("#"):
                 continue
