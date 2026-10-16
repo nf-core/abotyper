@@ -152,10 +152,10 @@
             },
             "url": [
                 "https://github.com/nf-core/abotyper",
-                "https://nf-co.re/abotyper/1.2.0/"
+                "https://nf-co.re/abotyper/1.0.0/"
             ],
             "version": [
-                "1.2.0"
+                "1.0.0"
             ]
         },
         {
