@@ -1,0 +1,90 @@
+{
+    "abotyper - ABO_AA_barcode01 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "2": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_pyyaml": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T13:28:29.428789752",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.2"
+        }
+    },
+    "abotyper - ABO_AA_barcode01 - phased VCF -> haplotypes": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.Haplotypes.tsv:md5,b2a0e49b8374e7b557fac23d85c93e39"
+                ]
+            ],
+            {
+                "versions_python": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_pyyaml": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T13:28:04.416673475",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.2"
+        }
+    }
+}

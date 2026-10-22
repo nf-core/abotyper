@@ -1,17 +1,33 @@
-bump_version: null
-lint: {}
-nf_core_version: 3.0.2
-org_path: null
+lint:
+  files_unchanged:
+    - .gitattributes
+    - .gitignore
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/linting.yml
+    - .github/workflows/branch.yml
+  nextflow_config:
+    - config_defaults:
+        - params.fasta
+        - params.fai
+        - params.multiqc_logo
+        - params.logo
+        - params.abo_bed
+        - params.abo_clair3_region_bed
+        - params.abo_panel
+        - params.abo_reference_fasta
+        - params.abo_reference_fai
+  nf_test_content: false
+  files_exist:
+    - .github/workflows/linting_comment.yml
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
-  author: '@fmobegi'
+  author: "@fmobegi"
   description: A pipeline for characterising the Human Blood Group and Red Cell Antigens
     using Oxford Nanopore third-generation sequencing data.
-  force: true
+  force: false
   is_nfcore: true
   name: abotyper
   org: nf-core
   outdir: .
-  skip_features: null
-  version: 1.0.0dev
-update: null
+  version: 1.0.0
