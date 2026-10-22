@@ -149,7 +149,7 @@ class SampleRenamer:
             raise FileNotFoundError(f"Final export file not found: {final_export_file}")
 
         try:
-            df = pd.read_csv(final_export_file, sep=",")
+            df = pd.read_csv(final_export_file, sep=",", encoding="utf-8")
             self.logger.info(f"Successfully read {len(df)} rows from export file")
             self.logger.debug(f"Columns found: {list(df.columns)}")
 

@@ -1,5 +1,7 @@
 lint:
   files_unchanged:
+    - .gitattributes
+    - .gitignore
     - .github/workflows/linting_comment.yml
     - .github/workflows/linting.yml
     - .github/workflows/branch.yml
@@ -8,6 +10,12 @@ lint:
         - params.fasta
         - params.fai
         - params.multiqc_logo
+        - params.logo
+        - params.abo_bed
+        - params.abo_clair3_region_bed
+        - params.abo_panel
+        - params.abo_reference_fasta
+        - params.abo_reference_fai
   nf_test_content: false
   files_exist:
     - .github/workflows/linting_comment.yml
@@ -22,4 +30,4 @@ template:
   name: abotyper
   org: nf-core
   outdir: .
-  version: 1.2.0
+  version: 1.0.0

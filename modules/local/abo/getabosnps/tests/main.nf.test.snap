@@ -1,12 +1,11 @@
 {
-    "abotyper - ABO_AA_barcode01 - exon6 - stub": {
+    "abotyper - ABO_AA_barcode01 - stub": {
         "content": [
             {
                 "0": [
                     [
                         {
-                            "id": "ABO_AA_barcode01",
-                            "exon": "exon6"
+                            "id": "ABO_AA_barcode01"
                         },
                         "ABO_AA_barcode01.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
@@ -14,20 +13,29 @@
                 "1": [
                     [
                         {
-                            "id": "ABO_AA_barcode01",
-                            "exon": "exon6"
+                            "id": "ABO_AA_barcode01"
                         },
                         "ABO_AA_barcode01.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "2": [
-                    "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
+                    [
+                        "ABO_GETABOSNPS",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "3": [
+                    [
+                        "ABO_GETABOSNPS",
+                        "pandas",
+                        "3.0.5"
+                    ]
                 ],
                 "log": [
                     [
                         {
-                            "id": "ABO_AA_barcode01",
-                            "exon": "exon6"
+                            "id": "ABO_AA_barcode01"
                         },
                         "ABO_AA_barcode01.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
@@ -35,142 +43,64 @@
                 "phenotype": [
                     [
                         {
-                            "id": "ABO_AA_barcode01",
-                            "exon": "exon6"
+                            "id": "ABO_AA_barcode01"
                         },
                         "ABO_AA_barcode01.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
-                "versions": [
-                    "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
+                "versions_pandas": [
+                    [
+                        "ABO_GETABOSNPS",
+                        "pandas",
+                        "3.0.5"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "ABO_GETABOSNPS",
+                        "python",
+                        "3.13.15"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-03-30T12:49:36.920549981",
+        "timestamp": "2026-10-16T13:32:26.746523079",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.2"
         }
     },
-    "abotyper - ABO_AB_barcode02 - exon7 - stub": {
+    "abotyper - ABO_AA_barcode01 - metrics + coverage -> ABOPhenotype report": {
         "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.ABOPhenotype.txt:md5,91af94f4d3ebfd36d797c3fd1caea0f7"
+                ]
+            ],
             {
-                "0": [
+                "versions_pandas": [
                     [
-                        {
-                            "id": "ABO_AB_barcode02",
-                            "exon": "exon7"
-                        },
-                        "ABO_AB_barcode02.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_GETABOSNPS",
+                        "pandas",
+                        "3.0.5"
                     ]
                 ],
-                "1": [
+                "versions_python": [
                     [
-                        {
-                            "id": "ABO_AB_barcode02",
-                            "exon": "exon7"
-                        },
-                        "ABO_AB_barcode02.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_GETABOSNPS",
+                        "python",
+                        "3.13.15"
                     ]
-                ],
-                "2": [
-                    "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
-                ],
-                "log": [
-                    [
-                        {
-                            "id": "ABO_AB_barcode02",
-                            "exon": "exon7"
-                        },
-                        "ABO_AB_barcode02.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
-                    ]
-                ],
-                "phenotype": [
-                    [
-                        {
-                            "id": "ABO_AB_barcode02",
-                            "exon": "exon7"
-                        },
-                        "ABO_AB_barcode02.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
-                    ]
-                ],
-                "versions": [
-                    "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
                 ]
             }
         ],
-        "timestamp": "2026-03-30T12:49:44.738138327",
+        "timestamp": "2026-10-16T20:02:33.813624778",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
-        }
-    },
-    "ABO_AB_barcode02_exon7": {
-        "content": [
-            [
-                "Exon 7:",
-                "",
-                "Exon 7 position(1-based): 422"
-            ],
-            [
-                "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
-            ]
-        ],
-        "timestamp": "2026-03-30T12:49:29.585555114",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
-        }
-    },
-    "ABO_AB_barcode02_exon6": {
-        "content": [
-            [
-                "Exon 6:",
-                "",
-                "Exon 6 position(1-based): 22"
-            ],
-            [
-                "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
-            ]
-        ],
-        "timestamp": "2026-03-30T12:49:22.466201087",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
-        }
-    },
-    "ABO_AA_barcode01_exon7": {
-        "content": [
-            [
-                "Exon 7:",
-                "",
-                "Exon 7 position(1-based): 422"
-            ],
-            [
-                "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
-            ]
-        ],
-        "timestamp": "2026-03-30T12:49:14.961522305",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
-        }
-    },
-    "ABO_AA_barcode01_exon6": {
-        "content": [
-            [
-                "Exon 6:",
-                "",
-                "Exon 6 position(1-based): 22"
-            ],
-            [
-                "versions.yml:md5,a19b00428870b61e2b0a6a0fd3246d0c"
-            ]
-        ],
-        "timestamp": "2026-03-30T12:49:07.692913542",
-        "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
         }
     }
 }

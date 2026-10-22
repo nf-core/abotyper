@@ -54,7 +54,8 @@ def marker_to_interval(marker: VariantMarker, pad: int) -> tuple[int, int]:
     if pos is None:
         raise ValueError(f"{marker.id} has no resolved position (not calibrated)")
     if needs_padding(marker):
-        start, end = max(0, pos - 1 - pad), pos + pad
+        lo, hi = marker.search_bounds(pad)
+        start, end = max(0, lo - 1), hi
     else:
         start, end = pos - 1, pos
     return start, end

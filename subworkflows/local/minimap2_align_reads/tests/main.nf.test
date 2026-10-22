@@ -1,0 +1,46 @@
+nextflow_workflow {
+
+    name "Test Subworkflow MINIMAP2_ALIGN_READS"
+    script "../main.nf"
+    workflow "MINIMAP2_ALIGN_READS"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/minimap2_align_reads"
+    tag "minimap2/align"
+    tag "samtools/coverage"
+    tag "samtools/flagstat"
+    tag "samtools/stats"
+    tag "abotyper"
+
+    // Alignment of real reads needs the nf-core test-datasets FASTQ files (the same ones the
+    // pipeline's -profile test uses); here the wiring and emits are checked in stub mode.
+
+    test("minimap2_align_reads - one sample - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01', single_end:true ],
+                                        [ file("$projectDir/assets/samplesheet.csv", checkIfExists: true) ] ])
+                input[1] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta.fai", checkIfExists: true) ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.bam.size() == 1 },
+                { assert workflow.out.bai.size() == 1 },
+                { assert workflow.out.coverage.size() == 1 },
+                { assert workflow.out.flagstat.size() == 1 },
+                { assert workflow.out.stats.size() == 1 },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
+}

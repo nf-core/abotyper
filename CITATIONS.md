@@ -12,9 +12,25 @@
 
 ## Pipeline tools
 
-- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [NanoPlot](https://github.com/wdecoster/NanoPlot)
 
-> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
+> De Coster W, D'Hert S, Schultz DT, Cruts M, Van Broeckhoven C. NanoPack: visualizing and processing long-read sequencing data. Bioinformatics. 2018 Aug 1;34(15):2666-2669. doi: 10.1093/bioinformatics/bty149.
+
+- [minimap2](https://github.com/lh3/minimap2)
+
+> Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics. 2018 Sep 15;34(18):3094-3100. doi: 10.1093/bioinformatics/bty191.
+
+- [SAMtools and BCFtools](https://github.com/samtools)
+
+> Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. GigaScience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008.
+
+- [Clair3](https://github.com/HKU-BAL/Clair3)
+
+> Zheng Z, Li S, Su J, Leung AW-S, Lam T-W, Luo R. Symphonizing pileup and full-alignment for deep learning-based long-read variant calling. Nature Computational Science. 2022;2:797-803. doi: 10.1038/s43588-022-00387-x.
+
+- [ISBT ABO allele table](https://blooddatabase.isbtweb.org/system/ABO)
+
+> International Society of Blood Transfusion, Working Party on Red Cell Immunogenetics and Blood Group Terminology. Blood group allele tables: ABO (ISBT 001), table v9.
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 

@@ -9,139 +9,43 @@ nextflow_process {
     tag "abo/getabosnps"
     tag "abotyper"
 
-    test("abotyper - ABO_AA_barcode01 - exon6") {
+    // Single combined-reference layout: one metrics table per sample covers every exon,
+    // so there is no per-exon meta or input any more.
+
+    test("abotyper - ABO_AA_barcode01 - metrics + coverage -> ABOPhenotype report") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01', exon:'exon6' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/haploscan/ABO_AA_barcode01.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.coverage.txt', checkIfExists: true),
-                    'exon6'
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
                 ]
                 """
             }
         }
 
         then {
+            def report = path(process.out.phenotype[0][1]).text
             assertAll(
                 { assert process.success },
                 { assert process.out.phenotype[0][1] ==~ ".*/ABO_AA_barcode01.ABOPhenotype.txt" },
                 { assert process.out.log[0][1] ==~ ".*/ABO_AA_barcode01.log.txt" },
-                { assert path(process.out.phenotype[0][1]).exists() },
-                { assert path(process.out.log[0][1]).exists() },
-                { assert path(process.out.phenotype[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.contains("exon6") || path(process.out.log[0][1]).text.contains("ABO_AA_barcode01") },
+                // one report covers every exon section of the combined reference
+                { assert report.contains("Exon 6:") && report.contains("Exon 7:") },
+                // c.261delG (position 22694) is a primary position and must be reported
+                { assert report.contains("Position:22694") },
+                { assert report.contains("Aligned Read Count:") },
                 { assert snapshot(
-                    path(process.out.phenotype[0][1]).readLines()[0..2],
-                    process.out.versions
-                ).match("ABO_AA_barcode01_exon6") }
+                    process.out.phenotype,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
             )
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - exon7") {
-
-        when {
-            process {
-                """
-                input[0] = [
-                    [ id:'ABO_AA_barcode01', exon:'exon7' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon7/haploscan/ABO_AA_barcode01.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon7/alignment/ABO_AA_barcode01.coverage.txt', checkIfExists: true),
-                    'exon7'
-                ]
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert process.success },
-                { assert process.out.phenotype[0][1] ==~ ".*/ABO_AA_barcode01.ABOPhenotype.txt" },
-                { assert process.out.log[0][1] ==~ ".*/ABO_AA_barcode01.log.txt" },
-                { assert path(process.out.phenotype[0][1]).exists() },
-                { assert path(process.out.log[0][1]).exists() },
-                { assert path(process.out.phenotype[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.contains("exon7") || path(process.out.log[0][1]).text.contains("ABO_AA_barcode01") },
-                { assert snapshot(
-                    path(process.out.phenotype[0][1]).readLines()[0..2],
-                    process.out.versions
-                ).match("ABO_AA_barcode01_exon7") }
-            )
-        }
-    }
-
-    test("abotyper - ABO_AB_barcode02 - exon6") {
-
-        when {
-            process {
-                """
-                input[0] = [
-                    [ id:'ABO_AB_barcode02', exon:'exon6' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon6/haploscan/ABO_AB_barcode02.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon6/alignment/ABO_AB_barcode02.coverage.txt', checkIfExists: true),
-                    'exon6'
-                ]
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert process.success },
-                { assert process.out.phenotype[0][1] ==~ ".*/ABO_AB_barcode02.ABOPhenotype.txt" },
-                { assert process.out.log[0][1] ==~ ".*/ABO_AB_barcode02.log.txt" },
-                { assert path(process.out.phenotype[0][1]).exists() },
-                { assert path(process.out.log[0][1]).exists() },
-                { assert path(process.out.phenotype[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.contains("exon6") || path(process.out.log[0][1]).text.contains("ABO_AB_barcode02") },
-                { assert snapshot(
-                    path(process.out.phenotype[0][1]).readLines()[0..2],
-                    process.out.versions
-                ).match("ABO_AB_barcode02_exon6") }
-            )
-        }
-    }
-
-    test("abotyper - ABO_AB_barcode02 - exon7") {
-
-        when {
-            process {
-                """
-                input[0] = [
-                    [ id:'ABO_AB_barcode02', exon:'exon7' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/haploscan/ABO_AB_barcode02.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.coverage.txt', checkIfExists: true),
-                    'exon7'
-                ]
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert process.success },
-                { assert process.out.phenotype[0][1] ==~ ".*/ABO_AB_barcode02.ABOPhenotype.txt" },
-                { assert process.out.log[0][1] ==~ ".*/ABO_AB_barcode02.log.txt" },
-                { assert path(process.out.phenotype[0][1]).exists() },
-                { assert path(process.out.log[0][1]).exists() },
-                { assert path(process.out.phenotype[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.size() > 0 },
-                { assert path(process.out.log[0][1]).text.contains("exon7") || path(process.out.log[0][1]).text.contains("ABO_AB_barcode02") },
-                { assert snapshot(
-                    path(process.out.phenotype[0][1]).readLines()[0..2],
-                    process.out.versions
-                ).match("ABO_AB_barcode02_exon7") }
-            )
-        }
-    }
-
-    test("abotyper - ABO_AA_barcode01 - exon6 - stub") {
+    test("abotyper - ABO_AA_barcode01 - stub") {
 
         options "-stub"
 
@@ -149,35 +53,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01', exon:'exon6' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/haploscan/ABO_AA_barcode01.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/exon6/alignment/ABO_AA_barcode01.coverage.txt', checkIfExists: true),
-                    'exon6'
-                ]
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert process.success },
-                { assert snapshot(process.out).match() }
-            )
-        }
-    }
-
-    test("abotyper - ABO_AB_barcode02 - exon7 - stub") {
-
-        options "-stub"
-
-        when {
-            process {
-                """
-                input[0] = [
-                    [ id:'ABO_AB_barcode02', exon:'exon7' ],
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/haploscan/ABO_AB_barcode02.AlignmentStatistics.tsv', checkIfExists: true),
-                    file(params.pipelines_testdata_base_path + 'abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/exon7/alignment/ABO_AB_barcode02.coverage.txt', checkIfExists: true),
-                    'exon7'
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
                 ]
                 """
             }

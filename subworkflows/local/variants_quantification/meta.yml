@@ -22,6 +22,8 @@ components:
   - abo/panel2bed
   - abo/clair2metrics
   - abo/clair2haplotypes
+  - abo/pileup
+  - abo/evidence
 input:
   - ch_bam:
       type: channel
@@ -55,17 +57,31 @@ input:
       description: |
         ABO variant panel file (abo_variant_panel.yaml), the single source of
         truth for diagnostic positions -- broadcast to ABO_PANEL2BED,
-        ABO_CLAIR2METRICS, and ABO_CLAIR2HAPLOTYPES.
+        ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES and ABO_EVIDENCE.
       pattern: "*.{yaml,yml,json,csv,tsv}"
 output:
   - metrics:
       type: file
       description: |
-        Per-position allele frequency / alignment statistics table, in the
-        same format pysam_haploscan.py produced, from ABO_CLAIR2METRICS
-        reading Clair3's gVCF directly.
+        Per-position allele frequency / alignment statistics table scored by
+        PREDICTABOPHENOTYPE, from ABO_EVIDENCE: Clair3's table (ABO_CLAIR2METRICS,
+        reading the gVCF directly) is the primary line and the BAM pileup
+        (ABO_PILEUP) fills positions Clair3 had no evidence for.
         Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
       pattern: "*.AlignmentStatistics.tsv"
+  - evidence_status:
+      type: file
+      description: |
+        One-line per-sample summary of the two lines of evidence (evidence source,
+        positions covered by each, discordant positions, maximum pileup depth).
+        Structure: [ val(meta), path(*.evidence_status.tsv) ]
+      pattern: "*.evidence_status.tsv"
+  - concordance:
+      type: file
+      description: |
+        Per-position Clair3-vs-BAM mismatch percentages and concordance flag.
+        Structure: [ val(meta), path(*.concordance.tsv) ]
+      pattern: "*.concordance.tsv"
   - haplotypes:
       type: file
       description: |

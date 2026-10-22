@@ -17,7 +17,7 @@ from xlsxwriter.utility import xl_col_to_name
 from abo_panel import load_panel, Panel, VariantMarker, call_named_marker
 
 __author__ = "Fredrick Mobegi"
-__copyright__ = "Copyright 2024-2025, ABO blood group typing using third-generation sequencing (TGS) technology"
+__copyright__ = "Copyright 2026, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = [
     "Fredrick Mobegi",
     "Benedict Matern",
@@ -25,7 +25,7 @@ __credits__ = [
     "Claude Sonnet 5",
 ]
 __license__ = "GPL"
-__version__ = "2.0.0"
+__version__ = "2.4.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
@@ -44,6 +44,21 @@ the shared B-lineage 7-SNP backbone present in nearly all B/B3/Bweak/Bel/
 cisAB/BA alleles. Bw.06's actual private variant is c.1036A>G (not yet in
 the exon6/7 amplicon's position set -- add via the panel once calibrated
 against the combined amplicon).
+
+Typing sheet and ISBT allele names (v2.2.0)
+-------------------------------------------
+ABO_result.xlsx now has two sheets: "Typing" (one NGSengine-style row per
+sample: reads, read length, insert size, mappability, median depth, median
+analysed depth, number of unresolved ("?") primary positions, typing result,
+phenotype, genotype, the variants detected, QC) and "Variants" (one column per
+panel position holding the call, e.g. "A 50% (215x)"; the full per-base table
+is kept in ABO_result.txt, formerly "ABO_Result"). ExtendedGenotype is written with ISBT-style names (A1 ->
+ABO*A1.01, O1 -> ABO*O.01.01, B -> ABO*B.01 are only reference defaults; when
+non-primary panel markers fire, the allele is narrowed to the one they point
+to). The decision tree and QC logic still work on the internal tokens and only
+ the written value is encoded.
+Alignment metrics are read from samtools stats / flagstat files found under
+each sample directory; a missing file leaves the cell blank.
 
 QC / failure capture (v2.1.0)
 -----------------------------
@@ -88,6 +103,365 @@ Part of the nf-core/abotyper pipeline: https://github.com/fmobegi/nf-core-abotyp
 
 
 # ===========================================================================
+# ISBT allele names and alignment metrics (v2.2.0)
+# ===========================================================================
+
+# Reference (default) ISBT allele per internal token: used only when no panel marker
+# points to a more specific allele of the same family. Checked against the ISBT ABO allele
+# table v9 (blooddatabase.isbtweb.org/system/ABO): ABO*A1.01 (reference, no changes),
+# ABO*B.01 (B backbone), ABO*O.01.01 (c.261delG only), ABO*O.02.01 (c.53G>T, c.220C>T,
+# c.297A>G, c.526C>G, c.802G>A) and ABO*O.03 (no numeric suffix in the table).
+RESEARCH_USE_STATEMENT = (
+    "RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or "
+    "transfusion decisions; confirm results with an accredited method before any clinical use."
+)
+ISBT_ALLELE_NAMES = {
+    "A1": "ABO*A1.01",
+    "A1.02": "ABO*A1.02",
+    "A2.01": "ABO*A2.01",
+    "A2.06": "ABO*A2.06",
+    "A2": "ABO*A2",
+    "A": "ABO*A",
+    "B": "ABO*B.01",
+    "O1": "ABO*O.01.01",
+    "O2": "ABO*O.02.01",
+    "O3": "ABO*O.03",
+}
+
+# Family prefix an allele name must start with to be a candidate for a token.
+_ISBT_FAMILY = {
+    "A1": "ABO*A1.", "A1.02": "ABO*A1.", "A2.01": "ABO*A2.", "A2.06": "ABO*A2.", "A2": "ABO*A2.",
+    "B": "ABO*B.", "O1": "ABO*O.01.", "O2": "ABO*O.02.", "O3": "ABO*O.03",
+}
+_ISBT_NAME_RE = re.compile(r"(?:ABO\*)?([A-Za-z]+[0-9]*\.\d+(?:\.\d+)?)(?![\d-])")
+
+
+_ALT_NOTE_RE = re.compile(r"\(c\.\d+(?:[ACGT]>([ACGT])|(dup|del)[ACGT]*)\)")
+
+# Ael alleles sit outside the A1/A2 families but are refinements of them: c.804dupG alone is ABO*AEL.01,
+# with c.467C>T it is ABO*AEL.08 (ISBT v9); c.804delG alone is ABO*AEL.03
+_EXTRA_FAMILY = {"A1": ("ABO*AEL.01", "ABO*AEL.03"), "A1.02": ("ABO*AEL.08",)}
+
+
+def _marker_candidate_alleles(marker, alt=None) -> set:
+    """Exact (non-wildcard) ISBT allele names listed in a panel marker's associated_alleles.
+
+    A marker with several alt bases can annotate each entry with the variant it belongs to, e.g.
+    'ABO*A3.04 (c.539G>A)'. When the alt base that actually fired is known, entries annotated with a
+    different alt base are skipped; unannotated entries always count.
+    """
+    out = set()
+    for entry in (getattr(marker, "associated_alleles", "") or "").split(";"):
+        names = ["ABO*" + m.group(1).upper() for m in _ISBT_NAME_RE.finditer(entry)]
+        if not names:
+            continue
+        note = _ALT_NOTE_RE.search(entry)
+        if alt and note and (note.group(1) or note.group(2)).upper() != str(alt).upper():
+            continue
+        out.update(names)
+    return out
+
+
+def _unpack_fired(mk):
+    """Fired-marker entries are (marker, alt_base) pairs; plain markers are accepted too."""
+    return mk if isinstance(mk, tuple) else (mk, None)
+
+
+# What the primary A markers say about the A allele itself: (c.467C>T, c.1061delC) carried or not. A candidate allele
+# whose ISBT definition disagrees (A2.20 is c.829G>A alone, so it cannot sit on an A2.01 background) is dropped.
+_A_PRIMARY_CONTEXT = {"A2.01": (True, True), "A2.06": (False, True), "A1.02": (True, False), "A1": (False, False)}
+
+
+def primary_carriers(panel):
+    """(alleles carrying c.467C>T, alleles carrying c.1061delC) from the two primary markers' associated alleles."""
+    out = []
+    for marker_id in ("a1_a2_467", "a1_a2_1061del"):
+        m = panel.get(marker_id) if panel is not None else None
+        out.append(_marker_candidate_alleles(m) if m is not None else None)
+    return tuple(out)
+
+
+def encode_allele(token: str, fired_markers=(), absent_markers=(), carriers=None, pooled: bool = True, other_token: str = "") -> str:
+    """Internal allele token (A1, O2, ...) -> ISBT-style name.
+
+    Starts from the reference allele of the token's family, then narrows using the
+    non-primary panel markers that actually fired in this sample: the allele names
+    those markers are associated with, restricted to the token's family. Several
+    candidates are narrowed further by dropping every allele that is defined by a marker
+    which was scanned with enough coverage and did not fire (absent_markers), e.g.
+    ABO*O.01.75 needs c.106G>T, so it is ruled out when c.106 reads as reference.
+    One surviving candidate -> that allele; several -> the family name only (not resolved
+    further); none -> the reference allele. Unknown tokens pass through.
+    """
+    t = str(token).strip()
+    default = ISBT_ALLELE_NAMES.get(t, t)
+    fam = _ISBT_FAMILY.get(t)
+    if not fam:
+        return default
+    sets = []
+    for mk in fired_markers:
+        marker, alt = _unpack_fired(mk)
+        cand = {a for a in _marker_candidate_alleles(marker, alt)
+                if a.startswith(fam) or a == fam.rstrip(".") or a in _EXTRA_FAMILY.get(t, ())}
+        if cand:
+            sets.append(cand)
+    if not sets:
+        return default
+    common = set.intersection(*sets)
+    cands = common if common else set.union(*sets)
+    ctx = _A_PRIMARY_CONTEXT.get(t)
+    if ctx and carriers and all(c is not None for c in carriers):
+        consistent = {a for a in cands if (a in carriers[0]) == ctx[0] and (a in carriers[1]) == ctx[1]}
+        cands = consistent or cands
+        if pooled:
+            # the markers of both alleles were pooled, so a marker may belong to the other allele. When every marker
+            # behind the candidates also lists alleles of the other allele's family (c.829G>A is on A2.20 and on the
+            # O.01 cassette alleles), the background allele itself (A2.01 for an A2.01 token) stays a candidate
+            other_fam = _ISBT_FAMILY.get(str(other_token).strip(), "")
+            if other_fam:
+                behind = [(mk, alt) for mk, alt in (_unpack_fired(x) for x in fired_markers)
+                          if {a for a in _marker_candidate_alleles(mk, alt) if a.startswith(fam)}]
+                if behind and all(any(a.startswith(other_fam) for a in _marker_candidate_alleles(mk, alt))
+                                  for mk, alt in behind):
+                    cands = cands | {default}
+    if len(cands) > 1 and absent_markers:
+        ruled_out = set()
+        for mk in absent_markers:
+            ruled_out |= _marker_candidate_alleles(mk)
+        cands = (cands - ruled_out) or cands
+    if len(cands) == 1:
+        return next(iter(cands))
+    return fam.rstrip(".")   # ambiguous: family only, e.g. ABO*O.01
+
+
+def encode_extended_genotype(ext: str, fired_markers=(), absent_markers=(), carriers=None) -> str:
+    """'A2.01/O1' -> 'ABO*A2.01/ABO*O.01.01'. 'Unknown', 'Error' and empty values are left untouched."""
+    if not isinstance(ext, str) or ext in ("", "Unknown", "Error"):
+        return ext
+    tokens = ext.split("/")
+    markers = list(fired_markers)
+    fired_ids = {getattr(_unpack_fired(m)[0], "id", None) for m in markers}
+    absent = [m for m in absent_markers if getattr(m, "id", None) not in fired_ids]
+    if "B" in tokens:
+        # B-lineage backbone SNPs (associated alleles include ABO*B.*) come from the B
+        # allele of an AB/BO sample; they must not rename the non-B allele (e.g. to A2.04)
+        backbone = [m for m in markers if "ABO*B.*" in (getattr(_unpack_fired(m)[0], "associated_alleles", "") or "")]
+        non_b = [m for m in markers if m not in backbone]
+        return "/".join(encode_allele(t, markers if t == "B" else non_b, absent, carriers,
+                                      other_token=tokens[1 - i] if len(tokens) == 2 else "")
+                        for i, t in enumerate(tokens))
+    return "/".join(encode_allele(t, markers, absent, carriers, other_token=tokens[1 - i] if len(tokens) == 2 else "")
+                    for i, t in enumerate(tokens))
+
+
+def _first_file(sample_dir: str, patterns) -> Optional[str]:
+    """First non-empty file under sample_dir matching any glob pattern (recursive).
+    Prefers a combined/ location, then the shallowest path, then alphabetical."""
+    found = []
+    for pat in patterns:
+        found.extend(glob.glob(os.path.join(sample_dir, "**", pat), recursive=True))
+    found = [f for f in found if os.path.isfile(f) and os.path.getsize(f) > 0]
+    if not found:
+        return None
+
+    def rank(path):
+        rel = os.path.relpath(path, sample_dir)
+        parts = rel.replace("\\", "/").split("/")
+        return (0 if "combined" in parts[:-1] else 1, len(parts), rel)
+
+    return sorted(found, key=rank)[0]
+
+
+def _weighted_median(pairs) -> Optional[float]:
+    """Median of values given as (value, count) pairs."""
+    pairs = sorted((v, c) for v, c in pairs if c > 0)
+    total = sum(c for _, c in pairs)
+    if total <= 0:
+        return None
+    half = total / 2.0
+    running = 0
+    for i, (v, c) in enumerate(pairs):
+        running += c
+        if running > half:
+            return float(v)
+        if running == half:
+            nxt = pairs[i + 1][0] if i + 1 < len(pairs) else v
+            return (v + nxt) / 2.0
+    return float(pairs[-1][0])
+
+
+def parse_alignment_metrics(sample_dir: str) -> Dict[str, Optional[float]]:
+    """Per-sample alignment metrics from samtools stats (preferred) and flagstat (fallback).
+
+    Keys: reads, read_length, insert_size, mappability, median_depth (None when unavailable).
+    Never raises. Note samtools stats caps the COV histogram at its last bin
+    (default 1000+), so a median depth above the cap is reported as the cap.
+    """
+    m: Dict[str, Optional[float]] = {
+        "reads": None, "read_length": None, "insert_size": None,
+        "mappability": None, "median_depth": None,
+    }
+    mapped = None
+    try:
+        stats_file = _first_file(sample_dir, ["*.stats"])
+        if stats_file:
+            cov = []
+            with open(stats_file, "r", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if line.startswith("SN\t"):
+                        parts = line.rstrip("\n").split("\t")
+                        if len(parts) < 3:
+                            continue
+                        key, val = parts[1].rstrip(":").strip(), parts[2].strip()
+                        try:
+                            if key == "raw total sequences":
+                                m["reads"] = float(val)
+                            elif key == "reads mapped":
+                                mapped = float(val)
+                            elif key == "average length":
+                                m["read_length"] = float(val)
+                            elif key == "insert size average":
+                                m["insert_size"] = float(val)
+                        except ValueError:
+                            pass
+                    elif line.startswith("COV\t"):
+                        parts = line.rstrip("\n").split("\t")
+                        if len(parts) >= 4:
+                            try:
+                                cov.append((int(parts[2]), int(parts[3])))
+                            except ValueError:
+                                pass
+            m["median_depth"] = _weighted_median(cov)
+    except Exception:
+        pass
+
+    try:
+        if m["reads"] is None or mapped is None:
+            flag_file = _first_file(sample_dir, ["*.flagstat"])
+            if flag_file:
+                with open(flag_file, "r", encoding="utf-8", errors="replace") as fh:
+                    for line in fh:
+                        t = re.match(r"^(\d+) \+ \d+ in total", line)
+                        if t and m["reads"] is None:
+                            m["reads"] = float(t.group(1))
+                        g = re.match(r"^(\d+) \+ \d+ mapped \(", line)
+                        if g and mapped is None:
+                            mapped = float(g.group(1))
+    except Exception:
+        pass
+
+    m["mapped"] = mapped
+    if m["reads"] and mapped is not None:
+        m["mappability"] = 100.0 * mapped / m["reads"]
+    if m["insert_size"] is not None and m["insert_size"] <= 0:
+        m["insert_size"] = None   # 0 = unpaired/long reads: not meaningful
+    return m
+
+
+def parse_coverage_file(sample_dir: str) -> Dict[str, Optional[float]]:
+    """ABO-specific figures from a samtools coverage table (*.coverage.txt, one row per contig).
+
+    abo_reads     reads mapped to the ABO reference (numreads)
+    covered_depth mean depth over the bases that have any coverage (meandepth * length / covbases)
+    Both None when the file is absent. In an ABO-HLA duplex run the HLA reads do not map to the
+    ABO reference, so these describe the ABO amplicon rather than the whole library.
+    """
+    out: Dict[str, Optional[float]] = {"abo_reads": None, "covered_depth": None}
+    try:
+        f = _first_file(sample_dir, ["*.coverage.txt"])
+        if not f:
+            return out
+        with open(f, "r", encoding="utf-8", errors="replace") as fh:
+            rows = [l.rstrip("\n").split("\t") for l in fh if l.strip() and not l.startswith("#")]
+        reads = depth_x_len = cov = 0.0
+        for r in rows:
+            if len(r) < 7:
+                continue
+            start, end, numreads, covbases, meandepth = (float(r[1]), float(r[2]), float(r[3]),
+                                                         float(r[4]), float(r[6]))
+            reads += numreads
+            cov += covbases
+            depth_x_len += meandepth * (end - start + 1)
+        out["abo_reads"] = reads
+        if cov > 0:
+            out["covered_depth"] = depth_x_len / cov
+    except (OSError, ValueError):
+        pass
+    return out
+
+
+def parse_evidence_status(sample_dir: str) -> Dict[str, object]:
+    """Two-line evidence summary written by the pipeline's ABO_EVIDENCE step (*.evidence_status.tsv).
+
+    evidence_source  CLAIR3+BAM | CLAIR3_ONLY | BAM_ONLY | NONE ('' when no file was found)
+    filled_primary   primary typing positions taken from the BAM pileup (Clair3 had no evidence)
+    discordant       panel positions where Clair3 and the BAM pileup disagree
+    primary_names    the primary typing positions among them
+    """
+    out: Dict[str, object] = {"evidence_source": "", "filled_primary": None, "bam_only": None,
+                              "discordant": None, "discordant_primary": None, "primary_names": "",
+                              "bam_max_depth": None}
+    try:
+        f = _first_file(sample_dir, ["*.evidence_status.tsv"])
+        if not f:
+            return out
+        with open(f, "r", encoding="utf-8", errors="replace") as fh:
+            lines = [l.rstrip("\n").split("\t") for l in fh if l.strip()]
+        if len(lines) >= 2:
+            row = dict(zip(lines[0], lines[1]))
+            out["evidence_source"] = row.get("evidence_source", "")
+            out["filled_primary"] = int(row.get("filled_primary_from_bam", "0"))
+            out["bam_only"] = int(row.get("bam_only", "0"))
+            if row.get("bam_max_depth", "") != "":
+                out["bam_max_depth"] = int(row["bam_max_depth"])
+            out["discordant"] = int(row.get("discordant", "0"))
+            out["discordant_primary"] = int(row.get("discordant_primary", "0"))
+            out["primary_names"] = row.get("discordant_primary_names", "").replace(";", ", ")
+    except (OSError, ValueError):
+        pass
+    return out
+
+
+def parse_nanostats(path: str) -> Dict[str, Optional[float]]:
+    """Read count and mean read length from a NanoPlot NanoStats.txt (None when absent)."""
+    out: Dict[str, Optional[float]] = {"reads": None, "read_length": None}
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                key, _, val = line.partition(":")
+                val = val.strip().replace(",", "")
+                try:
+                    if key.strip() == "Number of reads":
+                        out["reads"] = float(val)
+                    elif key.strip() == "Mean read length":
+                        out["read_length"] = float(val)
+                except ValueError:
+                    pass
+    except OSError:
+        pass
+    return out
+
+
+def find_nanostats(sample_dir: str, nanoplot_dir: Optional[str], sample_name: str,
+                   barcode: str) -> Optional[str]:
+    """NanoStats.txt inside the sample folder, else under nanoplot_dir in a path that
+    contains the sample name (preferred) or the barcode token."""
+    found = _first_file(sample_dir, ["*NanoStats.txt"])
+    if found or not nanoplot_dir or not os.path.isdir(nanoplot_dir):
+        return found
+    cands = [f for f in glob.glob(os.path.join(nanoplot_dir, "**", "*NanoStats.txt"), recursive=True)
+             if os.path.getsize(f) > 0]
+    for token in (sample_name, barcode):
+        hits = sorted(f for f in cands if token and token.lower() in
+                      os.path.relpath(f, nanoplot_dir).lower())
+        if token == barcode and len(hits) > 1:
+            continue   # barcode alone is ambiguous across runs
+        if hits:
+            return hits[0]
+    return None
+
+
+# ===========================================================================
 # Phase Confidence Scoring — reads Haplotypes.tsv from pysam_haploscan.py
 # ===========================================================================
 
@@ -109,7 +483,7 @@ def parse_haplotypes_tsv(haplo_file: str) -> Optional[PhaseEvidence]:
         return None
 
     try:
-        df = pd.read_csv(haplo_file, sep="\t")
+        df = pd.read_csv(haplo_file, sep="\t", encoding="utf-8")
         if df.empty:
             return None
 
@@ -214,6 +588,30 @@ def phase_relationship(evidence: Optional[PhaseEvidence], pos_a: int, pos_b: int
 # ===========================================================================
 
 
+_WORKER_PARSER = None
+
+
+def _init_worker(parser):
+    """Pool initializer: each worker process keeps its own copy of the configured parser."""
+    global _WORKER_PARSER
+    _WORKER_PARSER = parser
+
+
+def _process_one(filename):
+    """Run process_file for one sample in a worker; return everything it recorded plus its log."""
+    import contextlib
+    import io
+    p = _WORKER_PARSER
+    p.results, p.qc_records, p.sample_metrics, p.failed_samples = [], [], {}, []
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        try:
+            p.process_file(filename)
+        except Exception as e:    # process_file handles its own errors; this is a backstop
+            p.failed_samples.append({"sample": filename, "reason": f"Processing error: {e}"})
+    return filename, buf.getvalue(), p.results, p.qc_records, p.sample_metrics, p.failed_samples
+
+
 class ABOReportParser:
     """
     Collates all ABO phenotype results from each sample into a general table
@@ -224,15 +622,26 @@ class ABOReportParser:
     """
 
     def __init__(self, input_dir, panel: Panel, default_barcode="barcode00",
-                 min_depth=100, qc_report="ABO_run_qc.txt"):
+                 min_depth=30, qc_report="ABO_run_qc.txt", nanoplot_dir=None, threads=1,
+                 negative_control_pattern="NEG", positive_control_pattern="POS"):
         self.input_dir = input_dir
         self.panel = panel
         self.default_barcode = default_barcode
         self.results = []
         self.failed_samples = []
-        self.min_depth = min_depth            # reads below which an A1 call is flagged
+        self.min_depth = min_depth            # reads below which an A1 call is flagged and a sample fails the depth check
+        # sample names matching this pattern are negative controls: low depth is expected, reads are not
+        self.negative_control_re = re.compile(negative_control_pattern, re.IGNORECASE) if negative_control_pattern else None
+        # positive controls must show normal depth: a thin positive control means the run or the library failed
+        self.positive_control_re = re.compile(positive_control_pattern, re.IGNORECASE) if positive_control_pattern else None
         self.qc_report_path = qc_report       # run-level QC text report ("" disables)
         self.qc_records = []                  # one dict per sample, for the run summary
+        self.threads = max(1, int(threads or 1))   # worker processes for per-sample parsing
+        self.nanoplot_dir = nanoplot_dir      # optional folder of NanoPlot output (NanoStats.txt)
+        self._fired_markers = []
+        self._absent_markers = []
+        self._fired_pct = {}                  # marker id -> alt % of the call that fired it
+        self.sample_metrics = {}             # (sample_name, int barcode) -> Typing-sheet metrics
         self.replicate_stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
 
         # Positions actually usable in THIS run (resolved via amplicon_pos
@@ -257,7 +666,7 @@ class ABOReportParser:
         self.initialize_columns()
 
         self.pattern_with_barcode = re.compile(
-            r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$",
+            r"^[A-Z0-9]+(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$",
             re.IGNORECASE,
         )
         self.pattern_without_barcode = re.compile(
@@ -286,8 +695,8 @@ class ABOReportParser:
                 self.position_columns.append(col_label)
                 header_cols += [col_label] * 10
 
-        self.notes_columns = ["ASubtype", "ReadReliability", "PhaseConfidence", "BwSubtype",
-                              "A2Trace", "EvidenceBasis", "QCStatus", "QCFlags"]
+        self.notes_columns = ["ASubtype", "ReadReliability", "DepthCheck", "PhaseConfidence", "BwSubtype",
+                              "A2Trace", "EvidenceBasis", "QCStatus", "QCFlags", "ReplicateNote"]
         header_cols += ["Notes"] * len(self.notes_columns)
 
         column_metrics = ["#Reads", "Mat", "Mis", "Ins", "Del", "A", "G", "C", "T", "Type"]
@@ -586,6 +995,10 @@ class ABOReportParser:
             result = call_named_marker(marker, row_values, nreads=nreads)
             if result and result.get("fired"):
                 fired.append(result["text"])
+                self._fired_markers.append((marker, result.get("alt")))
+                self._fired_pct[marker.id] = result.get("pct")
+            elif result and not result.get("reason") and nreads and nreads >= (marker.min_reads or 0):
+                self._absent_markers.append(marker)      # read with enough depth and not carried
             elif result and result.get("reason") == "low_coverage":
                 warnings.append(
                     f"Low coverage at {marker.cdna_change} — {marker.category} "
@@ -694,6 +1107,9 @@ class ABOReportParser:
                 return self._primary_state(m, dict(safe_get_row(df, col)))
 
             state_exon7_685 = primary_state(col_1061, "a1_a2_1061del")
+            state_exon7_93 = primary_state(col_467, "a1_a2_467")
+            nreads_exon7_p685 = safe_get_reads(df, col_1061) if col_1061 else 0
+            background_notes: List[str] = []   # panel changes that are not part of any ISBT allele definition
 
             nreads6 = safe_get_reads(df, col_o1) if col_o1 else 0
             nreads_exon7_p422 = safe_get_reads(df, col_796) if col_796 else 0
@@ -713,22 +1129,21 @@ class ABOReportParser:
             Genotype = "Unknown"
             ExtendedGenotype = "Unknown"
             BwSubtype = ""
+            self._fired_markers = []   # non-primary markers that fired; refine ISBT allele names
+            self._absent_markers = []  # markers scanned with enough coverage that did not fire; rule alleles out
+            self._fired_pct = {}
 
             def determine_a2_subtype(markers_found: List[str]):
                 has_del = "c.1061del" in markers_found
-                has_907 = "c.907A" in markers_found
-                has_1032 = "c.1032A" in markers_found
                 has_297 = "c.297G" in markers_found
-                if has_907:
+                # ISBT: ABO*A2.01 = c.467C>T + c.1061delC; ABO*A2.06 = c.1061delC alone. c.907G>A and c.1032G>A
+                # are pipeline background markers, not part of any ISBT definition, so they never name an allele.
+                if has_del and state_exon7_93 == "ref" and nreads_exon7_p422 >= 30:
                     return "A2.06", None
-                if has_1032 and has_del:
-                    return "A2.01", "c.1032G>A"
                 if has_297 and has_del:
                     return "A2.01", "c.297A>G"
                 if has_del:
                     return "A2.01", None
-                if has_1032:
-                    return "A2.01", "c.1032G>A"
                 if has_297:
                     return "A2.01", "c.297A>G"
                 return "A2", None
@@ -787,9 +1202,9 @@ class ABOReportParser:
                 if has_del:
                     markers.append("c.1061del")
                 if has_907:
-                    markers.append("c.907A")
+                    background_notes.append("c.907G>A seen (a pipeline background marker, not an ISBT-defined change; not used for allele naming)")
                 if has_1032:
-                    markers.append("c.1032A")
+                    background_notes.append("c.1032G>A seen (a pipeline background marker, not an ISBT-defined change; not used for allele naming)")
                 if has_297:
                     markers.append("c.297G")
                 if a297_phase_note:
@@ -797,6 +1212,8 @@ class ABOReportParser:
 
                 o1v_fired = has_297 and not has_del and not has_907 and not has_1032
                 if o1v_fired:
+                    if a297_marker:
+                        self._fired_markers.append((a297_marker, None))   # points at the O1v-type allele
                     for m_ in ("c.297G", "c.266T", "c.268C"):
                         if m_ in markers:
                             markers.remove(m_)
@@ -816,6 +1233,22 @@ class ABOReportParser:
                             r = call_named_marker(m_marker, row_values, nreads=row.get("#Reads", 0))
                             if r and r.get("fired"):
                                 markers.append(label)
+                                self._fired_markers.append((m_marker, r.get("alt")))
+                                self._fired_pct[m_marker.id] = r.get("pct")
+
+                # an A2-panel position read with enough depth and not carrying its alt rules out the alleles it defines
+                for m_ in self.panel.by_category("a2_panel"):
+                    pos = m_.resolved_position()
+                    if pos is None or pos not in row_lookup:
+                        continue
+                    row = row_lookup[pos]
+                    r = call_named_marker(m_, {"A": row.get("A", 0), "G": row.get("G", 0),
+                                               "C": row.get("C", 0), "T": row.get("T", 0)},
+                                          nreads=row.get("#Reads", 0))
+                    reads_here = row.get("#Reads", 0)
+                    if (r and not r.get("fired") and not r.get("reason")
+                            and reads_here and reads_here >= (m_.min_reads or 0)):
+                        self._absent_markers.append(m_)
 
                 if nreads_exon7_p422 >= 500 and not o1v_fired:
                     for m_ in self.panel.by_category("a2_panel"):
@@ -831,6 +1264,8 @@ class ABOReportParser:
                         if r and r.get("fired"):
                             label = "c." + str(m_.cdna_pos) + "var"
                             markers.append(label)
+                            self._fired_markers.append((m_, r.get("alt")))
+                            self._fired_pct[m_.id] = r.get("pct")
 
                 return markers, warns
 
@@ -860,14 +1295,12 @@ class ABOReportParser:
                             zygosity = "het"
                     else:
                         # Subtype was called from a non-primary marker
-                        # (c.907A/c.1032A/c.297G) -- check ITS allele
+                        # (c.297G) -- check ITS allele
                         # fraction directly via the same ref/alt/het
                         # classifier used for primary markers, since
                         # scan_a2_markers()/call_named_marker() only report
                         # whether the marker fired, not its zygosity.
                         driving_marker_id = {
-                            "c.907A": "a2p_907_a206",
-                            "c.1032A": "a2p_1032_a201",
                             "c.297G": "a2_marker_297_a201",
                         }
                         for label, marker_id in driving_marker_id.items():
@@ -883,6 +1316,11 @@ class ABOReportParser:
 
                     return clean_subtype, warning_text, zygosity
                 warning_text = "; ".join(warns) if warns else None
+                # ISBT: ABO*A1.02 = c.467C>T alone. Named only when c.1061delC is clearly absent on enough reads,
+                # because a missed deletion looks the same and was the usual cause of this pattern in earlier audits.
+                if (state_exon7_93 in ("alt", "het") and state_exon7_685 == "ref"
+                        and nreads_exon7_p685 >= 30 and nreads_exon7_p422 >= 30):
+                    return "A1.02", warning_text, ("het" if state_exon7_93 == "het" else "hom")
                 if type_exon7_93 in ("A1.02 or A2", "A1"):
                     return "A1", warning_text, "hom"
                 return "", None, "hom"
@@ -895,66 +1333,66 @@ class ABOReportParser:
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O.01"
+                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O.02"
+                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
                 a_subtype, a_subtype_warning, _ = determine_a_subtype()
                 Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O.03"
+                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O3"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.01"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O3"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O2"
 
             elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O3"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O3"
 
             elif (type_exon6 == "O1" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.01/O.01"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O1"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O2" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.02/O.02"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O2"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
                     and type_exon7_431 == "O3"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O.03/O.03"
+                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O3/O3"
 
             elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
                     and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
@@ -1054,6 +1492,9 @@ class ABOReportParser:
             # ----- PART 5: QC / FAILURE CAPTURE (v2.1.0) -----
             # Annotates the call; never changes it. See the module docstring.
             qc_review: List[str] = []
+            encoded_genotype, named_by_phase = self._encode_with_phase(ExtendedGenotype, resolved_phase_evidence)
+            if named_by_phase:
+                PhaseConfidence += "; alleles named per haplotype"
             _copies = {"ref": 0, "het": 1, "hom": 2}
 
             def cell(col, key):
@@ -1119,6 +1560,8 @@ class ABOReportParser:
             tokens = [t for t in ExtendedGenotype.split("/")] if ExtendedGenotype != "Unknown" else []
             has_A = any(t.startswith("A") for t in tokens)
 
+            qc_review.extend(background_notes)
+
             # --- A2 trace ---
             A2Trace = "n/a (no A allele)"
             a2_missing = [x for x in ("c.467C>T", "c.1061delC") if x in no_evidence]
@@ -1131,18 +1574,36 @@ class ABOReportParser:
                 if e467 and e1061:
                     A2Trace = "1 A2 confirmed (c.467 + c.1061delC)"
                 elif e467:
-                    A2Trace = "2 A2 partial: c.467 variant, c.1061delC not called"
-                    qc_review.append("A2 partial: c.467 variant without c.1061delC (possible missed deletion or A1.02)")
+                    if any(t == "A1.02" for t in tokens):
+                        A2Trace = "2 A1.02 pattern: c.467C>T without c.1061delC (ABO*A1.02)"
+                        if "ABO*AEL.08" not in encoded_genotype:    # an Ael call already explains the c.467C>T
+                            qc_review.append(
+                                f"A1.02 pattern: c.467C>T seen in {alt_frac('a1_a2_467') or 0:.0f}% of reads, c.1061delC in only "
+                                f"{alt_frac('a1_a2_1061del') or 0:.0f}% "
+                                f"({int(cell(self.panel.get('a1_a2_1061del').column_label(), '#Reads'))} reads); "
+                                "ISBT defines A1.02 as c.467C>T alone. Rare allele: confirm that the deletion is truly absent. "
+                                f"c.467C>T plus c.804dupG is ABO*AEL.08 (insertion signal here: "
+                                f"{cell(self.panel.get('ael_804_indel').column_label(), 'Ins'):.0f}%); ONT can under-read an insertion in the 7-G run")
+                    else:
+                        A2Trace = "2 A2 partial: c.467 variant, c.1061delC not called"
+                        qc_review.append("A2 partial: c.467 variant without c.1061delC (possible missed deletion or A1.02)")
                 elif e1061:
-                    A2Trace = "3 A2 partial: c.1061delC variant, c.467 not called"
-                    qc_review.append("A2 partial: c.1061delC variant without c.467")
+                    if any(t == "A2.06" for t in tokens):
+                        A2Trace = "3 A2.06 pattern: c.1061delC without c.467C>T (ABO*A2.06)"
+                        qc_review.append(
+                            f"A2.06 pattern: c.1061delC seen in {alt_frac('a1_a2_1061del') or 0:.0f}% of reads, c.467C>T in only "
+                            f"{alt_frac('a1_a2_467') or 0:.0f}% ({int(cell(self.panel.get('a1_a2_467').column_label(), '#Reads'))} reads); "
+                            "ISBT defines A2.06 as c.1061delC alone (A2.01 also needs c.467C>T). Rare allele: confirm that c.467C>T is truly absent")
+                    else:
+                        A2Trace = "3 A2 partial: c.1061delC variant, c.467 not called"
+                        qc_review.append("A2 partial: c.1061delC variant without c.467")
                 else:
                     A2Trace = "4 No A2 evidence (both primary markers reference)"
                 a2_tokens = [t for t in tokens if t.startswith("A2")]
                 a1_tokens = [t for t in tokens if t == "A1"]
                 if any(t == "A" for t in tokens):
                     qc_review.append("A subtype unresolved (generic A)")
-                if a1_tokens and not a2_tokens and not A2Trace.startswith("4"):
+                if a1_tokens and not a2_tokens and not A2Trace.startswith("4") and not any(x == "A1.02" for x in tokens):
                     qc_review.append("reported A1 despite A2-lineage marker")
                 if a2_tokens and A2Trace.startswith("4"):
                     qc_review.append("reported A2 without a primary A2 marker")
@@ -1177,12 +1638,50 @@ class ABOReportParser:
             else:
                 EvidenceBasis = "variant evidence"
 
-            QCStatus = "REVIEW" if qc_review else "PASS"
-            QCFlags = "; ".join(qc_review)
             try:
                 _sid = str(df.at[0, ("", "Sequencing_ID")])
             except (KeyError, IndexError):
                 _sid = ""
+
+            # --- depth gate: reads at the primary positions. Annotates the sample; the call is never changed.
+            #   normal sample     : Very low (<=20 reads) / Low (< --min-depth) -> REVIEW; otherwise OK
+            #   negative control  : few reads is the expected, correct result; reads above --min-depth mean
+            #                       possible contamination -> REVIEW
+            #   positive control  : needs normal depth like a patient sample; thin reads mean a failed control -> REVIEW
+            is_negative = bool(self.negative_control_re and self.negative_control_re.search(_sid))
+            is_positive = bool(not is_negative and self.positive_control_re and self.positive_control_re.search(_sid))
+            lowest = min(primary_reads) if primary_reads else 0
+            highest = max(primary_reads) if primary_reads else 0
+            if is_negative:
+                if highest <= self.min_depth:
+                    DepthCheck = f"Negative control: low depth as expected (max {int(highest)} reads)"
+                    qc_review = []        # every other flag on a near-empty control is a consequence of the low depth
+                else:
+                    DepthCheck = f"Negative control: reads present (max {int(highest)} reads), check for contamination"
+                    qc_review.append(f"negative control has reads (max {int(highest)} > {self.min_depth}): possible contamination")
+            elif is_positive and (not primary_reads or highest <= 0 or lowest < self.min_depth):
+                DepthCheck = f"Positive control: depth too low ({int(lowest)} reads), control failed"
+                qc_review.append(f"positive control has too few reads (min {int(lowest)} < {self.min_depth})")
+            elif is_positive:
+                DepthCheck = f"Positive control: depth OK ({int(lowest)} reads)"
+            elif not primary_reads or highest <= 0:
+                DepthCheck = "No data"
+                qc_review.append("no reads at the primary positions")
+            elif lowest <= 20:
+                DepthCheck = f"Very low ({int(lowest)} reads)"
+                qc_review.append(f"low depth at primary positions (min {int(lowest)} reads < {self.min_depth})")
+            elif lowest < self.min_depth:
+                DepthCheck = f"Low ({int(lowest)} reads)"
+                qc_review.append(f"low depth at primary positions (min {int(lowest)} reads < {self.min_depth})")
+            else:
+                DepthCheck = f"OK ({int(lowest)} reads)"
+
+            if "ABO*AEL." in encoded_genotype:
+                qc_review.append("Ael allele (c.804 homopolymer indel): very weak or silent A expression, so serology may read O; "
+                                 "ONT reads are error-prone in this 7-G run, confirm the indel")
+
+            QCStatus = "REVIEW" if qc_review else "PASS"
+            QCFlags = "; ".join(qc_review)
             self.qc_records.append({
                 "sample": _sid, "genotype": Genotype, "ext": ExtendedGenotype, "a2trace": A2Trace,
                 "evidence": EvidenceBasis, "s261": s261, "reads_uniform": reads_uniform,
@@ -1200,9 +1699,10 @@ class ABOReportParser:
 
             df[("Result", "Phenotype")] = Phenotype
             df[("Result", "Genotype")] = Genotype
-            df[("Result", "ExtendedGenotype")] = ExtendedGenotype
+            df[("Result", "ExtendedGenotype")] = encoded_genotype
             df[("Notes", "ASubtype")] = ASubtype
             df[("Notes", "ReadReliability")] = Reliability
+            df[("Notes", "DepthCheck")] = DepthCheck
             df[("Notes", "PhaseConfidence")] = PhaseConfidence
             df[("Notes", "BwSubtype")] = BwSubtype
             df[("Notes", "A2Trace")] = A2Trace
@@ -1221,6 +1721,7 @@ class ABOReportParser:
             df[("Result", "ExtendedGenotype")] = "Error"
             df[("Notes", "ASubtype")] = ""
             df[("Notes", "ReadReliability")] = "Error processing"
+            df[("Notes", "DepthCheck")] = ""
             df[("Notes", "PhaseConfidence")] = "Error"
             df[("Notes", "BwSubtype")] = "Error"
             df[("Notes", "A2Trace")] = ""
@@ -1326,6 +1827,8 @@ class ABOReportParser:
                 result_df, phase_evidence_by_exon=phase_evidence_by_exon,
             )
 
+            self._record_sample_metrics(result_df, sample_name, barcode, sample_dir)
+
             self.results.append(result_df)
             print(f"Successfully processed {filename}")
 
@@ -1333,6 +1836,367 @@ class ABOReportParser:
             print(f"Error processing {filename}: {str(e)}")
             import traceback
             traceback.print_exc()
+
+    def _record_sample_metrics(self, result_df, sample_name, barcode, sample_dir):
+        """Collect the Typing-sheet metrics for one sample (never raises)."""
+        try:
+            metrics = parse_alignment_metrics(sample_dir)
+        except Exception:
+            metrics = {}
+        # Duplex (ABO-HLA) runs: HLA reads never map to the ABO reference, so whole-library
+        # mappability is misleading. Report reads in the library (NanoPlot, else samtools),
+        # reads on the ABO reference (samtools coverage) and on-target % between them.
+        try:
+            metrics.update(parse_coverage_file(sample_dir))
+        except Exception:
+            pass
+        try:
+            status = parse_evidence_status(sample_dir)
+            metrics.update({"evidence_source": status["evidence_source"], "evidence_label": None,
+                            "bam_only": status["bam_only"], "discordant": status["discordant"],
+                            "discordant_primary": status["discordant_primary"]})
+            msgs = []
+            label = "OK"
+            if status["evidence_source"] == "NONE":
+                mx = status["bam_max_depth"]
+                if mx == 0:
+                    label = "No reads over ABO region (likely amplicon dropout)"
+                elif mx is not None:
+                    label = f"ABO region barely covered (max pileup depth {mx})"
+                else:
+                    label = "No evidence from either Clair3 or BAM pileup"
+                # replace the generic per-position message with the specific cause
+                old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
+                kept = [f for f in old.split("; ") if f and not f.startswith("no evidence at primary position")]
+                result_df.at[0, ("Notes", "QCFlags")] = "; ".join([label] + kept)
+                result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
+            elif status["evidence_source"] == "BAM_ONLY":
+                label = "Typed from BAM pileup only (Clair3 produced no usable calls)"
+            if status["evidence_source"] == "BAM_ONLY":
+                msgs.append("Clair3 produced no usable calls; typed from BAM pileup only")
+            elif status["filled_primary"]:
+                msgs.append(f"{status['filled_primary']} primary position(s) rest on BAM pileup "
+                            f"alone (no Clair3 evidence)")
+            if status["discordant_primary"]:
+                msgs.append(f"Clair3 and BAM pileup disagree at primary position(s): "
+                            f"{status['primary_names']}")
+            metrics["evidence_label"] = label
+            if msgs:
+                # the two lines of evidence do not support the call equally: always review
+                old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
+                result_df.at[0, ("Notes", "QCFlags")] = (old + "; " if old else "") + "; ".join(msgs)
+                result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
+        except Exception:
+            pass
+        try:
+            # NanoPlot runs on the raw reads, so it is the better source for read count/length
+            ns_file = find_nanostats(sample_dir, self.nanoplot_dir, str(sample_name), str(barcode))
+            if ns_file:
+                ns = parse_nanostats(ns_file)
+                for k in ("reads", "read_length"):
+                    if ns.get(k) is not None:
+                        metrics[k] = ns[k]
+        except Exception:
+            pass
+        try:
+            # the coverage table counts secondary/supplementary alignments; samtools stats'
+            # primary mapped-read count is the ceiling when we have it
+            if metrics.get("abo_reads") is not None and metrics.get("mapped") is not None:
+                metrics["abo_reads"] = min(metrics["abo_reads"], metrics["mapped"])
+            if metrics.get("abo_reads") is not None and metrics.get("reads"):
+                metrics["mappability"] = min(100.0, 100.0 * metrics["abo_reads"] / metrics["reads"])
+        except Exception:
+            pass
+        try:
+            depths = []
+            for col_label in self.position_columns:
+                v = pd.to_numeric(result_df.at[0, (col_label, "#Reads")], errors="coerce")
+                if pd.notna(v) and v > 0:
+                    depths.append(float(v))
+            metrics["median_analyzed_depth"] = float(pd.Series(depths).median()) if depths else None
+
+            qmarks = 0
+            for marker in self.primary_markers:
+                t = result_df.at[0, (marker.column_label(), "Type")]
+                if pd.isna(t) or not str(t).strip():
+                    qmarks += 1
+            metrics["question_marks"] = qmarks
+        except Exception:
+            metrics.setdefault("median_analyzed_depth", None)
+            metrics.setdefault("question_marks", None)
+        try:
+            key = (str(sample_name), int(str(barcode).replace("barcode", "")))
+        except ValueError:
+            return
+        self.sample_metrics[key] = metrics
+
+    # -----------------------------------------------------------------
+    # Compact per-position view (Variants sheet, "Variants detected" column)
+    # -----------------------------------------------------------------
+    @staticmethod
+    def _num(v):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return None
+        return None if pd.isna(f) else f
+
+    @staticmethod
+    def _change_token(marker, alt: str) -> str:
+        """The cDNA change of a marker that belongs to the alt that was seen (c.539G>C / c.539G>A -> c.539G>A)."""
+        tokens = [tk.strip() for tk in re.split(r"\s*/\s*|,\s*(?=c\.)", marker.cdna_change or "") if tk.strip()]
+        if not tokens:
+            return f"c.{marker.cdna_pos}"
+        for tk in tokens:
+            if len(alt) == 1 and tk.endswith(">" + alt):
+                return tk
+            if alt == "del" and "del" in tk:
+                return tk
+            if alt == "ins" and ("dup" in tk or "ins" in tk):
+                return tk
+        return tokens[0]
+
+    def _position_calls(self, final_df) -> List[Dict[str, dict]]:
+        """One dict per row of the merged (MultiIndex) table: column label -> summary of that position.
+
+        state is 'nodata' (no reads), 'ref' or 'alt'. A position reads 'alt' when the strongest alt allele
+        reaches the marker's own calling threshold (variant_threshold_pct for named markers, 20% for the
+        primary markers, which carry no such threshold)."""
+        markers = {lab: self._marker_for_column(lab) for lab in self.position_columns}
+        calls = []
+        for i in range(len(final_df)):
+            row_calls = {}
+            for lab, mk in markers.items():
+                reads = self._num(final_df.at[final_df.index[i], (lab, "#Reads")])
+                type_ = final_df.at[final_df.index[i], (lab, "Type")]
+                type_ = "" if type_ is None or (not isinstance(type_, str) and pd.isna(type_)) else str(type_)
+                if mk is None or not reads:
+                    row_calls[lab] = {"state": "nodata", "reads": int(reads or 0), "type": type_}
+                    continue
+                vt = (mk.variant_type or "").lower()
+                indel = vt in ("deletion", "insertion", "indel") or "indel" in vt or (mk.ref_base or "").upper() == "REF"
+                cand = []
+                if not indel or "snp" in vt:
+                    cand += [(b, self._num(final_df.at[final_df.index[i], (lab, b)]) or 0.0) for b in mk.alt_bases() if b in "ACGT"]
+                if indel:
+                    cand += [("del", self._num(final_df.at[final_df.index[i], (lab, "Del")]) or 0.0),
+                             ("ins", self._num(final_df.at[final_df.index[i], (lab, "Ins")]) or 0.0)]
+                alt, pct = max(cand, key=lambda x: x[1]) if cand else ("", 0.0)
+                threshold = mk.variant_threshold_pct if mk.variant_threshold_pct is not None else 20
+                info = {"reads": int(reads), "type": type_, "alt": alt, "pct": pct}
+                if alt and pct >= threshold:
+                    info.update(state="alt", change=self._change_token(mk, alt), cdna_pos=mk.cdna_pos)
+                else:
+                    info["state"] = "ref"
+                row_calls[lab] = info
+            calls.append(row_calls)
+        return calls
+
+    @staticmethod
+    def _cell_text(info: dict) -> str:
+        if info["state"] == "nodata":
+            return "no data"
+        if info["state"] == "alt":
+            return f"{info['alt']} {info['pct']:.0f}% ({info['reads']}x)"
+        return f"ref ({info['reads']}x)"
+
+    @staticmethod
+    def _variants_text(row_calls: dict) -> str:
+        hits = sorted((v["cdna_pos"] or 0, v["change"], v["pct"], v["reads"]) for v in row_calls.values() if v["state"] == "alt")
+        if not hits:
+            return "" if all(v["state"] == "nodata" for v in row_calls.values()) else "None"
+        # a call on 40 reads or fewer carries its depth, so noise in a near-empty sample is not mistaken for a variant
+        return "; ".join(f"{c} {p:.0f}%" + (f" ({n}x)" if n <= 40 else "") for _, c, p, n in hits)
+
+    def _undetected_rare(self, calls) -> set:
+        """Column labels of rare panel positions (report: detected) that no sample in the run carries."""
+        if not calls:
+            return set()
+        hidden = set()
+        for lab in self.position_columns:
+            mk = self._marker_for_column(lab)
+            if mk is not None and (mk.report or "").lower() == "detected" and not any(c[lab]["state"] == "alt" for c in calls):
+                hidden.add(lab)
+        return hidden
+
+    def _build_variants_view(self, final_df, calls, hidden=()):
+        """Compact Variants sheet: one column per panel position holding the call, e.g. 'A 50% (215x)'.
+
+        Returns (frame, position_labels) where position_labels maps frame column index -> panel column label."""
+        data = {"Sample name": [], "Barcode": [], "Phenotype": [], "Genotype": [], "Typing Result": []}
+        for i in range(len(final_df)):
+            idx = final_df.index[i]
+            try:
+                bc = f"barcode{int(final_df.at[idx, ('', 'Barcode')]):02d}"
+            except (TypeError, ValueError):
+                bc = ""
+            data["Sample name"].append(str(final_df.at[idx, ("", "Sequencing_ID")]))
+            data["Barcode"].append(bc)
+            data["Phenotype"].append(final_df.at[idx, ("Result", "Phenotype")])
+            data["Genotype"].append(final_df.at[idx, ("Result", "Genotype")])
+            data["Typing Result"].append(final_df.at[idx, ("Result", "ExtendedGenotype")])
+        names = {}
+        for lab in self.position_columns:
+            if lab in hidden:
+                continue
+            mk = self._marker_for_column(lab)
+            first = (re.split(r"\s*/\s*|,\s*(?=c\.)", mk.cdna_change)[0].strip() if mk and mk.cdna_change else lab)
+            pos = mk.resolved_position() if mk else ""
+            name = f"{first} ({pos})"
+            while name in data:
+                name += " "
+            names[lab] = name
+            data[name] = [self._cell_text(calls[i][lab]) for i in range(len(final_df))]
+        for nc in self.notes_columns:
+            data[nc] = [final_df.at[final_df.index[i], ("Notes", nc)] for i in range(len(final_df))]
+        frame = pd.DataFrame(data).astype(object)
+        cols = list(frame.columns)
+        return frame, {cols.index(n): lab for lab, n in names.items()}
+
+    # -----------------------------------------------------------------
+    # Allele naming by haplotype (Clair3 phasing)
+    # -----------------------------------------------------------------
+    _TOKEN_NEEDS = {"O1": {"o1"}, "O2": {"o2"}, "O3": {"o3"}, "B": {"b796", "b803"},
+                    "A2.01": {"a467", "a1061"}, "A2.06": {"a1061"}, "A1.02": {"a467"}}
+
+    @staticmethod
+    def _token_fits_haplotype(token: str, pos: set, ids: dict) -> bool:
+        """Can this internal allele token (O1, B, A2.01, ...) sit on a haplotype that carries the ALT alleles at pos?"""
+        has = lambda key: ids.get(key) in pos                     # noqa: E731
+        o_or_b = has("o1") or has("o2") or has("o3") or has("b796") or has("b803")
+        if token == "O1":
+            return has("o1")
+        if token == "O2":
+            return has("o2")
+        if token == "O3":
+            return has("o3")
+        if token == "B":
+            return has("b796") and has("b803")
+        if o_or_b:
+            return False                                           # an A allele carries no O or B primary marker
+        if token == "A2.01":
+            return has("a467") and has("a1061")
+        if token == "A2.06":
+            return has("a1061") and not has("a467")
+        if token == "A1.02":
+            return has("a467") and not has("a1061")
+        if token == "A1":
+            return not has("a467") and not has("a1061")
+        if token == "A2":
+            return has("a467") or has("a1061")
+        return True                                                # bare "A": no constraint
+
+    def _name_alleles_by_haplotype(self, ext: str, evidence, fired, absent):
+        """Name the two alleles of a genotype from the two phased haplotypes, or return None when the phasing cannot
+        carry the decision (then the caller pools the markers of both alleles, as before).
+
+        Each fired marker is given to the haplotype that carries it; a marker on the other haplotype counts as absent
+        for this allele. This is what separates O.01.01 / O.01.02 in an O1/O1 sample and keeps the markers of the O
+        allele from renaming the A allele."""
+        if not evidence or not evidence.haplotype_counts or not isinstance(ext, str) or ext in ("", "Unknown", "Error"):
+            return None
+        tokens = ext.split("/")
+        if len(tokens) != 2:
+            return None
+        ranked = sorted(evidence.haplotype_counts.items(), key=lambda x: x[1], reverse=True)
+        if len(ranked) < 2 or evidence.total_reads <= 0:
+            return None
+        top2 = ranked[0][1] + ranked[1][1]
+        if top2 / evidence.total_reads < 0.90 or ranked[1][1] / evidence.total_reads < 0.20:
+            return None                                            # not two clean haplotypes (hom, or a broken phase set)
+        haps = [set(int(p) for p in re.findall(r"p(\d+)=", h)) for h, _ in ranked[:2]]
+        ids = {}
+        for key, marker_id in (("o1", "o1_marker"), ("o2", "o2_marker_802"), ("o3", "o34_homopolymer_804"),
+                               ("b796", "b_vs_ao_796"), ("b803", "ao_vs_b_803"),
+                               ("a467", "a1_a2_467"), ("a1061", "a1_a2_1061del")):
+            m = self.panel.get(marker_id)
+            if m is not None and m.resolved_position() is not None:
+                ids[key] = m.resolved_position()
+        # clair2haplotypes.py drops homozygous positions (the same on both sides), so a position both alleles need
+        # (c.261delG in an O1/O1 sample) belongs to both haplotypes even though neither string lists it
+        needs = [self._TOKEN_NEEDS.get(tok, set()) for tok in tokens]
+        for key in needs[0] & needs[1]:
+            if key in ids:
+                haps[0].add(ids[key])
+                haps[1].add(ids[key])
+        fired_pos = [(mk, alt, mk.resolved_position()) for mk, alt in (_unpack_fired(x) for x in fired)]
+        for mk, _, p in fired_pos:
+            if p is not None and not (p in haps[0] or p in haps[1]):
+                if (self._fired_pct.get(mk.id) or 0) >= 80:        # homozygous marker: both alleles carry it
+                    haps[0].add(p)
+                    haps[1].add(p)
+        if any(p is None or not (p in haps[0] or p in haps[1]) for _, _, p in fired_pos):
+            return None                                            # a marker the phasing does not know about
+        fits = [perm for perm in ((0, 1), (1, 0))
+                if self._token_fits_haplotype(tokens[0], haps[perm[0]], ids)
+                and self._token_fits_haplotype(tokens[1], haps[perm[1]], ids)]
+        if not fits or (len(fits) == 2 and tokens[0] != tokens[1]):
+            return None
+        names = []
+        for tok, h in zip(tokens, fits[0]):
+            mine = [(mk, alt) for mk, alt, p in fired_pos if p in haps[h]]
+            others = [mk for mk, alt, p in fired_pos if p not in haps[h]]
+            names.append(encode_allele(tok, mine, list(absent) + others, primary_carriers(self.panel), pooled=False))
+        return "/".join(sorted(names) if tokens[0] == tokens[1] else names)
+
+    def _encode_with_phase(self, ext: str, evidence):
+        """(ISBT-style name, True when the haplotypes decided it)."""
+        try:
+            named = self._name_alleles_by_haplotype(ext, evidence, self._fired_markers, self._absent_markers)
+        except Exception:
+            named = None
+        if named:
+            return named, True
+        return encode_extended_genotype(ext, self._fired_markers, self._absent_markers, primary_carriers(self.panel)), False
+
+    def _build_typing_df(self, final_df) -> pd.DataFrame:
+        """One NGSengine-style row per sample, same order as final_df (single-level columns)."""
+        def num(v, nd=None):
+            if v is None or pd.isna(v):
+                return None
+            return round(float(v), nd) if nd is not None else int(round(float(v)))
+
+        variants_detected = getattr(self, "_variants_detected", [])
+        rows = []
+        for _, r in final_df.iterrows():
+            sid = str(r["Sequencing_ID"])
+            try:
+                bc = int(r["Barcode"])
+            except (TypeError, ValueError):
+                bc = None
+            m = self.sample_metrics.get((sid, bc), {})
+            rows.append({
+                "Sample name": sid,
+                "Barcode": f"barcode{bc:02d}" if bc is not None else "",
+                "Number of reads": num(m.get("reads")),
+                "Read Length": num(m.get("read_length")),
+                "Insert Size": num(m.get("insert_size")),
+                "ABO reads": num(m.get("abo_reads")),
+                "Mappability %": num(m.get("mappability"), 1),
+                "Mean depth (covered bases)": num(m.get("covered_depth")),
+                "Median Read depth": num(m.get("median_depth")),
+                "Median analyzed Read depth": num(m.get("median_analyzed_depth")),
+                "Number of question mark positions": m.get("question_marks"),
+                "Evidence source": m.get("evidence_source") or "",
+                "BAM-only positions": m.get("bam_only"),
+                "Clair3/BAM discordant": m.get("discordant"),
+                "Discordant primary positions": m.get("discordant_primary"),
+                "Typing Result": r["ExtendedGenotype"],
+                "Phenotype": r["Phenotype"],
+                "Genotype": r["Genotype"],
+                "Variants detected": variants_detected[len(rows)] if len(rows) < len(variants_detected) else "",
+                "Depth check": r.get("DepthCheck"),
+                "QCStatus": r["QCStatus"],
+                "QCFlags": r["QCFlags"],
+                "Replicate note": r.get("ReplicateNote"),
+            })
+        return pd.DataFrame(rows, columns=[
+            "Sample name", "Barcode", "Number of reads", "Read Length", "Insert Size",
+            "ABO reads", "Mappability %", "Mean depth (covered bases)", "Median Read depth",
+            "Median analyzed Read depth",
+            "Number of question mark positions", "Evidence source", "BAM-only positions",
+            "Clair3/BAM discordant", "Discordant primary positions", "Typing Result", "Phenotype", "Genotype",
+            "Variants detected", "Depth check", "QCStatus", "QCFlags", "Replicate note"]).astype(object)
 
     def process_files(self):
         """Process all files in the input directory that match expected patterns."""
@@ -1357,7 +2221,11 @@ class ABOReportParser:
 
         print("\033[92m\n ********* Started combining samples to single file ********* \033[0m\n")
 
-        for filename in valid_directories:
+        parallel = self.threads > 1 and len(valid_directories) > 1
+        if parallel:
+            self._process_files_parallel(valid_directories)
+
+        for filename in ([] if parallel else valid_directories):
             try:
                 self.processing_stats["pattern_matched"] += 1
                 print(f"\nProcessing file: {filename}")
@@ -1389,6 +2257,33 @@ class ABOReportParser:
         print(f"Pattern match failures: {self.processing_stats['pattern_failed']}")
         print(f"----------------------------")
 
+    def _process_files_parallel(self, valid_directories):
+        """Parse samples in a process pool (--threads N). Output order does not matter: the
+        merged table is sorted by sample and barcode, and each sample's log is printed whole,
+        in directory order, once its worker finishes."""
+        from concurrent.futures import ProcessPoolExecutor
+
+        for filename in valid_directories:        # cheap bookkeeping stays serial
+            self.processing_stats["pattern_matched"] += 1
+            try:
+                _, _, pattern_type = self.extract_sample_info(filename)
+                self.processing_stats["with_barcode" if pattern_type == "explicit" else "without_barcode"] += 1
+            except Exception:
+                pass
+
+        workers = min(self.threads, len(valid_directories))
+        print(f"Parsing {len(valid_directories)} samples with {workers} worker processes")
+        with ProcessPoolExecutor(max_workers=workers, initializer=_init_worker, initargs=(self,)) as ex:
+            for filename, log, results, qc_records, sample_metrics, failed in ex.map(
+                    _process_one, valid_directories):
+                print(f"\nProcessing file: {filename}")
+                print(log, end="")
+                print(f"Finished processing file: {filename}")
+                self.results.extend(results)
+                self.qc_records.extend(qc_records)
+                self.sample_metrics.update(sample_metrics)
+                self.failed_samples.extend(failed)
+
     def merge_dataframes(self):
         if not self.results:
             print("Warning: No sample results to merge.")
@@ -1403,33 +2298,33 @@ class ABOReportParser:
     def save_results_to_file(self, final_df):
         """Save results to text and Excel files; column count/labels are dynamic."""
         try:
-            final_df.to_csv("./ABO_result.txt", sep="\t", index=False)
+            calls = self._position_calls(final_df)
+        except Exception as calls_err:
+            print(f"Warning: could not summarise the positions: {calls_err}")
+            calls = None
+        hidden = self._undetected_rare(calls)      # rare positions nobody carries stay out of both tables
+        if hidden:
+            print(f"{len(hidden)} rare panel positions were not detected in any sample and are left out of the tables")
+        try:
+            (final_df.drop(columns=sorted(hidden), level=0) if hidden else final_df).to_csv(
+                "./ABO_result.txt", sep="\t", index=False, encoding="utf-8")
             print("Results saved successfully to text file.")
         except Exception as txt_err:
             print(f"Error saving to text file: {txt_err}")
             return
 
         try:
-            read_count_cols = []
-            if isinstance(final_df.columns, pd.MultiIndex):
-                for i, col in enumerate(final_df.columns):
-                    if col[1] == "#Reads":
-                        read_count_cols.append(i)
-            else:
-                for i, col in enumerate(final_df.columns):
-                    if "#Reads" in str(col):
-                        read_count_cols.append(i)
+            if calls is None:
+                calls = self._position_calls(final_df)
+            self._variants_detected = [self._variants_text(c) for c in calls]
+            variants_df, pos_labels = self._build_variants_view(final_df, calls, hidden)
 
             writer = pd.ExcelWriter("./ABO_result.xlsx", engine="xlsxwriter")
 
             if isinstance(final_df.columns, pd.MultiIndex):
                 final_df.columns = final_df.columns.droplevel()
 
-            final_df.to_excel(writer, sheet_name="ABO_Result", header=True, index=False, startrow=1)
-
             workbook = writer.book
-            worksheet = writer.sheets["ABO_Result"]
-
             data_format = workbook.add_format({"bg_color": "white", "font_color": "black", "border": 1})
             header_format = workbook.add_format({"bold": True, "fg_color": "#007399", "border": 1, "font_color": "white"})
             red_bg_format = workbook.add_format({"bg_color": "#e2725b", "font_color": "black"})
@@ -1437,77 +2332,168 @@ class ABOReportParser:
             header_format.set_align("center")
             header_format.set_align("vcenter")
 
-            num_rows, num_cols = final_df.shape
-            # locate by name: the Notes block now has 8 columns, so a fixed offset from the end is unsafe
-            _cols = list(final_df.columns)
-            reliability_col = xl_col_to_name(_cols.index("ReadReliability")) if "ReadReliability" in _cols else xl_col_to_name(num_cols - 1)
+            # Sheet 1: Typing (one NGSengine-style row per sample). Sheet order = creation order.
+            try:
+                typing_df = self._build_typing_df(final_df)
+                typing_df.to_excel(writer, sheet_name="Typing", index=False)
+                ws_t = writer.sheets["Typing"]
+                for c, name in enumerate(typing_df.columns):
+                    ws_t.write(0, c, name, header_format)
+                int_fmt = workbook.add_format({"border": 1, "num_format": "#,##0"})
+                dec_fmt = workbook.add_format({"border": 1, "num_format": "0.0"})
+                for r in range(len(typing_df)):
+                    for c, name in enumerate(typing_df.columns):
+                        v = typing_df.iat[r, c]
+                        if v is None or (not isinstance(v, str) and pd.isna(v)):
+                            ws_t.write_blank(r + 1, c, None, data_format)
+                        elif name == "Mappability %":
+                            ws_t.write_number(r + 1, c, float(v), dec_fmt)
+                        elif name in ("Number of reads", "Read Length", "Insert Size", "Median Read depth",
+                                      "ABO reads", "Mean depth (covered bases)",
+                                      "Median analyzed Read depth", "Number of question mark positions",
+                                      "BAM-only positions", "Clair3/BAM discordant",
+                                      "Discordant primary positions"):
+                            ws_t.write_number(r + 1, c, float(v), int_fmt)
+                        else:
+                            ws_t.write(r + 1, c, v, data_format)
+                for c, name in enumerate(typing_df.columns):
+                    longest = max([len(str(name))] + [len(str(x)) for x in typing_df[name] if x is not None])
+                    ws_t.set_column(c, c, min(max(longest + 2, 10), 80 if name in ("Replicate note", "Variants detected") else 60 if name == "QCFlags" else 40))
+                ws_t.set_row(0, 45, header_format)
+                ws_t.freeze_panes(1, 0)
+                last = len(typing_df)
+                if last:
+                    qc_t = xl_col_to_name(list(typing_df.columns).index("QCStatus"))
+                    ws_t.conditional_format(
+                        f"{qc_t}2:{qc_t}{last + 1}",
+                        {"type": "cell", "criteria": "==", "value": '"REVIEW"', "format": orange_bg_format},
+                    )
+                    dc_t = xl_col_to_name(list(typing_df.columns).index("Depth check"))
+                    green_bg_format = workbook.add_format({"bg_color": "#c6e0b4", "font_color": "black"})
+                    for text_, fmt_ in (("Very low", red_bg_format), ("No data", red_bg_format),
+                                        ("Negative control: reads present", red_bg_format),
+                                        ("Positive control: depth too low", red_bg_format),
+                                        ("Low", orange_bg_format),
+                                        ("Negative control", green_bg_format),
+                                        ("Positive control", green_bg_format)):
+                        ws_t.conditional_format(
+                            f"{dc_t}2:{dc_t}{last + 1}",
+                            {"type": "text", "criteria": "begins with", "value": text_, "format": fmt_, "stop_if_true": True},
+                        )
+                    rn_t = xl_col_to_name(list(typing_df.columns).index("Replicate note"))
+                    ws_t.conditional_format(
+                        f"A2:{xl_col_to_name(len(typing_df.columns) - 1)}{last + 1}",
+                        {"type": "formula", "criteria": f"=LEN(${rn_t}2)>0", "format": red_bg_format},
+                    )
+                    rd_t = xl_col_to_name(list(typing_df.columns).index("Number of reads"))
+                    ws_t.conditional_format(
+                        f"{rd_t}2:{rd_t}{last + 1}",
+                        {"type": "cell", "criteria": "<=", "value": self.min_depth, "format": orange_bg_format},
+                    )
+            except Exception as typing_err:
+                print(f"Warning: could not write Typing sheet: {typing_err}")
 
+            # Sheet 2: Variants (one column per panel position)
+            variants_df.to_excel(writer, sheet_name="Variants", header=False, index=False, startrow=2)
+            worksheet = writer.sheets["Variants"]
+
+            about = workbook.add_worksheet("About")
+            bold = workbook.add_format({"bold": True})
+            about.set_column(0, 0, 34)
+            about.set_column(1, 1, 110)
+            about.write(0, 0, "ABO typing results", bold)
+            about.write(1, 0, RESEARCH_USE_STATEMENT, bold)
+            for r_, (k_, v_) in enumerate(self._about_items(), start=3):
+                about.write(r_, 0, k_, bold)
+                about.write(r_, 1, v_)
+
+            num_rows, num_cols = variants_df.shape
+            _cols = list(variants_df.columns)
+            reliability_col = xl_col_to_name(_cols.index("ReadReliability"))
             print(f"Data has {num_rows} rows, starting at row 3 with two header rows")
 
-            for col_idx in read_count_cols:
-                col_letter = xl_col_to_name(col_idx)
-                worksheet.conditional_format(
-                    f"{col_letter}3:{col_letter}{num_rows + 2}",
-                    {"type": "cell", "criteria": "<=", "value": 20, "format": red_bg_format},
-                )
-                worksheet.conditional_format(
-                    f"{col_letter}3:{col_letter}{num_rows + 2}",
-                    {"type": "cell", "criteria": "between", "minimum": 21, "maximum": 40, "format": orange_bg_format},
-                )
+            red_cell = workbook.add_format({"bg_color": "#e2725b", "font_color": "black", "border": 1})
+            orange_cell = workbook.add_format({"bg_color": "#ff9a00", "font_color": "black", "border": 1})
+            alt_cell = workbook.add_format({"bold": True, "bg_color": "#fff2cc", "font_color": "black", "border": 1})
+            grey_cell = workbook.add_format({"bg_color": "#d9d9d9", "font_color": "#595959", "border": 1})
+            wrap_header = workbook.add_format({"bold": True, "fg_color": "#007399", "border": 1, "font_color": "white",
+                                               "align": "center", "valign": "vcenter", "text_wrap": True})
 
-            print(f"Applying read count conditional formatting to columns: "
-                  f"{[xl_col_to_name(i) for i in read_count_cols]}")
+            for row in range(num_rows):
+                for col in range(num_cols):
+                    cell_value = variants_df.iat[row, col]
+                    if cell_value is None or (not isinstance(cell_value, str) and pd.isna(cell_value)):
+                        continue
+                    fmt = data_format
+                    lab = pos_labels.get(col)
+                    if lab is not None:
+                        info = calls[row][lab]
+                        if info["state"] == "nodata":
+                            fmt = grey_cell
+                        elif info["reads"] <= 20:
+                            fmt = red_cell          # very low depth: the call is not reliable
+                        elif info["reads"] <= 40:
+                            fmt = orange_cell       # low depth
+                        elif info["state"] == "alt":
+                            fmt = alt_cell
+                        worksheet.write(row + 2, col, cell_value, fmt)
+                        if info["state"] == "alt" and info["type"]:
+                            worksheet.write_comment(row + 2, col, info["type"], {"x_scale": 2.2, "y_scale": 0.8})
+                    else:
+                        worksheet.write(row + 2, col, cell_value, data_format)
 
-            try:
-                worksheet.conditional_format(
-                    f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",
-                    {"type": "formula", "criteria": f'=${reliability_col}3="Very Low(<=20 reads)"', "format": red_bg_format},
-                )
-                worksheet.conditional_format(
-                    f"A3:{xl_col_to_name(num_cols - 1)}{num_rows + 2}",
-                    {"type": "formula", "criteria": f'=${reliability_col}3="Low (<=40 reads)"', "format": orange_bg_format},
-                )
-            except Exception as format_err:
-                print(f"Warning: Could not apply row-level conditional formatting: {format_err}")
-
-            if "QCStatus" in _cols:
+            if num_rows:
+                last_col = xl_col_to_name(num_cols - 1)
+                try:
+                    worksheet.conditional_format(
+                        f"A3:{last_col}{num_rows + 2}",
+                        {"type": "formula", "criteria": f'=${reliability_col}3="Very Low(<=20 reads)"', "format": red_bg_format},
+                    )
+                    worksheet.conditional_format(
+                        f"A3:{last_col}{num_rows + 2}",
+                        {"type": "formula", "criteria": f'=${reliability_col}3="Low (<=40 reads)"', "format": orange_bg_format},
+                    )
+                except Exception as format_err:
+                    print(f"Warning: Could not apply row-level conditional formatting: {format_err}")
                 qc_letter = xl_col_to_name(_cols.index("QCStatus"))
                 worksheet.conditional_format(
                     f"{qc_letter}3:{qc_letter}{num_rows + 2}",
                     {"type": "cell", "criteria": "==", "value": '"REVIEW"', "format": orange_bg_format},
                 )
+                rn_letter = xl_col_to_name(_cols.index("ReplicateNote"))
+                worksheet.conditional_format(
+                    f"A3:{last_col}{num_rows + 2}",
+                    {"type": "formula", "criteria": f"=LEN(${rn_letter}3)>0", "format": red_bg_format},
+                )
 
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    cell_value = final_df.iat[row, col]
-                    if not pd.isna(cell_value):
-                        worksheet.write(row + 2, col, cell_value, data_format)
+            def _group(first, last, title):
+                if first == last:
+                    worksheet.write(0, first, title, header_format)
+                else:
+                    worksheet.merge_range(0, first, 0, last, title, header_format)
 
-            # Per-position header merge ranges
-            column_start = 5
-            merge_ranges = []
-            for col_label in self.position_columns:
-                start_col = column_start
-                end_col = start_col + 9
-                start_letter = xl_col_to_name(start_col)
-                end_letter = xl_col_to_name(end_col)
-                merge_ranges.append((f"{start_letter}1:{end_letter}1", col_label))
-                column_start = end_col + 1
-
-            notes_start = xl_col_to_name(column_start)
-            notes_end = xl_col_to_name(column_start + len(self.notes_columns) - 1)
-
-            worksheet.merge_range("A1:B1", "Sample", header_format)
-            worksheet.merge_range("C1:E1", "Result", header_format)
-            worksheet.merge_range(f"{notes_start}1:{notes_end}1", "Notes", header_format)
-
-            for merge_range in merge_ranges:
-                worksheet.merge_range(merge_range[0], merge_range[1], header_format)
-
-            for col in range(num_cols):
-                cell_value = final_df.columns[col]
-                if not pd.isna(cell_value):
-                    worksheet.write(1, col, cell_value, header_format)
+            _group(0, 1, "Sample")
+            _group(2, 4, "Result")
+            pos_idx = sorted(pos_labels)
+            run_start = pos_idx[0] if pos_idx else None
+            for k, ci in enumerate(pos_idx):
+                grp = pos_labels[ci].split("_")[0]
+                nxt = pos_labels[pos_idx[k + 1]].split("_")[0] if k + 1 < len(pos_idx) else None
+                if nxt != grp:
+                    _group(run_start, ci, grp.replace("Exon", "Exon "))
+                    run_start = pos_idx[k + 1] if k + 1 < len(pos_idx) else None
+            if self.notes_columns:
+                first_note = _cols.index(self.notes_columns[0])
+                _group(first_note, num_cols - 1, "Notes")
+            for col, name in enumerate(_cols):
+                worksheet.write(1, col, name.strip(), wrap_header)
+            worksheet.set_row(1, 34)
+            worksheet.set_column(0, 1, 16)
+            worksheet.set_column(2, 4, 18)
+            if pos_idx:
+                worksheet.set_column(pos_idx[0], pos_idx[-1], 17)
+            worksheet.set_column(_cols.index(self.notes_columns[0]), num_cols - 1, 24)
+            worksheet.freeze_panes(2, 2)
 
             writer.close()
             print("Results saved successfully to Excel file.")
@@ -1565,7 +2551,8 @@ class ABOReportParser:
                 self.df_for_lis_soft["#Reads"] = 0
 
         for _src, _dst in (("QCStatus", "QC Status"), ("QCFlags", "QC Flags"),
-                           ("A2Trace", "A2 Trace"), ("EvidenceBasis", "Evidence Basis")):
+                           ("A2Trace", "A2 Trace"), ("EvidenceBasis", "Evidence Basis"),
+                           ("ReplicateNote", "Replicate Note")):
             if _src in final_df.columns:
                 self.df_for_lis_soft[_dst] = final_df[_src]
 
@@ -1576,12 +2563,46 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # QC: replicate cross-check and run-level summary (v2.1.0)
     # -----------------------------------------------------------------
+    @staticmethod
+    def _alleles_compatible(x: str, y: str) -> bool:
+        """Two ISBT-style allele names do not conflict when they are equal or one is a less specific form of
+        the other (ABO*A2 / ABO*A2.01, ABO*O.01 / ABO*O.01.01, or a bare ABO*A / ABO*A1.01)."""
+        a, b = x.replace("ABO*", "").strip(), y.replace("ABO*", "").strip()
+        if a == b:
+            return True
+        for s, t in ((a, b), (b, a)):
+            if t.startswith(s + "."):
+                return True
+            if len(s) == 1 and s.isalpha() and t[:1] == s and (len(t) == 1 or not t[1].isalpha()):
+                return True
+        return False
+
+    @classmethod
+    def _typings_compatible(cls, e1: str, e2: str) -> bool:
+        """Do two ExtendedGenotype strings describe the same pair of alleles, allowing for one being less specific?"""
+        t1, t2 = str(e1).split("/"), str(e2).split("/")
+        if len(t1) != len(t2):
+            return str(e1) == str(e2)
+        if len(t1) == 2:
+            return ((cls._alleles_compatible(t1[0], t2[0]) and cls._alleles_compatible(t1[1], t2[1]))
+                    or (cls._alleles_compatible(t1[0], t2[1]) and cls._alleles_compatible(t1[1], t2[0])))
+        return all(cls._alleles_compatible(a, c) for a, c in zip(t1, t2))
+
+    @staticmethod
+    def _zygosity(genotype) -> str:
+        g = str(genotype)
+        if len(g) != 2 or g in ("Unknown", "nan"):
+            return "unresolved"
+        return "homozygous" if g[0] == g[1] else "heterozygous"
+
     def _apply_replicate_checks(self, final_df):
-        """Samples sharing a Sequencing_ID (replicates across barcodes/runs)
-        must agree on genotype and on A2 evidence. Disagreement marks EVERY
-        member of the group for review; nothing is changed."""
+        """Samples sharing a Sequencing_ID (the same sample on different barcodes/runs) must
+        agree on genotype, A2 evidence and allele-level typing. Disagreement marks EVERY member
+        of the group: REVIEW + a QC flag, and a ReplicateNote that lists each replicate's
+        genotype, zygosity and typing (the sheets colour these rows red). Nothing is changed.
+        Rows are already sorted by sample then barcode, so replicates sit together."""
         sid = final_df[("", "Sequencing_ID")].astype(str)
-        stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0}
+        stats = {"groups": 0, "discordant_genotype": 0, "discordant_a2": 0, "discordant_allele": 0}
         for _, idx in sid.groupby(sid).groups.items():
             idx = list(idx)
             if len(idx) < 2:
@@ -1589,10 +2610,12 @@ class ABOReportParser:
             stats["groups"] += 1
             grp = final_df.loc[idx]
             genos = set(grp[("Result", "Genotype")].astype(str))
+            exts = set(grp[("Result", "ExtendedGenotype")].astype(str))
             a2 = grp[("Notes", "A2Trace")].astype(str)
             a2_has = set(not x.startswith("4") for x in a2 if "n/a" not in x and not x.startswith("5"))
-            members = ", ".join(
-                f"barcode{int(b):02d}={e}" for b, e in zip(grp[("", "Barcode")], grp[("Result", "ExtendedGenotype")]))
+            rows = list(zip(grp[("", "Barcode")], grp[("Result", "Genotype")].astype(str),
+                            grp[("Result", "ExtendedGenotype")].astype(str)))
+            members = ", ".join(f"barcode{int(bc):02d}={e}" for bc, _, e in rows)
             msg = None
             if len(genos) > 1:
                 stats["discordant_genotype"] += 1
@@ -1600,17 +2623,100 @@ class ABOReportParser:
             elif len(a2_has) > 1:
                 stats["discordant_a2"] += 1
                 msg = f"replicates disagree on A2 evidence ({members})"
-            if msg:
-                for i in idx:
-                    old = str(final_df.at[i, ("Notes", "QCFlags")] or "")
-                    final_df.at[i, ("Notes", "QCFlags")] = (old + "; " if old else "") + msg
-                    final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
+            elif len(exts) > 1 and not all(self._typings_compatible(p, q) for p in exts for q in exts):
+                stats["discordant_allele"] += 1
+                msg = f"replicates agree on genotype but differ at allele level ({members})"
+            if not msg:
+                continue
+
+            # ReplicateNote: every replicate with its zygosity and typing, plus what the
+            # mismatch most likely means
+            parts = [f"barcode{int(bc):02d}: {g} ({self._zygosity(g)}), {e}" for bc, g, e in rows]
+            note = f"Replicate mismatch ({len(rows)} runs of this sample): " + " | ".join(parts) + "."
+            hets = [(bc, g) for bc, g, _ in rows if self._zygosity(g) == "heterozygous"]
+            homs = [(bc, g) for bc, g, _ in rows if self._zygosity(g) == "homozygous"]
+            dropout = [f"barcode{int(bc):02d}" for bc, g in homs
+                       if any(set(g) <= set(hg) for _, hg in hets)]
+            if dropout:
+                note += (f" Homozygous call in {', '.join(dropout)} is contained in a heterozygous replicate: "
+                         "possible allele dropout; confirm with another method.")
+            unresolved = [f"barcode{int(bc):02d}" for bc, g, _ in rows if self._zygosity(g) == "unresolved"]
+            if unresolved:
+                note += f" Unresolved (no usable typing): {', '.join(unresolved)}."
+            for i in idx:
+                old = str(final_df.at[i, ("Notes", "QCFlags")] or "")
+                final_df.at[i, ("Notes", "QCFlags")] = (old + "; " if old else "") + msg
+                final_df.at[i, ("Notes", "QCStatus")] = "REVIEW"
+                final_df.at[i, ("Notes", "ReplicateNote")] = note
         self.replicate_stats = stats
+
+    def _about_items(self):
+        """Version / provenance lines for the About sheet and the QC report."""
+        meta = getattr(self.panel, "meta", {}) or {}
+        items = [("aggregate_abo_reports.py", __version__),
+                 ("Panel version", str(meta.get("panel_version", "unknown"))),
+                 ("Panel source", str(meta.get("source", "unknown")))]
+        if meta.get("isbt_allele_table_version"):
+            items.append(("ISBT ABO allele table", str(meta["isbt_allele_table_version"])))
+        if meta.get("isbt_allele_table_checked"):
+            items.append(("ISBT table checked", str(meta["isbt_allele_table_checked"])))
+        if meta.get("isbt_allele_table_release_date"):
+            items.append(("ISBT table release date", str(meta["isbt_allele_table_release_date"])))
+        return items
+
+    def _evidence_summary(self, final_df):
+        """Per-sample evidence rows (None when no sample carries an evidence status)."""
+        rows = []
+        for _, r in final_df.iterrows():
+            try:
+                key = (str(r["Sequencing_ID"]), int(r["Barcode"]))
+            except (TypeError, ValueError):
+                continue
+            m = self.sample_metrics.get(key, {})
+            if not m.get("evidence_source"):
+                continue
+            rows.append({
+                "Sample": key[0],
+                "Barcode": f"barcode{key[1]:02d}",
+                "Evidence source": m["evidence_source"],
+                "Evidence status": m.get("evidence_label") or "OK",
+                "BAM-only positions": m.get("bam_only"),
+                "Clair3/BAM discordant": m.get("discordant"),
+                "Discordant primary positions": m.get("discordant_primary"),
+                "QC status": r.get("QCStatus", ""),
+                "Typing result": r.get("ExtendedGenotype", ""),
+            })
+        return rows or None
+
+    def write_evidence_summary(self, final_df, path="ABO_evidence_summary_mqc.tsv"):
+        """MultiQC custom-content table: where each sample's evidence came from, and which
+        samples had failed or empty Clair3 output, no reads over the ABO region, or disagreement
+        between Clair3 and the BAM pileup."""
+        rows = self._evidence_summary(final_df)
+        if not rows:
+            return
+        cols = list(rows[0].keys())
+        try:
+            with open(path, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write("# id: 'abo_evidence_summary'\n")
+                fh.write("# section_name: 'ABO evidence summary'\n")
+                fh.write("# description: 'Agreement between the two lines of evidence (Clair3 and BAM pileup) "
+                         "per sample. Samples with no reads over the ABO region, Clair3-only or BAM-only "
+                         "evidence, or discordant primary positions need review. "
+                         + RESEARCH_USE_STATEMENT.replace("'", "") + "'\n")
+                fh.write("# plot_type: 'table'\n")
+                fh.write("\t".join(cols) + "\n")
+                for row in rows:
+                    fh.write("\t".join("" if row[c] is None else str(row[c]) for c in cols) + "\n")
+            print(f"Evidence summary written to {path}")
+        except OSError as e:
+            print(f"Could not write evidence summary: {e}")
 
     def report_qc(self, final_df):
         """Print (and optionally write) a run-level QC summary. Called after
         the results are saved, so final_df has single-level column names."""
-        lines = ["=== QC SUMMARY ==="]
+        lines = ["=== QC SUMMARY ===", RESEARCH_USE_STATEMENT]
+        lines += [f"{k}: {v}" for k, v in self._about_items()]
         n = len(final_df)
         if n == 0:
             return
@@ -1633,6 +2739,19 @@ class ABOReportParser:
                 for f, c in tally.most_common():
                     lines.append(f"  {c:6d}  {f}")
 
+        ev_rows = self._evidence_summary(final_df)
+        if ev_rows:
+            lines.append("Evidence (Clair3 + BAM pileup):")
+            for k, v in Counter(r["Evidence source"] for r in ev_rows).most_common():
+                lines.append(f"  {v:6d}  {k}")
+            problems = [r for r in ev_rows if r["Evidence status"] != "OK" or r["Discordant primary positions"]]
+            if problems:
+                lines.append("Samples needing attention:")
+                for r in problems:
+                    extra = (f"; discordant at {r['Discordant primary positions']} primary position(s)"
+                             if r["Discordant primary positions"] else "")
+                    lines.append(f"  {r['Sample']} ({r['Barcode']}): {r['Evidence status']}{extra}")
+
         if "EvidenceBasis" in final_df.columns:
             lines.append("Evidence basis: " + ", ".join(
                 f"{k}={v}" for k, v in final_df["EvidenceBasis"].value_counts().items()))
@@ -1642,9 +2761,10 @@ class ABOReportParser:
                 lines.append(f"  {v:6d}  {k}")
         rs = self.replicate_stats
         if rs["groups"]:
-            bad = rs["discordant_genotype"] + rs["discordant_a2"]
+            bad = rs["discordant_genotype"] + rs["discordant_a2"] + rs.get("discordant_allele", 0)
             lines.append(f"Replicate groups: {rs['groups']}   disagreeing: {bad} "
-                         f"(genotype {rs['discordant_genotype']}, A2 evidence {rs['discordant_a2']})")
+                         f"(genotype {rs['discordant_genotype']}, A2 evidence {rs['discordant_a2']}, "
+                         f"allele level {rs.get('discordant_allele', 0)})")
 
         notes = []
         recs = self.qc_records
@@ -1706,6 +2826,7 @@ class ABOReportParser:
         print(final_df.to_string(index=False))
         print("-" * 336)
         self.save_results_to_file(final_df)
+        self.write_evidence_summary(final_df)
 
         if self.failed_samples:
             print("\n\nFailed Samples Summary:")
@@ -1738,11 +2859,14 @@ class ABOReportParser:
                     print(f"\nExtended Genotype Distribution (with A subtypes):")
                     a_subtypes, ab_subtypes, other_genotypes = {}, {}, {}
                     for genotype, count in extended_genotype_counts.items():
-                        if "A1" in str(genotype) or "A2" in str(genotype):
-                            if "B" in str(genotype):
-                                ab_subtypes[genotype] = count
-                            else:
-                                a_subtypes[genotype] = count
+                        # tokens are ISBT names (ABO*A1.01, ABO*B.01, ...); "ABO*" itself contains a "B"
+                        toks = str(genotype).split("/")
+                        has_a = any(t.startswith("ABO*A") for t in toks)
+                        has_b = any(t.startswith("ABO*B") for t in toks)
+                        if has_a and has_b:
+                            ab_subtypes[genotype] = count
+                        elif has_a:
+                            a_subtypes[genotype] = count
                         else:
                             other_genotypes[genotype] = count
                     if a_subtypes:
@@ -1818,6 +2942,11 @@ subfolders are picked up automatically):
 
 OUTPUT FILES:
   - ABO_result.txt / ABO_result.xlsx / final_export.csv
+  - ABO_result.xlsx has two sheets: "Typing" (one row per sample with read /
+    mappability / depth metrics from samtools stats + flagstat, the ISBT-style
+    typing result, variants detected and QC) and "Variants" (one column per panel
+    position)
+  - ExtendedGenotype uses ISBT-style names, e.g. ABO*A2.01/ABO*O.01
 
 Column layout and position parsing are driven by --panel; add a new
 diagnostic position by editing the panel file, not this script.
@@ -1832,8 +2961,23 @@ For more information, see: https://github.com/fmobegi/nf-core-abotyper
                          help="Path to the variant panel file (.yaml/.json/.csv/.tsv). Default: %(default)s")
     parser.add_argument("--default-barcode", "-b", default="barcode00", metavar="BARCODE",
                          help="Default barcode for samples without explicit barcode suffix (default: %(default)s)")
-    parser.add_argument("--min-depth", type=int, default=100, metavar="N",
-                         help="Flag A1 calls made on fewer than N reads at c.467/c.1061delC (default: %(default)s)")
+    parser.add_argument("--nanoplot-dir", default=None, metavar="DIR",
+                         help="Folder holding NanoPlot output (*NanoStats.txt); used for Number of reads / Read Length "
+                              "in the Typing sheet when a sample folder has no NanoStats.txt of its own")
+    parser.add_argument("--threads", "-t", type=int, default=1, metavar="N",
+                         help="Worker processes for per-sample parsing (default: %(default)s, serial). "
+                              "Useful for large runs; results are identical.")
+    parser.add_argument("--min-depth", type=int, default=30, metavar="N",
+                         help="Flag A1 calls made on fewer than N reads at c.467/c.1061delC, and samples with fewer than "
+                              "N reads at a primary position (depth check) (default: %(default)s)")
+    parser.add_argument("--positive-control-pattern", default="POS", metavar="REGEX",
+                         help="Sample names matching this regular expression (case-insensitive) are positive controls: "
+                              "they need normal depth, and fewer than --min-depth reads fails the control; "
+                              "use '' to disable (default: %(default)s)")
+    parser.add_argument("--negative-control-pattern", default="NEG", metavar="REGEX",
+                         help="Sample names matching this regular expression (case-insensitive) are negative controls: "
+                              "few reads is the expected result and reads above --min-depth are flagged as possible "
+                              "contamination; use '' to treat every sample alike (default: %(default)s)")
     parser.add_argument("--qc-report", default="ABO_run_qc.txt", metavar="FILE",
                          help="Write the run-level QC summary here; use '' to disable (default: %(default)s)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output for debugging")
@@ -1878,6 +3022,9 @@ if __name__ == "__main__":
           f"({len(panel.calibrated())} usable now, {len(panel.uncalibrated())} awaiting calibration)")
 
     parser_instance = ABOReportParser(args.input_directory, panel, args.default_barcode,
-                                      min_depth=args.min_depth, qc_report=args.qc_report)
+                                      min_depth=args.min_depth, qc_report=args.qc_report,
+                                      nanoplot_dir=args.nanoplot_dir, threads=args.threads,
+                                      negative_control_pattern=args.negative_control_pattern,
+                                      positive_control_pattern=args.positive_control_pattern)
     parser_instance.run()
     print("All done!\n")
