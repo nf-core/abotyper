@@ -43,7 +43,20 @@ from typing import Dict, List, Optional, Tuple
 
 from abo_panel import load_panel, VariantMarker
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
+__author__ = "Fredrick Mobegi"
+__copyright__ = "Copyright 2026, ABO blood group typing using third-generation sequencing (TGS) technology"
+__credits__ = [
+    "Fredrick Mobegi",
+    "Benedict Matern",
+    "Mathijs Groeneweg",
+    "Claude Sonnet 5",
+]
+__license__ = "GPL"
 __version__ = "2.2.0"
+__maintainer__ = "Fredrick Mobegi"
+__email__ = "fredrick.mobegi@health.wa.gov.au"
+__status__ = "Production"
 
 TSV_HEADER = "\t".join([
     "Ref_Position_1based", "Ref_Base", "Match_Percent", "Mismatch_Percent",
@@ -196,7 +209,12 @@ def pileup_row(marker: VariantMarker, cols: Dict[int, PileupColumn]) -> Tuple[Li
         if letter in pct:               # e.g. c.1061delC (ref C): the reference fraction is scored on the C column
             pct[letter] = match
             ref_base = letter
-        mismatch = ins + dele
+        # the mismatch is the kind of indel the marker scores: a duplication row is not "mismatched" by the deletion
+        # noise that homopolymer runs give (a 5-G run shows ~25% deletion placeholders in ONT reads)
+        kinds = {t.lower() for t in marker.alt_bases()}
+        scores_ins = bool(kinds & {"ins", "dup"})
+        scores_del = "del" in kinds
+        mismatch = (ins if scores_ins or not (scores_ins or scores_del) else 0.0) + (dele if scores_del or not (scores_ins or scores_del) else 0.0)
     else:
         ref = marker.ref_base.strip().upper() or here.ref
         pct = {b: 100.0 * here.bases[b] / depth for b in "AGCT"}

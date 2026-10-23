@@ -36,7 +36,20 @@ from pathlib import Path
 
 from abo_panel import load_panel, VariantMarker
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
+__author__ = "Fredrick Mobegi"
+__copyright__ = "Copyright 2026, ABO blood group typing using third-generation sequencing (TGS) technology"
+__credits__ = [
+    "Fredrick Mobegi",
+    "Benedict Matern",
+    "Mathijs Groeneweg",
+    "Claude Sonnet 5",
+]
+__license__ = "GPL"
 __version__ = "1.0.0"
+__maintainer__ = "Fredrick Mobegi"
+__email__ = "fredrick.mobegi@health.wa.gov.au"
+__status__ = "Production"
 
 INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
 

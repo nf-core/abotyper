@@ -14,6 +14,7 @@ import pandas as pd
 
 from abo_panel import load_panel, Panel, VariantMarker
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
 __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024-2025, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = [
