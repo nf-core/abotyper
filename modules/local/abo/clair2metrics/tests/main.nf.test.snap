@@ -1,0 +1,90 @@
+{
+    "abotyper - ABO_AA_barcode01 - Clair3 gVCF -> metrics": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,cb819c9016bceacf9c17b3a059b7d153"
+                ]
+            ],
+            {
+                "versions_python": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_pyyaml": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T20:00:11.919699901",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    },
+    "abotyper - ABO_AA_barcode01 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "2": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_pyyaml": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T13:29:19.662737404",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.2"
+        }
+    }
+}

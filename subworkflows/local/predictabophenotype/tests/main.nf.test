@@ -1,4 +1,3 @@
-// TODO nf-core: Once you have added the required tests, please run the following command to build this file:
 // nf-core subworkflows test predictabophenotype
 nextflow_workflow {
 
@@ -7,38 +6,75 @@ nextflow_workflow {
     workflow "PREDICTABOPHENOTYPE"
 
     tag "subworkflows"
-    tag "subworkflows_"
+    tag "subworkflows_local"
     tag "subworkflows/predictabophenotype"
-    // TODO nf-core: Add tags for all modules used within this subworkflow. Example:
-    tag "samtools"
-    tag "samtools/sort"
-    tag "samtools/index"
+    tag "abo/getabosnps"
+    tag "abo/snps2pheno"
+    tag "abotyper"
 
+    // Inputs for ONE sample (ABO_AA_barcode01) in the single combined-reference layout:
+    // metrics (ABO_EVIDENCE), coverage, haplotypes (ABO_CLAIR2HAPLOTYPES) and the two
+    // evidence files written by ABO_EVIDENCE.
 
-    // TODO nf-core: Change the test name preferably indicating the test-data and file-format used
-    test("sarscov2 - bam - single_end") {
+    test("abo_phenotype_prediction - one sample - combined reference") {
 
         when {
+            params {
+                // the subworkflow stages each sample's reports under ${params.outdir}/per_sample_processing
+                outdir = "$outputDir"
+            }
             workflow {
                 """
-                // TODO nf-core: define inputs of the workflow here. Example:
-                input[0] = [
-                    [ id:'test', single_end:false ], // meta map
-                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
-                ]
-                input[1] = [
-                    [ id:'genome' ],
-                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
-                ]
+                def meta = [ id:'ABO_AA_barcode01' ]
+                def d    = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                def p    = "$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01/combined"
+                input[0] = channel.of([ meta, file("\$d/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true) ])
+                input[1] = channel.of([ meta, file("\$d/ABO_AA_barcode01.coverage.txt", checkIfExists: true) ])
+                input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
+                input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
+                input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
                 """
             }
         }
 
         then {
             assertAll(
-                { assert workflow.success},
-                { assert snapshot(workflow.out).match()}
-                //TODO nf-core: Add all required assertions to verify the test output.
+                { assert workflow.success },
+                // one final results table, one MultiQC evidence table
+                { assert workflow.out.abo_results.size() == 1 },
+                { assert path(workflow.out.abo_results[0]).exists() },
+                { assert workflow.out.evidence_summary.size() == 1 },
+                { assert path(workflow.out.evidence_summary[0]).text.contains("ABO_AA") }
+            )
+        }
+    }
+
+    test("abo_phenotype_prediction - one sample - stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+            workflow {
+                """
+                def meta = [ id:'ABO_AA_barcode01' ]
+                def d    = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                def p    = "$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01/combined"
+                input[0] = channel.of([ meta, file("\$d/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true) ])
+                input[1] = channel.of([ meta, file("\$d/ABO_AA_barcode01.coverage.txt", checkIfExists: true) ])
+                input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
+                input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
+                input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() }
             )
         }
     }

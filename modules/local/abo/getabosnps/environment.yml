@@ -1,0 +1,7 @@
+name: getabosnps
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13.15
+  - pyyaml=6.0.3
+  - pandas=3.0.5
