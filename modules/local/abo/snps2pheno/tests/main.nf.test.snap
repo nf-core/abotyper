@@ -1,0 +1,147 @@
+{
+    "abotyper - two samples compiled into the final tables": {
+        "content": [
+            [
+                "final_export.csv:md5,dc556698e756671bcc4ddfc6cc25893e"
+            ],
+            {
+                "versions_numpy": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "numpy",
+                        "2.5.3"
+                    ]
+                ],
+                "versions_pandas": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "pandas",
+                        "3.0.5"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_xlsxwriter": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "xlsxwriter",
+                        "3.2.9"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T20:05:48.919416604",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    },
+    "abotyper - two samples compiled - stub": {
+        "content": [
+            {
+                "0": [
+                    "ABO_result.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "ABO_result.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "2": [
+                    "ABO_results.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "3": [
+                    "final_export.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "4": [
+                    "ABO_run_qc.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "5": [
+                    "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "6": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "7": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "pandas",
+                        "3.0.5"
+                    ]
+                ],
+                "8": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "numpy",
+                        "2.5.3"
+                    ]
+                ],
+                "9": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "xlsxwriter",
+                        "3.2.9"
+                    ]
+                ],
+                "csv": [
+                    "final_export.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "log": [
+                    "ABO_results.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "mqc": [
+                    "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "qc": [
+                    "ABO_run_qc.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "txt": [
+                    "ABO_result.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions_numpy": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "numpy",
+                        "2.5.3"
+                    ]
+                ],
+                "versions_pandas": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "pandas",
+                        "3.0.5"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "python",
+                        "3.13.15"
+                    ]
+                ],
+                "versions_xlsxwriter": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "xlsxwriter",
+                        "3.2.9"
+                    ]
+                ],
+                "xls": [
+                    "ABO_result.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T13:52:31.579750351",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    }
+}

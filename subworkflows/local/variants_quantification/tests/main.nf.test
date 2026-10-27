@@ -1,0 +1,58 @@
+nextflow_workflow {
+
+    name "Test Subworkflow VARIANTS_QUANTIFICATION"
+    script "../main.nf"
+    workflow "VARIANTS_QUANTIFICATION"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/variants_quantification"
+    tag "abo/pileup"
+    tag "abo/evidence"
+    tag "abo/clair2metrics"
+    tag "abo/clair2haplotypes"
+    tag "abo/panel2bed"
+    tag "clair3"
+    tag "abotyper"
+
+    // Clair3 needs a downloaded model and minutes of CPU, so the subworkflow is exercised in stub
+    // mode: this checks the wiring (join with remainder:true, the new ABO_PILEUP / ABO_EVIDENCE
+    // branch and every emit) without the caller. Real-data behaviour of each step is covered by
+    // the module tests.
+
+    test("variants_quantification - one sample - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                def d = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam", checkIfExists: true) ])
+                input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam.bai", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[3] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta.fai", checkIfExists: true) ])
+                input[4] = 'https://example.org/clair3_model'     // not downloaded in stub mode
+                input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                // the scored table, the two evidence files and the haplotype table are all emitted for the sample
+                { assert workflow.out.metrics.size() == 1 },
+                { assert workflow.out.evidence_status.size() == 1 },
+                { assert workflow.out.concordance.size() == 1 },
+                { assert workflow.out.panel_bed.size() == 1 },
+                { assert snapshot(
+                    workflow.out.metrics,
+                    workflow.out.evidence_status,
+                    workflow.out.concordance,
+                    workflow.out.panel_bed
+                ).match() }
+            )
+        }
+    }
+}

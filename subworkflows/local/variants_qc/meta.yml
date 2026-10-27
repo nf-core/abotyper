@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "VARIANTS_QC"
+description: |
+  Review/export side-branch for Clair3's small-variant calls, independent of
+  the phenotype-prediction path. Normalizes Clair3's PASS-filtered VCF
+  (left-aligns indels, splits multiallelics via bcftools norm), restricts it
+  to the ABO panel positions (bcftools view -R), and flattens the result to
+  a flat per-position TSV (bcftools query) -- a panel-scoped VCF a human can
+  open in IGV, and a TSV for spot-checking. Runs on CLAIR3.out.vcf, not the
+  gVCF: symbolic <NON_REF> ref-blocks in the gVCF aren't what bcftools
+  norm/view/query are built for. Outputs are not consumed by
+  PREDICTABOPHENOTYPE -- ABO_CLAIR2METRICS reads the gVCF directly for that.
+keywords:
+  - abo
+  - blood typing
+  - variant calling
+  - bcftools
+  - vcf
+  - qc
+components:
+  - bcftools/norm
+  - bcftools/view
+  - bcftools/query
+input:
+  - ch_clair3_vcf:
+      type: channel
+      description: |
+        Clair3's PASS-filtered small-variant calls (CLAIR3.out.vcf).
+        Structure: [ val(meta), path(*.vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - ch_clair3_tbi:
+      type: channel
+      description: |
+        Tabix index for ch_clair3_vcf (CLAIR3.out.tbi).
+        Structure: [ val(meta), path(*.vcf.gz.tbi) ]
+      pattern: "*.vcf.gz.tbi"
+  - ch_fasta:
+      type: channel
+      description: |
+        Reference FASTA used for bcftools norm's left-alignment.
+        Structure: [ val(meta), path(*.fasta) ]
+      pattern: "*.fasta"
+  - panel_bed:
+      type: file
+      description: |
+        ABO panel BED (from ABO_PANEL2BED / VARIANTS_QUANTIFICATION.out.panel_bed),
+        broadcast as a value channel. Passed to bcftools view as the regions file.
+      pattern: "*.bed"
+output:
+  - panel_vcf:
+      type: file
+      description: |
+        Normalized Clair3 calls restricted to the ABO panel positions.
+        Structure: [ val(meta), path(*.vcf.gz) ]
+      pattern: "*.vcf.gz"
+  - panel_vcf_index:
+      type: file
+      description: |
+        Tabix index for panel_vcf.
+        Structure: [ val(meta), path(*.tbi) ]
+      pattern: "*.tbi"
+  - panel_query_tsv:
+      type: file
+      description: |
+        Flat per-position TSV (CHROM/POS/REF/ALT/GT/AD/DP) from bcftools query
+        on panel_vcf, for manual spot-checking.
+        Structure: [ val(meta), path(*.tsv) ]
+      pattern: "*.tsv"
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

@@ -1,0 +1,109 @@
+nextflow_process {
+
+    name "Test Process ABO_EVIDENCE"
+    script "../main.nf"
+    process "ABO_EVIDENCE"
+
+    tag "modules"
+    tag "modules_local"
+    tag "abo/evidence"
+    tag "abotyper"
+
+    test("abotyper - ABO_AA_barcode01 - Clair3 + BAM pileup agree") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                ]
+                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            def status = path(process.out.status[0][1]).readLines()
+            def row    = [status[0].split('\t'), status[1].split('\t')].transpose().collectEntries { k, v -> [k, v] }
+            assertAll(
+                { assert process.success },
+                // the merged table keeps its name; the Clair3 input is staged in clair3/ so they do not collide
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
+                // header + one row per calibrated panel position (135 in panel v2.3.0)
+                { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
+                { assert row.positions == '135' },
+                { assert row.evidence_source == 'CLAIR3+BAM' },
+                // the fixture was made before the rare positions were added: the 51 original positions are covered by both
+                // lines, the others have no Clair3 row; the pileup covers a few of them through the padded indel windows
+                { assert row.both == '51' },
+                { assert row.clair3_only == '0' },
+                // at most one non-primary position may disagree (the synthetic reads carry indel noise in the c.804 7-G run)
+                { assert row.discordant.toInteger() <= 1 },
+                { assert row.discordant_primary == '0' },
+                { assert snapshot(
+                    process.out.tsv,
+                    process.out.status,
+                    process.out.concordance,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AA_barcode01 - Clair3 produced nothing (BAM pileup only)") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    []
+                ]
+                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            def status = path(process.out.status[0][1]).readLines()
+            def row    = [status[0].split('\t'), status[1].split('\t')].transpose().collectEntries { k, v -> [k, v] }
+            assertAll(
+                { assert process.success },
+                { assert row.evidence_source == 'BAM_ONLY' },
+                // the pileup covers the 51 original positions and 10 more inside the padded indel windows
+                { assert row.bam_only == '61' },
+                { assert row.clair3_only == '0' },
+                { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
+                { assert snapshot(process.out.tsv, process.out.status).match() }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AA_barcode01 - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                ]
+                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

@@ -5,8 +5,12 @@ results/
 .DS_Store
 testing/
 testing*
+.nf-test/
+.nf-test.log
+.claude/
 *.pyc
 null/
 .lineage/
 .nf-test/
 .nf-test.log
+__pycache*

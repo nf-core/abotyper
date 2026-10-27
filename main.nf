@@ -15,7 +15,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { ABOTYPER  } from './workflows/abotyper'
+include { ABOTYPER                } from './workflows/abotyper'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abotyper_pipeline'
@@ -26,10 +26,11 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+params.abo_reference_fai   = getGenomeAttribute('abo_reference_fai')   ?: params.abo_reference_fai
+params.abo_reference_fasta = getGenomeAttribute('abo_reference_fasta') ?: params.abo_reference_fasta
+params.clair3_model_url    = getGenomeAttribute('clair3_model_url')    ?: params.clair3_model_url
+params.logo                = getGenomeAttribute('logo')                ?: params.logo
+params.abo_panel           = getGenomeAttribute('abo_panel')           ?: params.abo_panel
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,29 +38,33 @@ params.fasta = getGenomeAttribute('fasta')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// WORKFLOW: Run main analysis pipeline depending on type of input
-//
 workflow NFCORE_ABOTYPER {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
     main:
+    abo_reference_fai   = params.abo_reference_fai ? Channel.fromPath(params.abo_reference_fai)
+        .map { it -> [[id: it.baseName], it] } : Channel.empty()
+    abo_reference_fasta = params.abo_reference_fasta ? Channel.fromPath(params.abo_reference_fasta)
+        .map { it -> [[id: it.baseName], it] } : Channel.empty()
+    clair3_model_url    = params.clair3_model_url ? Channel.value(params.clair3_model_url) :
+        Channel.empty()
+    logo = params.logo ? Channel.fromPath(params.logo).collect() : Channel.empty()
+    abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel).collect() : Channel.empty()
 
-    //
-    // WORKFLOW: Run pipeline
-    //
-    ABOTYPER (
+    ABOTYPER(
         samplesheet,
-        params.multiqc_config,
-        params.multiqc_logo,
-        params.multiqc_methods_description,
-        params.outdir,
+        abo_reference_fai,
+        abo_reference_fasta,
+        clair3_model_url,
+        logo,
+        abo_panel
     )
+
     emit:
-    multiqc_report = ABOTYPER.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = ABOTYPER.out.multiqc_report
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -67,12 +72,10 @@ workflow NFCORE_ABOTYPER {
 */
 
 workflow {
-
-    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION(
         params.version,
         params.validate_params,
         params.monochrome_logs,
@@ -87,13 +90,14 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_ABOTYPER (
+    NFCORE_ABOTYPER(
         PIPELINE_INITIALISATION.out.samplesheet
     )
+
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION (
+    PIPELINE_COMPLETION(
         params.email,
         params.email_on_fail,
         params.plaintext_email,
@@ -102,9 +106,3 @@ workflow {
         NFCORE_ABOTYPER.out.multiqc_report
     )
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
