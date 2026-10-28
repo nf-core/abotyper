@@ -182,4 +182,10 @@ If you update images or graphics, follow the nf-core [style guidelines](https://
 
 ## Pipeline specific contribution guidelines
 
-<!-- TODO nf-core: Add any pipeline specific contribution guidelines here, such as coding styles, procedures, checklists etc. -->
+## Pipeline-specific guidelines
+
+- **Variant panel:** diagnostic positions, thresholds and ISBT allele associations live in `assets/refs/abo_variant_panel.yaml` (with a flat `.csv` export). Add or change a variant by editing the panel, not the scripts, and note the ISBT allele-table version you checked it against in the panel `meta:` block.
+- **Reference:** `assets/refs/NG_006669v2.fasta` must stay a regular file (no Git LFS), because the pipeline is run straight from GitHub.
+- **Tests:** every local module and subworkflow has an nf-test under its `tests/` folder; inputs are small committed files in `tests/fixtures/`. Run them on Linux with `tests/run_nf_tests.sh docker`, and commit the generated `.snap` files with the change.
+- **Scripts:** files in `bin/` must be executable (`git update-index --chmod=+x`) and read and write UTF-8.
+- **Research use only:** keep the research-use statement (`docs/intended_use.md`) intact in any output you add.
