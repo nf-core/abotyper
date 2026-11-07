@@ -51,6 +51,10 @@ workflow NFCORE_ABOTYPER {
         Channel.empty()
     logo = params.logo ? Channel.fromPath(params.logo).collect() : Channel.empty()
     abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel).collect() : Channel.empty()
+    // staged as a task input so Clair3 can read it on any executor (cloud, HPC), not just locally
+    abo_clair3_region_bed = params.abo_clair3_region_bed
+        ? Channel.fromPath(params.abo_clair3_region_bed, checkIfExists: true).collect()
+        : Channel.value([])
 
     ABOTYPER(
         samplesheet,
@@ -58,7 +62,8 @@ workflow NFCORE_ABOTYPER {
         abo_reference_fasta,
         clair3_model_url,
         logo,
-        abo_panel
+        abo_panel,
+        abo_clair3_region_bed,
     )
 
     emit:

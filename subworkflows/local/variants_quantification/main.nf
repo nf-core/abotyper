@@ -24,6 +24,7 @@ workflow VARIANTS_QUANTIFICATION {
     ch_fai     // channel: [ val(meta1), path(fai)   ]
     model_url  // val: URL to the Clair3 model archive
     panel_file // path: abo_variant_panel.yaml
+    region_bed // path: BED of the region Clair3 calls in (abo_clair3_region.bed), or [] for none
 
     main:
 
@@ -54,6 +55,7 @@ workflow VARIANTS_QUANTIFICATION {
         ch_clair3_input,
         ch_fasta.map { meta1, fasta -> [meta1, fasta] }.first(), // convert to value channel
         ch_fai.map { meta1, fai -> [meta1, fai] }.first(), // convert to value channel
+        region_bed,
     )
 
     // CLAIR3 runs with errorStrategy 'ignore': say so at run time when a sample gets no gVCF.

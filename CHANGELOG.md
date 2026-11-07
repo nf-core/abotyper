@@ -39,6 +39,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 - Panel `associated_alleles` completed from ISBT v9 for every non-primary marker and six unsupported claims removed (c.297, c.722, c.742, c.907, c.1032, c.1054). Allele naming now also rules out any allele that is defined by a marker that was covered but did not fire, so a sample with the c.542G>A + c.646/681/771/829 cassette pattern is named ABO*O.01.11 and with c.106/188/189/220 added ABO*O.01.75, not the family name ABO*O.01.
 - Path parameters shipped in `assets/` no longer carry a hardcoded `default` in `nextflow_schema.json`; their defaults are set in `nextflow.config` from `${projectDir}`.
 - Panel-filtered calls were published with a doubled dot (`<sample>.panel..vcf.gz`, `<sample>.panel..tsv`); they are now `<sample>.panel.vcf.gz` and `<sample>.panel.tsv`.
+- The Clair3 region BED (`--abo_clair3_region_bed`) is staged into the task as a file instead of being passed as a path in `ext.args`. On executors that do not share the launch directory (AWS Batch, other cloud and many HPC set-ups) Clair3 could not read it and, with `errorStrategy ignore`, every sample silently fell back to the BAM pileup. The nf-core `clair3` module is patched with an optional `bed` input for this.
 
 ### `Changed`
 

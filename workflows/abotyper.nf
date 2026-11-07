@@ -34,6 +34,7 @@ workflow ABOTYPER {
     ch_clair3_model_url  // channel: clair3_url from params.clair3_model_url
     logo                 // channel: png from params.logo (custom pathwest logo)
     abo_panel            // channel: path from params.abo_panel (variant panel YAML)
+    clair3_region_bed    // channel: path from params.abo_clair3_region_bed, or [] for none
 
     main:
 
@@ -67,6 +68,7 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.fai,
         ch_clair3_model_url,
         abo_panel,
+        clair3_region_bed,
     )
 
     //
