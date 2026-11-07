@@ -6,7 +6,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.panel..vcf.gz"
+                    "ABO_AA_barcode01.panel.vcf.gz"
                 ]
             ],
             [
@@ -14,11 +14,11 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.panel..tsv"
+                    "ABO_AA_barcode01.panel.tsv"
                 ]
             ]
         ],
-        "timestamp": "2026-10-16T14:26:39.849966506",
+        "timestamp": "2026-11-07T15:36:48.03044766",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -32,7 +32,7 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "ABO_AA_barcode01.panel.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "1": [
@@ -40,7 +40,7 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AA_barcode01.panel.vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "2": [
@@ -48,7 +48,7 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AA_barcode01.panel.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "panel_query_tsv": [
@@ -56,7 +56,7 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AA_barcode01.panel.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "panel_vcf": [
@@ -64,7 +64,7 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        "ABO_AA_barcode01.panel.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
                     ]
                 ],
                 "panel_vcf_index": [
@@ -72,12 +72,12 @@
                         {
                             "id": "ABO_AA_barcode01"
                         },
-                        "ABO_AA_barcode01.panel..vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AA_barcode01.panel.vcf.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T14:27:07.840592192",
+        "timestamp": "2026-11-07T15:37:18.317153915",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
