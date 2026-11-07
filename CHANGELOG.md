@@ -46,6 +46,8 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 - nf-core template updated to tools 4.2.1 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
 - nf-core modules updated to the latest versions (bcftools 1.25, samtools/htslib 1.25, MultiQC 1.35, NanoPlot 1.48.0). The NanoPlot patch now only adds plain `.fastq`/`.fq` input; bcftools/query is patched to keep `ext.suffix`, so the panel table stays `.tsv`.
 - The pipeline-specific nf-core/configs include (`pipeline/abotyper.config`) is enabled.
+- The Clair3 model download is a local module (`modules/local/clair3/downloadmodel`, `CLAIR3_DOWNLOADMODEL`) with its own wget 1.25.0 conda environment and Docker/Singularity containers, and reports its wget version. It ran without a container before, so it needed wget on the host.
+- The `abo/*` local modules pick their Singularity image under Apptainer too (they checked for `singularity` only, so Apptainer pulled the Docker image).
 
 ### `Dependencies`
 

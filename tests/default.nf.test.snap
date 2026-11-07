@@ -2,7 +2,68 @@
     "-profile test": {
         "content": [
             {
-                
+                "ABO_CLAIR2HAPLOTYPES": {
+                    "python": "3.13.15",
+                    "pyyaml": "6.0.3"
+                },
+                "ABO_CLAIR2METRICS": {
+                    "python": "3.13.15",
+                    "pyyaml": "6.0.3"
+                },
+                "ABO_EVIDENCE": {
+                    "python": "3.13.15",
+                    "pyyaml": "6.0.3"
+                },
+                "ABO_GETABOSNPS": {
+                    "pandas": "3.0.5",
+                    "python": "3.13.15"
+                },
+                "ABO_PANEL2BED": {
+                    "python": "3.13.15",
+                    "pyyaml": "6.0.3"
+                },
+                "ABO_PILEUP": {
+                    "samtools": 1.25
+                },
+                "ABO_SNPS2PHENO": {
+                    "numpy": "2.5.3",
+                    "pandas": "3.0.5",
+                    "python": "3.13.15",
+                    "xlsxwriter": "3.2.9"
+                },
+                "BCFTOOLS_NORM": {
+                    "bcftools": 1.25
+                },
+                "BCFTOOLS_QUERY": {
+                    "bcftools": 1.25
+                },
+                "BCFTOOLS_VIEW": {
+                    "bcftools": 1.25
+                },
+                "CLAIR3": {
+                    "clair3": "2.0.0"
+                },
+                "CLAIR3_DOWNLOADMODEL": {
+                    "wget": "1.25.0"
+                },
+                "MINIMAP2_ALIGN": {
+                    "minimap2": "2.30-r1287"
+                },
+                "NANOPLOT": {
+                    "NanoPlot": "1.48.0"
+                },
+                "SAMTOOLS_COVERAGE": {
+                    "samtools": 1.25
+                },
+                "SAMTOOLS_FLAGSTAT": {
+                    "samtools": 1.25
+                },
+                "SAMTOOLS_STATS": {
+                    "samtools": 1.25
+                },
+                "Workflow": {
+                    "nf-core/abotyper": "v1.0.0"
+                }
             },
             [
                 "ABO_evidence_summary_mqc.tsv",
@@ -552,7 +613,7 @@
                 "ABO_O2O2_barcode10_NanoStats.txt:md5,14fe2259faf8e54bf459d4bdb82be860"
             ]
         ],
-        "timestamp": "2026-11-07T16:33:04.189186108",
+        "timestamp": "2026-11-07T18:36:34.547782967",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

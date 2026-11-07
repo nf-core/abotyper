@@ -10,6 +10,7 @@
 //   to every sample here and to the sibling VARIANTS_QC subworkflow.
 
 include { CLAIR3                } from '../../../modules/nf-core/clair3/main'
+include { CLAIR3_DOWNLOADMODEL  } from '../../../modules/local/clair3/downloadmodel/main'
 include { ABO_PANEL2BED         } from '../../../modules/local/abo/panel2bed/main'
 include { ABO_CLAIR2METRICS     } from '../../../modules/local/abo/clair2metrics/main'
 include { ABO_CLAIR2HAPLOTYPES  } from '../../../modules/local/abo/clair2haplotypes/main'
@@ -39,10 +40,10 @@ workflow VARIANTS_QUANTIFICATION {
         .first()
 
     //
-    // PROCESS: DOWNLOAD_CLAIR3_MODEL
+    // MODULE: CLAIR3_DOWNLOADMODEL
     //
-    DOWNLOAD_CLAIR3_MODEL(model_url)
-    ch_clair3_model_dir = DOWNLOAD_CLAIR3_MODEL.out.model_dir
+    CLAIR3_DOWNLOADMODEL(model_url)
+    ch_clair3_model_dir = CLAIR3_DOWNLOADMODEL.out.model_dir
 
     //
     // MODULE: CLAIR3
@@ -133,35 +134,4 @@ workflow VARIANTS_QUANTIFICATION {
     clair3_gvcf       = CLAIR3.out.gvcf
     clair3_gtbi       = CLAIR3.out.gtbi
     panel_bed         = ABO_PANEL2BED.out.bed
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PROCESS: DOWNLOAD_CLAIR3_MODEL
-        Downloads Clair3 PyTorch model files (.pt) from specified URL
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-process DOWNLOAD_CLAIR3_MODEL {
-    tag { url.tokenize('/').last() }
-
-    input:
-    val url
-
-    output:
-    path("clair3_model_dir"), emit: model_dir
-
-    script:
-    """
-    mkdir -p clair3_model_dir
-
-    # Download only the two PyTorch model files
-    wget ${url}/pileup.pt -O clair3_model_dir/pileup.pt
-    wget ${url}/full_alignment.pt -O clair3_model_dir/full_alignment.pt
-    """
-
-    stub:
-    """
-    mkdir -p clair3_model_dir
-    touch clair3_model_dir/pileup.pt clair3_model_dir/full_alignment.pt
-    """
 }
