@@ -136,7 +136,7 @@ This set of modules use [SAMtools](http://www.htslib.org/) and its subtools to e
   - `*.merge_output.vcf.gz`: Clair3's PASS-filtered small-variant calls.
   - `*.merge_output.gvcf.gz`: Clair3's gVCF, including non-variant reference blocks.
   - `*.phased_merge_output.vcf.gz`: Clair3's phased small-variant calls (GT + PS tags).
-  - `*.panel.vcf.gz` / `*.panel..tsv`: normalized calls restricted to the ABO panel positions, and a flat TSV of the same, for manual review (`VARIANTS_QC`).
+  - `*.panel.vcf.gz` / `*.panel.tsv`: normalized calls restricted to the ABO panel positions, and a flat TSV of the same, for manual review (`VARIANTS_QC`).
 - `clair2metrics/`
   - `*.AlignmentStatistics.tsv`: Per-position nucleotide frequency and coverage table, converted from Clair3's gVCF.
   - `*.Haplotypes.tsv`: Haplotype table, synthesized from Clair3's phased-VCF phase-set allele depths (not literal per-read observations).
