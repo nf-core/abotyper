@@ -105,6 +105,7 @@ CONTROLPOS_barcode19.fastq
 Sample-45-44874_barcode25.fastq
 Sample1-2024-12345_barcode22.fastq
 ```
+> *.gz files are also accepted. I just modified the schema to allow both compressed and uncompressed files. A feature that is becoming less common in nf-core pipelines but provides more flexibility.
 
 ## Sequencing platform compatibility
 
