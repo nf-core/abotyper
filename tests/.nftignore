@@ -12,4 +12,5 @@ ABO_results.log
 ABO_result.xlsx
 per_sample_processing/*/alignment/*.{bam,bam.bai}
 per_sample_processing/*/clair3/*.{gz,tbi}
+per_sample_processing/*/*.log.txt
 pipeline_info/*.{html,json,txt,yml,bed}
