@@ -53,7 +53,20 @@ from typing import Dict, List, Optional, Tuple
 
 from abo_panel import load_panel, Panel, VariantMarker
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
+__author__ = "Fredrick Mobegi"
+__copyright__ = "Copyright 2026, ABO blood group typing using third-generation sequencing (TGS) technology"
+__credits__ = [
+    "Fredrick Mobegi",
+    "Benedict Matern",
+    "Mathijs Groeneweg",
+    "Claude Sonnet 5",
+]
+__license__ = "GPL"
 __version__ = "1.1.0"
+__maintainer__ = "Fredrick Mobegi"
+__email__ = "fredrick.mobegi@health.wa.gov.au"
+__status__ = "Production"
 
 TSV_HEADER = "\t".join([
     "Ref_Position_1based", "Ref_Base", "Match_Percent", "Mismatch_Percent",

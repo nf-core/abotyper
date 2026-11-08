@@ -22,7 +22,7 @@ process ABO_EVIDENCE {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
         ? 'oras://community.wave.seqera.io/library/python_pyyaml:10a1a757f29eaf02'
         : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
 

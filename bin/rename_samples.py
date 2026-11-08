@@ -33,6 +33,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
 __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg"]

@@ -16,6 +16,7 @@ from xlsxwriter.utility import xl_col_to_name
 
 from abo_panel import load_panel, Panel, VariantMarker, call_named_marker
 
+# Authorship and licence: provided as part of the nf-core/abotyper pipeline.
 __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2026, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = [
@@ -169,6 +170,18 @@ def _unpack_fired(mk):
 
 # What the primary A markers say about the A allele itself: (c.467C>T, c.1061delC) carried or not. A candidate allele
 # whose ISBT definition disagrees (A2.20 is c.829G>A alone, so it cannot sit on an A2.01 background) is dropped.
+_SAME_FAMILY_SPLIT = ("O1", "O2")
+
+
+def _cdna_tokens(cdna: str):
+    """The c. changes of a panel row ('c.539G>C / c.539G>A' -> two tokens); a descriptive row such as
+    'c.804 region (homopolymer, legacy O3/O4 marker)' gives its leading 'c.804'."""
+    out = []
+    for tk in re.split(r"\s*/\s*|,\s*(?=c\.)", cdna or ""):
+        m = re.match(r"c\.[^\s,]+", tk.strip())
+        if m:
+            out.append(m.group(0))
+    return out
 _A_PRIMARY_CONTEXT = {"A2.01": (True, True), "A2.06": (False, True), "A1.02": (True, False), "A1": (False, False)}
 
 
@@ -234,7 +247,7 @@ def encode_allele(token: str, fired_markers=(), absent_markers=(), carriers=None
     return fam.rstrip(".")   # ambiguous: family only, e.g. ABO*O.01
 
 
-def encode_extended_genotype(ext: str, fired_markers=(), absent_markers=(), carriers=None) -> str:
+def encode_extended_genotype(ext: str, fired_markers=(), absent_markers=(), carriers=None, fired_pct=None) -> str:
     """'A2.01/O1' -> 'ABO*A2.01/ABO*O.01.01'. 'Unknown', 'Error' and empty values are left untouched."""
     if not isinstance(ext, str) or ext in ("", "Unknown", "Error"):
         return ext
@@ -242,6 +255,17 @@ def encode_extended_genotype(ext: str, fired_markers=(), absent_markers=(), carr
     markers = list(fired_markers)
     fired_ids = {getattr(_unpack_fired(m)[0], "id", None) for m in markers}
     absent = [m for m in absent_markers if getattr(m, "id", None) not in fired_ids]
+    if len(tokens) == 2 and tokens[0] == tokens[1] and tokens[0] in _SAME_FAMILY_SPLIT and fired_pct is not None:
+        # Two alleles of the same family (O1/O1) and no phasing. A marker at a heterozygous fraction sits on one of
+        # the two alleles, so it must not rename both; a homozygous marker is on both. The heterozygous markers are
+        # given to one allele (assumed in cis) and the other allele is named from the homozygous markers alone.
+        hom = [m for m in markers if (fired_pct.get(getattr(_unpack_fired(m)[0], "id", None)) or 0) >= 80]
+        het = [m for m in markers if m not in hom]
+        if het:
+            tok = tokens[0]
+            with_het = encode_allele(tok, hom + het, absent, carriers, pooled=False)
+            without = encode_allele(tok, hom, absent + [_unpack_fired(m)[0] for m in het], carriers, pooled=False)
+            return "/".join(sorted([with_het, without]))
     if "B" in tokens:
         # B-lineage backbone SNPs (associated alleles include ABO*B.*) come from the B
         # allele of an AB/BO sample; they must not rename the non-B allele (e.g. to A2.04)
@@ -1266,8 +1290,27 @@ class ABOReportParser:
                             markers.append(label)
                             self._fired_markers.append((m_, r.get("alt")))
                             self._fired_pct[m_.id] = r.get("pct")
+                else:
+                    # the A2 logic does not use these positions here (an O1v-type sample, or too few reads), but a
+                    # marker that is clearly carried still decides the allele name, e.g. the c.771/c.829 cassette
+                    for m_ in self.panel.by_category("a2_panel"):
+                        if m_.id in ("a2p_907_a206", "a2p_1032_a201", "a2_marker_297_a201"):
+                            continue
+                        pos = m_.resolved_position()
+                        if pos is None or pos not in row_lookup:
+                            continue
+                        row = row_lookup[pos]
+                        if not row.get("#Reads", 0) or row.get("#Reads", 0) < max(30, m_.min_reads or 0):
+                            continue
+                        r = call_named_marker(m_, {"A": row.get("A", 0), "G": row.get("G", 0),
+                                                   "C": row.get("C", 0), "T": row.get("T", 0)}, nreads=row.get("#Reads", 0))
+                        if r and r.get("fired") and all(mk.id != m_.id for mk, _ in (_unpack_fired(x) for x in self._fired_markers)):
+                            self._fired_markers.append((m_, r.get("alt")))
+                            self._fired_pct[m_.id] = r.get("pct")
 
                 return markers, warns
+
+            a2_scanned = [False]
 
             def determine_a_subtype():
                 """Returns (subtype_label, warning_text, zygosity).
@@ -1282,6 +1325,7 @@ class ABOReportParser:
                 returned *whether* a subtype marker fired, never whether it
                 fired at ~50% (het) or ~90%+ (hom) allele fraction.
                 """
+                a2_scanned[0] = True
                 markers, warns = scan_a2_markers()
                 if markers:
                     clean_subtype, nt_notation = determine_a2_subtype(markers)
@@ -1421,6 +1465,28 @@ class ABOReportParser:
 
             else:
                 Phenotype, Genotype, ExtendedGenotype = "Unknown", "Unknown", "Unknown"
+
+            # ----- PART 1b: A2-panel markers for genotypes without an A allele (O and B samples) -----
+            # They do not change the call, but a marker carried on the O or B allele (c.297, the c.646/681/771/829
+            # cassette) decides which ISBT allele that allele is named.
+            if not a2_scanned[0]:
+                for m_ in list(self.panel.by_category("a2_panel")):
+                    if m_.id in ("a2p_907_a206", "a2p_1032_a201"):
+                        continue
+                    pos = m_.resolved_position()
+                    if pos is None or pos not in row_lookup:
+                        continue
+                    row = row_lookup[pos]
+                    reads_here = row.get("#Reads", 0) or 0
+                    if reads_here < max(30, m_.min_reads or 0):
+                        continue
+                    r = call_named_marker(m_, {"A": row.get("A", 0), "G": row.get("G", 0),
+                                               "C": row.get("C", 0), "T": row.get("T", 0)}, nreads=reads_here)
+                    if r and r.get("fired"):
+                        self._fired_markers.append((m_, r.get("alt")))
+                        self._fired_pct[m_.id] = r.get("pct")
+                    elif r and not r.get("reason"):
+                        self._absent_markers.append(m_)
 
             # ----- PART 2: subtype-marker scan across ALL panel categories -----
             bw_markers, bw_warnings = self.scan_category_markers(
@@ -1944,7 +2010,7 @@ class ABOReportParser:
     @staticmethod
     def _change_token(marker, alt: str) -> str:
         """The cDNA change of a marker that belongs to the alt that was seen (c.539G>C / c.539G>A -> c.539G>A)."""
-        tokens = [tk.strip() for tk in re.split(r"\s*/\s*|,\s*(?=c\.)", marker.cdna_change or "") if tk.strip()]
+        tokens = _cdna_tokens(marker.cdna_change)
         if not tokens:
             return f"c.{marker.cdna_pos}"
         for tk in tokens:
@@ -2040,7 +2106,7 @@ class ABOReportParser:
             if lab in hidden:
                 continue
             mk = self._marker_for_column(lab)
-            first = (re.split(r"\s*/\s*|,\s*(?=c\.)", mk.cdna_change)[0].strip() if mk and mk.cdna_change else lab)
+            first = (_cdna_tokens(mk.cdna_change) or [lab])[0] if mk and mk.cdna_change else lab
             pos = mk.resolved_position() if mk else ""
             name = f"{first} ({pos})"
             while name in data:
@@ -2147,7 +2213,8 @@ class ABOReportParser:
             named = None
         if named:
             return named, True
-        return encode_extended_genotype(ext, self._fired_markers, self._absent_markers, primary_carriers(self.panel)), False
+        return encode_extended_genotype(ext, self._fired_markers, self._absent_markers, primary_carriers(self.panel),
+                                        fired_pct=self._fired_pct), False
 
     def _build_typing_df(self, final_df) -> pd.DataFrame:
         """One NGSengine-style row per sample, same order as final_df (single-level columns)."""

@@ -5,7 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > Versions below `v1.0.0` are retrospective labels for unreleased development milestones. They group the work of the merged pull requests in the git history (December 2024 – October 2026) and were never released; `v1.0.0` is the first release.
 
-## v1.0.0 - [2026-10-16]
+## v1.0.0 - [2026-11-07]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.
 
@@ -38,6 +38,16 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 - Depth check for every sample (`Depth check` column in the `Typing` sheet, coloured red for very low or no data, orange for low): fewer than `--min-depth` reads at a primary position sends the sample to review. Sample names containing `NEG` (`--negative-control-pattern`) are negative controls, where few reads is the expected result (green) and reads above `--min-depth` are flagged as possible contamination; names containing `POS` (`--positive-control-pattern`) are positive controls, which need normal depth and fail with too few reads. Calls are never changed by the check.
 - Panel `associated_alleles` completed from ISBT v9 for every non-primary marker and six unsupported claims removed (c.297, c.722, c.742, c.907, c.1032, c.1054). Allele naming now also rules out any allele that is defined by a marker that was covered but did not fire, so a sample with the c.542G>A + c.646/681/771/829 cassette pattern is named ABO*O.01.11 and with c.106/188/189/220 added ABO*O.01.75, not the family name ABO*O.01.
 - Path parameters shipped in `assets/` no longer carry a hardcoded `default` in `nextflow_schema.json`; their defaults are set in `nextflow.config` from `${projectDir}`.
+- Panel-filtered calls were published with a doubled dot (`<sample>.panel..vcf.gz`, `<sample>.panel..tsv`); they are now `<sample>.panel.vcf.gz` and `<sample>.panel.tsv`.
+- The Clair3 region BED (`--abo_clair3_region_bed`) is staged into the task as a file instead of being passed as a path in `ext.args`. On executors that do not share the launch directory (AWS Batch, other cloud and many HPC set-ups) Clair3 could not read it and, with `errorStrategy ignore`, every sample silently fell back to the BAM pileup. The nf-core `clair3` module is patched with an optional `bed` input for this.
+
+### `Changed`
+
+- nf-core template updated to tools 4.2.1 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
+- nf-core modules updated to the latest versions (bcftools 1.25, samtools/htslib 1.25, MultiQC 1.35, NanoPlot 1.48.0). The NanoPlot patch now only adds plain `.fastq`/`.fq` input; bcftools/query is patched to keep `ext.suffix`, so the panel table stays `.tsv`.
+- The pipeline-specific nf-core/configs include (`pipeline/abotyper.config`) is enabled.
+- The Clair3 model download is a local module (`modules/local/clair3/downloadmodel`, `CLAIR3_DOWNLOADMODEL`) with its own wget 1.25.0 conda environment and Docker/Singularity containers, and reports its wget version. It ran without a container before, so it needed wget on the host.
+- The `abo/*` local modules pick their Singularity image under Apptainer too (they checked for `singularity` only, so Apptainer pulled the Docker image).
 
 ### `Dependencies`
 
@@ -45,7 +55,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 | ------------------------- | ------------------------------------------------------------------------ |
 | Nextflow                  | `>=25.10.4`                                                              |
 | Clair3                    | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
-| samtools / htslib         | 1.24 (alignment statistics, coverage and `ABO_PILEUP`)                   |
+| samtools / htslib         | 1.25 (alignment statistics, coverage and `ABO_PILEUP`)                   |
 | minimap2                  | via the nf-core `minimap2/align` module                                  |
 | pyyaml                    | required by `bin/abo_panel.py` and all panel-driven scripts              |
 | pandas, numpy, xlsxwriter | `ABO_SNPS2PHENO` and `ABO_GETABOSNPS`                                    |

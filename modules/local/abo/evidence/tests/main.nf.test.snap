@@ -109,7 +109,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,5fa3099a846d12c77550ce05c55e1409"
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,19f1f05163cd13c570e3e708c5e89769"
                 ]
             ],
             [
@@ -121,7 +121,7 @@
                 ]
             ]
         ],
-        "timestamp": "2026-10-16T20:01:32.762090063",
+        "timestamp": "2026-11-07T15:30:26.537118045",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -134,7 +134,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,ebe1a4aa1b528c1f18f5524a77016168"
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,bf908491e351e56ccd5060d20d29f8b5"
                 ]
             ],
             [
@@ -150,7 +150,7 @@
                     {
                         "id": "ABO_AA_barcode01"
                     },
-                    "ABO_AA_barcode01.concordance.tsv:md5,892b7ac76ac424aba87a71320e8126ab"
+                    "ABO_AA_barcode01.concordance.tsv:md5,2af641326c4db8882be518d6b7cf3e86"
                 ]
             ],
             {
@@ -170,7 +170,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-10-16T20:01:02.682282674",
+        "timestamp": "2026-11-07T15:29:57.484036763",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

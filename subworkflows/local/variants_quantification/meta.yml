@@ -19,6 +19,7 @@ keywords:
   - allele frequency
 components:
   - clair3
+  - clair3/downloadmodel
   - abo/panel2bed
   - abo/clair2metrics
   - abo/clair2haplotypes
@@ -59,6 +60,12 @@ input:
         truth for diagnostic positions -- broadcast to ABO_PANEL2BED,
         ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES and ABO_EVIDENCE.
       pattern: "*.{yaml,yml,json,csv,tsv}"
+  - region_bed:
+      type: file
+      description: |
+        BED of the region Clair3 calls in (params.abo_clair3_region_bed), staged
+        into the CLAIR3 task; [] calls the whole reference.
+      pattern: "*.bed"
 output:
   - metrics:
       type: file
