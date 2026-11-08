@@ -104,6 +104,11 @@ workflow PIPELINE_INITIALISATION {
     validateInputParameters()
 
     //
+    // Point conda users at the pinned environments
+    //
+    condaLockNote()
+
+    //
     // Create channel from input file provided through params.input
     //
 
@@ -185,6 +190,14 @@ workflow PIPELINE_COMPLETION {
 //
 // Check and validate pipeline parameters
 //
+def condaLockNote() {
+    def profiles = workflow.profile.tokenize(',')
+    if (profiles.intersect(['conda', 'mamba']).size() > 0 && !profiles.contains('conda_lock')) {
+        log.info("Conda environments are built from each module's environment.yml. For the exact tested " +
+            "package builds, add conda_lock: -profile conda,conda_lock (https://nf-co.re/abotyper/usage#conda)")
+    }
+}
+
 def validateInputParameters() {
     genomeExistsError()
 }

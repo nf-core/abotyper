@@ -156,6 +156,21 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
   - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow `24.03.0-edge` or later).
 - `conda`
   - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
+- `conda_lock`
+  - Use with `conda` or `mamba` to install the exact package builds the nf-core modules were tested with. See [Conda](#conda).
+
+### Conda
+
+With `-profile conda` (or `mamba`), each tool's environment is built from its module's `environment.yml` when the pipeline runs. That fixes the tool version, but its dependencies can change as new builds are published to conda-forge and bioconda. To install the exact builds the modules were tested with, add `conda_lock`:
+
+```bash
+nextflow run nf-core/abotyper -profile conda,conda_lock --input samplesheet.csv --outdir <OUTDIR>
+```
+
+`conda_lock` covers the nf-core modules that ship lock files (bcftools, samtools and MultiQC) on linux-64 and linux-aarch64, chosen from the machine Nextflow runs on. The other tools still come from their `environment.yml`.
+
+> [!WARNING]
+> Do not use `conf/containers_conda_lock_files_amd64.config` or `conf/containers_conda_lock_files_arm64.config`. nf-core tools generates them, but they point at lock files that conda cannot read, so environment creation fails. `conda_lock` uses converted copies of the same lock files.
 
 ### `-resume`
 
