@@ -7,10 +7,11 @@
   patient management, or transfusion or transplantation decisions.
 - Any result used clinically must be confirmed by an accredited method (for example
   serology or an accredited genotyping assay) under the laboratory's own quality system.
-- Reports that rest on a single line of evidence (Clair3 only, BAM pileup only) or on
-  disagreeing lines are marked `REVIEW`, and samples with no reads over the ABO region
-  (likely amplicon dropout) are reported as `Unknown`. These flags support, and do not
-  replace, expert review.
+- BAM-pileup-only reports, primary positions filled from BAM, and disagreements at
+  primary typing markers are marked `REVIEW`. Clair3-only evidence and disagreements
+  confined to non-primary markers do not automatically trigger this flag. Samples with
+  no reads over the ABO region (likely amplicon dropout) are reported as `Unknown`.
+  These flags support, and do not replace, expert review.
 
 ## What an IVD pathway would need
 
