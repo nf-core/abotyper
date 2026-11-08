@@ -9,7 +9,7 @@
                     [
                         "ABO_SNPS2PHENO",
                         "numpy",
-                        "2.5.4"
+                        "2.5.3"
                     ]
                 ],
                 "versions_pandas": [
@@ -80,7 +80,7 @@
                     [
                         "ABO_SNPS2PHENO",
                         "numpy",
-                        "2.5.4"
+                        "2.5.3"
                     ]
                 ],
                 "9": [
@@ -109,7 +109,7 @@
                     [
                         "ABO_SNPS2PHENO",
                         "numpy",
-                        "2.5.4"
+                        "2.5.3"
                     ]
                 ],
                 "versions_pandas": [
