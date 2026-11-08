@@ -26,7 +26,7 @@
                     "samtools": 1.25
                 },
                 "ABO_SNPS2PHENO": {
-                    "numpy": "2.5.3",
+                    "numpy": "2.5.4",
                     "pandas": "3.0.5",
                     "python": "3.13.15",
                     "xlsxwriter": "3.2.9"
