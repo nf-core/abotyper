@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "MINIMAP2_ALIGN_READS"
-description: Aligns each sample to two exon references using Minimap2, then runs Samtools coverage, flagstat, and stats. Uses a pure metadata-driven approach with no aliasing or premature splitting.
+description: Aligns each sample once against a single combined ABO reference using Minimap2, then runs Samtools coverage, flagstat, and stats.
 keywords:
   - alignment
   - minimap2
