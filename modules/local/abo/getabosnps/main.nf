@@ -14,7 +14,7 @@ process ABO_GETABOSNPS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
         ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml:a1b47a7a3bb7f9c7'
         : 'community.wave.seqera.io/library/pandas_python_pyyaml:e40312b9d861eff3'}"
 

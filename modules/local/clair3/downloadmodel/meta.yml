@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: CLAIR3_DOWNLOADMODEL
+description: Download the Clair3 PyTorch model files (pileup.pt, full_alignment.pt) from a model URL into one directory for CLAIR3
+keywords:
+  - clair3
+  - model
+  - download
+  - variant calling
+tools:
+  - wget:
+      description: GNU Wget, a non-interactive network downloader
+      homepage: https://www.gnu.org/software/wget/
+      documentation: https://www.gnu.org/software/wget/manual/
+      tool_dev_url: https://git.savannah.gnu.org/cgit/wget.git
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - url:
+      type: string
+      description: Base URL of a Clair3 PyTorch model folder holding pileup.pt and full_alignment.pt
+
+output:
+  model_dir:
+    - clair3_model_dir:
+        type: directory
+        description: Directory with pileup.pt and full_alignment.pt, passed to CLAIR3 as user_model
+        pattern: "clair3_model_dir"
+  versions_wget:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - wget:
+          type: string
+          description: Name of the tool
+      - wget --version | sed '1!d; s/^GNU Wget //; s/ .*//':
+          type: eval
+          description: The expression to obtain the version of wget
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - wget:
+          type: string
+          description: Name of the tool
+      - wget --version | sed '1!d; s/^GNU Wget //; s/ .*//':
+          type: eval
+          description: The expression to obtain the version of wget
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

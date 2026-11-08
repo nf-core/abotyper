@@ -1,30 +1,8 @@
 Changes in component 'nf-core/nanoplot'
-Changes in 'nanoplot/environment.yml':
---- modules/nf-core/nanoplot/environment.yml
-+++ modules/nf-core/nanoplot/environment.yml
-@@ -4,4 +4,4 @@
-   - conda-forge
-   - bioconda
- dependencies:
--  - bioconda::nanoplot=1.47.0
-+  - bioconda::nanoplot=1.48.0
-
-'modules/nf-core/nanoplot/meta.yml' is unchanged
 Changes in 'nanoplot/main.nf':
 --- modules/nf-core/nanoplot/main.nf
 +++ modules/nf-core/nanoplot/main.nf
-@@ -4,8 +4,8 @@
- 
-     conda "${moduleDir}/environment.yml"
-     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
--        'https://depot.galaxyproject.org/singularity/nanoplot:1.47.0--pyhdfd78af_0' :
--        'quay.io/biocontainers/nanoplot:1.47.0--pyhdfd78af_0' }"
-+        'https://depot.galaxyproject.org/singularity/nanoplot:1.48.0--pyhdfd78af_1' :
-+        'quay.io/biocontainers/nanoplot:1.48.0--pyhdfd78af_1' }"
- 
-     input:
-     tuple val(meta), path(ontfile)
-@@ -21,7 +21,8 @@
+@@ -24,7 +24,8 @@
  
      script:
      def args = task.ext.args ?: ''
@@ -35,7 +13,9 @@ Changes in 'nanoplot/main.nf':
      """
      NanoPlot \\
 
-'modules/nf-core/nanoplot/tests/tags.yaml' is unchanged
+'modules/nf-core/nanoplot/environment.yml' is unchanged
+'modules/nf-core/nanoplot/meta.yml' is unchanged
 'modules/nf-core/nanoplot/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/nanoplot/tests/tags.yaml' is unchanged
 'modules/nf-core/nanoplot/tests/main.nf.test' is unchanged
 ************************************************************
