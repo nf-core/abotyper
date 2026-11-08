@@ -16,6 +16,7 @@ workflow PREDICTABOPHENOTYPE {
     ch_haplotypes    // channel: [ val(meta), path(*.Haplotypes.tsv) ] - from ABO_CLAIR2HAPLOTYPES
     ch_evidence_status // channel: [ val(meta), path(*.evidence_status.tsv) ] - from ABO_EVIDENCE
     ch_concordance     // channel: [ val(meta), path(*.concordance.tsv) ]     - from ABO_EVIDENCE
+    ch_panel           // channel: path(variant panel) - params.abo_panel, staged into each task
 
     main:
 
@@ -27,7 +28,8 @@ workflow PREDICTABOPHENOTYPE {
     MODULE: ABO_GETABOSNPS
     */
     ABO_GETABOSNPS(
-        ch_combined_input
+        ch_combined_input,
+        ch_panel
     )
 
     // PREP: Organize SNP reports AND Haplotypes.tsv by sample, single
@@ -74,6 +76,7 @@ workflow PREDICTABOPHENOTYPE {
     ABO_SNPS2PHENO(
         ch_snp_reports,
         ch_per_sample_processing,
+        ch_panel
     )
 
     emit:

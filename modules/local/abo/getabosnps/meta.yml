@@ -42,6 +42,11 @@ input:
         description: Coverage file containing depth information for genomic positions
         pattern: "*.{cov,coverage,txt}"
         required: true
+  - - panel_file:
+        type: file
+        description: ABO variant panel file (abo_variant_panel.yaml / .json / .csv / .tsv)
+        pattern: "*.{yaml,yml,json,csv,tsv}"
+        required: true
 
 output:
   phenotype:

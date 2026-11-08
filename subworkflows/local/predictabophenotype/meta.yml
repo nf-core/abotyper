@@ -41,6 +41,12 @@ input:
         subdirectory so that aggregate_abo_reports.py can compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"
+  - ch_panel:
+      type: file
+      description: |
+        ABO variant panel file (params.abo_panel), staged into ABO_GETABOSNPS and
+        ABO_SNPS2PHENO so they can read it on any executor.
+      pattern: "*.{yaml,yml,json,csv,tsv}"
 output:
   - abo_results:
       type: file

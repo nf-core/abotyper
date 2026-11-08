@@ -22,6 +22,7 @@ process ABO_SNPS2PHENO {
     input:
     path samples_dir
     path per_sample_processing
+    path panel_file
 
     output:
     path "ABO_result.txt", emit: txt
@@ -40,6 +41,7 @@ process ABO_SNPS2PHENO {
     """
     aggregate_abo_reports.py \\
         ${per_sample_processing} \\
+        --panel ${panel_file} \\
         --threads ${task.cpus} \\
         ${args} 2>&1 | tee ABO_results.log
     """

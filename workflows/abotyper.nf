@@ -99,6 +99,7 @@ workflow ABOTYPER {
         VARIANTS_QUANTIFICATION.out.haplotypes,
         VARIANTS_QUANTIFICATION.out.evidence_status,
         VARIANTS_QUANTIFICATION.out.concordance,
+        abo_panel,
     )
 
     // Per-sample evidence summary (Clair3 + BAM pileup) as a MultiQC table
