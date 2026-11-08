@@ -33,6 +33,7 @@ nextflow_workflow {
                 input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
                 input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
                 input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
+                input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }
@@ -67,6 +68,7 @@ nextflow_workflow {
                 input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
                 input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
                 input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
+                input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }

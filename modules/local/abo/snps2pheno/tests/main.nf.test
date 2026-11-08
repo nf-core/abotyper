@@ -24,6 +24,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/per_sample_processing/ABO_BO1_barcode06", checkIfExists: true)
                 ]
                 input[1] = file("$projectDir/tests/fixtures/per_sample_processing", checkIfExists: true)
+                input[2] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }
@@ -64,6 +65,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/per_sample_processing/ABO_BO1_barcode06", checkIfExists: true)
                 ]
                 input[1] = file("$projectDir/tests/fixtures/per_sample_processing", checkIfExists: true)
+                input[2] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }

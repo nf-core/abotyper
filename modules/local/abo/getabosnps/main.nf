@@ -20,6 +20,7 @@ process ABO_GETABOSNPS {
 
     input:
     tuple val(meta), path(variants_freq), path(coverage)
+    path panel_file
 
     output:
     tuple val(meta), path("*.ABOPhenotype.txt"), emit: phenotype
@@ -36,6 +37,7 @@ process ABO_GETABOSNPS {
         -i ${variants_freq} \\
         -o ${prefix}.ABOPhenotype.txt \\
         -c ${coverage} \\
+        --panel ${panel_file} \\
         ${args} \\
         2>&1 | tee ${prefix}.log.txt
     """

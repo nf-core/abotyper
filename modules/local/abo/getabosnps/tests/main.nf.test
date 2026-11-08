@@ -22,6 +22,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
                 ]
+                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }
@@ -57,6 +58,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
                 ]
+                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }
