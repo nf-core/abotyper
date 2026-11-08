@@ -17,6 +17,14 @@ nextflow_pipeline {
             def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
             // stable_content: All files in ${params.outdir}/ with stable content
             def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            // typing_calls: every column of final_export.csv except #Reads (mean read depth), which differs by a
+            // read or two between the conda and container builds of Clair3 (see tests/.nftignore)
+            def export_rows = path("$outputDir/final_export.csv").text.readLines().collect { line ->
+                line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/, -1) as List
+            }
+            def keep_cols = (0..<export_rows[0].size()).findAll { i -> export_rows[0][i] != '#Reads' }
+            // One joined line per row: nf-test reads a bare empty string as a path and would md5 the working directory
+            def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
             assert workflow.success
             assertAll(
                 { assert snapshot(
@@ -25,7 +33,9 @@ nextflow_pipeline {
                     // All stable path name, with a relative path
                     stable_path,
                     // All files with stable contents
-                    stable_content
+                    stable_content,
+                    // Genotype, phenotype and QC calls for every sample
+                    typing_calls
                 ).match() }
             )
         }
