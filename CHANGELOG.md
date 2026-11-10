@@ -51,6 +51,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 - The pipeline-specific nf-core/configs include (`pipeline/abotyper.config`) is enabled.
 - The Clair3 model download is a local module (`modules/local/clair3/downloadmodel`, `CLAIR3_DOWNLOADMODEL`) with its own wget 1.25.0 conda environment and Docker/Singularity containers, and reports its wget version. It ran without a container before, so it needed wget on the host.
 - The `abo/*` local modules pick their Singularity image under Apptainer too (they checked for `singularity` only, so Apptainer pulled the Docker image).
+- Metro map (`docs/images/nf-core-abotyperv2-metro-map.*`): the pileup line is labelled SAMtools pileup, minimap2 is written in lower case and the amplicon is labelled ~7 kb. The README image is a 2,400-pixel-wide JPEG so it loads quickly; the PNG and SVG keep the full resolution.
 
 ### `Dependencies`
 
