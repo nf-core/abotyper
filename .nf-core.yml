@@ -19,7 +19,7 @@ lint:
         - params.abo_reference_fasta
         - params.abo_reference_fai
   nf_test_content: false
-nf_core_version: 4.2.1
+nf_core_version: 4.2.2
 repository_type: pipeline
 template:
   author: "@fmobegi"
