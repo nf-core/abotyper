@@ -50,7 +50,9 @@ workflow VARIANTS_QUANTIFICATION {
     //
     ch_clair3_input = ch_bam_bai
         .combine(ch_clair3_model_dir)
-        .map { meta, bam, bai, model_dir -> [meta, bam, bai, "", "${model_dir}/", "ont"] }
+        // Keep model_dir as a Path: turning it into a string drops the s3:// / gs:// / az:// scheme,
+        // so the model cannot be staged when the work directory is in cloud storage.
+        .map { meta, bam, bai, model_dir -> [meta, bam, bai, "", model_dir, "ont"] }
 
     CLAIR3(
         ch_clair3_input,

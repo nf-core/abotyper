@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > Versions below `v1.0.0` are retrospective labels for unreleased development milestones. They group the work of the merged pull requests in the git history (December 2024 – October 2026) and were never released; `v1.0.0` is the first release.
 
+## v1.0.1dev - [unreleased]
+
+### `Fixed`
+
+- Clair3 failed with "Can't stage file … clair3_model_dir -- file does not exist" when the work directory was in cloud storage (for example AWS Batch with an `s3://` work directory), and every sample fell back to the BAM pileup alone, flagged REVIEW. The downloaded model directory was passed to `CLAIR3` as a string, which dropped the `s3://` scheme; it is now passed as a path.
+
 ## v1.0.0 - [2026-11-07]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.
