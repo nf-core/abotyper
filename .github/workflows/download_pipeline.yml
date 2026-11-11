@@ -36,6 +36,8 @@ jobs:
 
   download:
     runs-on: ubuntu-24.04 # Apptainer 1.3.4 requires libfuse3-3.
+    permissions:
+      contents: read
     needs: configure
     steps:
       - name: Check out pipeline code
