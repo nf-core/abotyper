@@ -122,7 +122,7 @@ The pipeline will attempt to extract the sample name and barcode from the filena
 
 ## Running `nf-core/abotyper`
 
-This pipeline has been extensively tested using conda, docker, and singularity profiles. Other containerisation methods are being improved,tested and documented. It is adisable to run a minimal test run to check your environment before submitting big jobs.
+This pipeline has been extensively tested using conda, docker, and singularity profiles. Other containerisation methods are being improved, tested and documented. It is advised to run a minimal test run to check your environment before submitting big jobs.
 
 To run this pipeline, use:
 
