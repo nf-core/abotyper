@@ -60,17 +60,17 @@ The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO ref
 
 The pipeline makes use of the following core dependencies:
 
-| Dependency             | Minimum version | Used for                          |
-| ---------------------- | --------------- | --------------------------------- |
-| **Core Tools**         |                 |                                   |
-| nanoplot               | 1.48.0          | long-read quality control         |
-| minimap2               | 2.30            | long-read alignment               |
-| samtools               | 1.23            | BAM sort, index, alignment QC     |
-| clair3                 | 2.0.0           | variant calling, phasing          |
-| bcftools               | 1.23.1          | VCF normalize, filter (QC export) |
-| multiqc                | 1.35            | aggregate QC report               |
-| **Typing**             |                 |                                   |
-| abotyper-core          | 0.1.0           | panel, evidence and ABO typing    |
+| Dependency     | Minimum version | Used for                          |
+| -------------- | --------------- | --------------------------------- |
+| **Core Tools** |                 |                                   |
+| nanoplot       | 1.48.0          | long-read quality control         |
+| minimap2       | 2.30            | long-read alignment               |
+| samtools       | 1.23            | BAM sort, index, alignment QC     |
+| clair3         | 2.0.0           | variant calling, phasing          |
+| bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
+| multiqc        | 1.35            | aggregate QC report               |
+| **Typing**     |                 |                                   |
+| abotyper-core  | 0.1.0           | panel, evidence and ABO typing    |
 
 The typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) Python package (`pip install abotyper-core` or Bioconda), which has its own tests and command-line tools. It also provides `abotyper-rename-samples`, a standalone lab-export utility that is not part of the pipeline, and `abotyper-calibrate-panel`.
 

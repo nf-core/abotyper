@@ -69,13 +69,13 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Dependencies`
 
-| Tool                      | Version / source                                                         |
-| ------------------------- | ------------------------------------------------------------------------ |
-| Nextflow                  | `>=25.10.4`                                                              |
-| Clair3                    | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
-| samtools / htslib         | 1.25 (alignment statistics, coverage and `ABO_PILEUP`)                   |
-| minimap2                  | via the nf-core `minimap2/align` module                                  |
-| abotyper-core             | 0.1.0 (Bioconda / BioContainers); the `abo/*` typing modules             |
+| Tool              | Version / source                                                         |
+| ----------------- | ------------------------------------------------------------------------ |
+| Nextflow          | `>=25.10.4`                                                              |
+| Clair3            | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
+| samtools / htslib | 1.25 (alignment statistics, coverage and `ABO_PILEUP`)                   |
+| minimap2          | via the nf-core `minimap2/align` module                                  |
+| abotyper-core     | 0.1.0 (Bioconda / BioContainers); the `abo/*` typing modules             |
 
 ### `Known gaps / not yet done`
 
