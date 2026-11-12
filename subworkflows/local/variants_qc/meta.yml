@@ -63,9 +63,10 @@ output:
       type: file
       description: |
         Flat per-position TSV (CHROM/POS/REF/ALT/GT/AD/DP) from bcftools query
-        on panel_vcf, for manual spot-checking.
-        Structure: [ val(meta), path(*.tsv) ]
-      pattern: "*.tsv"
+        on panel_vcf, for manual spot-checking. The module names it *.txt; it is
+        published as *.panel.tsv.
+        Structure: [ val(meta), path(*.txt) ]
+      pattern: "*.txt"
 authors:
   - "@fmobegi"
 maintainers:
