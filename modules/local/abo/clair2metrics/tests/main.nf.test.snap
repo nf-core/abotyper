@@ -23,13 +23,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "clair2metrics.py",
+                        "1.1.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T20:00:11.919699901",
+        "timestamp": "2026-11-12T11:36:22.979752005",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     },
     "abotyper - ABO_AA_barcode01 - stub": {
@@ -51,6 +58,13 @@
                     ]
                 ],
                 "2": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "clair2metrics.py",
+                        "1.1.0"
+                    ]
+                ],
+                "3": [
                     [
                         "ABO_CLAIR2METRICS",
                         "pyyaml",
@@ -78,13 +92,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "clair2metrics.py",
+                        "1.1.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:29:19.662737404",
+        "timestamp": "2026-11-12T11:36:35.636805682",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     }
 }

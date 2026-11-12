@@ -12,6 +12,13 @@
                         "3.0.5"
                     ]
                 ],
+                "versions_panel": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "abo_variant_panel",
+                        "2.3.0"
+                    ]
+                ],
                 "versions_python": [
                     [
                         "ABO_SNPS2PHENO",
@@ -26,6 +33,13 @@
                         "6.0.3"
                     ]
                 ],
+                "versions_script": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "aggregate_abo_reports.py",
+                        "2.5.0"
+                    ]
+                ],
                 "versions_xlsxwriter": [
                     [
                         "ABO_SNPS2PHENO",
@@ -35,7 +49,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:34:26.390373343",
+        "timestamp": "2026-11-12T11:38:42.797376528",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"
@@ -49,6 +63,20 @@
                 ],
                 "1": [
                     "ABO_result.xlsx:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "10": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "pyyaml",
+                        "6.0.3"
+                    ]
+                ],
+                "11": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "xlsxwriter",
+                        "3.2.9"
+                    ]
                 ],
                 "2": [
                     "ABO_results.log:md5,d41d8cd98f00b204e9800998ecf8427e"
@@ -72,22 +100,22 @@
                 "7": [
                     [
                         "ABO_SNPS2PHENO",
-                        "pandas",
-                        "3.0.5"
+                        "aggregate_abo_reports.py",
+                        "2.5.0"
                     ]
                 ],
                 "8": [
                     [
                         "ABO_SNPS2PHENO",
-                        "pyyaml",
-                        "6.0.3"
+                        "abo_variant_panel",
+                        "2.3.0"
                     ]
                 ],
                 "9": [
                     [
                         "ABO_SNPS2PHENO",
-                        "xlsxwriter",
-                        "3.2.9"
+                        "pandas",
+                        "3.0.5"
                     ]
                 ],
                 "csv": [
@@ -112,6 +140,13 @@
                         "3.0.5"
                     ]
                 ],
+                "versions_panel": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "abo_variant_panel",
+                        "2.3.0"
+                    ]
+                ],
                 "versions_python": [
                     [
                         "ABO_SNPS2PHENO",
@@ -126,6 +161,13 @@
                         "6.0.3"
                     ]
                 ],
+                "versions_script": [
+                    [
+                        "ABO_SNPS2PHENO",
+                        "aggregate_abo_reports.py",
+                        "2.5.0"
+                    ]
+                ],
                 "versions_xlsxwriter": [
                     [
                         "ABO_SNPS2PHENO",
@@ -138,7 +180,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:34:51.139187333",
+        "timestamp": "2026-11-12T11:39:25.817891868",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"

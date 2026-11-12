@@ -20,6 +20,13 @@
                 "2": [
                     [
                         "ABO_CLAIR2HAPLOTYPES",
+                        "clair2haplotypes.py",
+                        "1.1.0"
+                    ]
+                ],
+                "3": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
                         "pyyaml",
                         "6.0.3"
                     ]
@@ -45,13 +52,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "clair2haplotypes.py",
+                        "1.1.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:28:29.428789752",
+        "timestamp": "2026-11-12T11:36:10.847173975",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     },
     "abotyper - ABO_AA_barcode01 - phased VCF -> haplotypes": {
@@ -78,13 +92,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_CLAIR2HAPLOTYPES",
+                        "clair2haplotypes.py",
+                        "1.1.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:28:04.416673475",
+        "timestamp": "2026-11-12T11:36:00.020323428",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     }
 }

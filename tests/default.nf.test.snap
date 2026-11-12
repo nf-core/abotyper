@@ -3,23 +3,28 @@
         "content": [
             {
                 "ABO_CLAIR2HAPLOTYPES": {
+                    "clair2haplotypes.py": "1.1.0",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3"
                 },
                 "ABO_CLAIR2METRICS": {
+                    "clair2metrics.py": "1.1.0",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3"
                 },
                 "ABO_EVIDENCE": {
+                    "pileup2metrics.py": "2.2.0",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3"
                 },
                 "ABO_GETABOSNPS": {
                     "pandas": "3.0.5",
+                    "predict_abo_phenotype.py": "2.0.0",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3"
                 },
                 "ABO_PANEL2BED": {
+                    "panel_to_bed.py": "1.0.0",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3"
                 },
@@ -27,6 +32,8 @@
                     "samtools": 1.25
                 },
                 "ABO_SNPS2PHENO": {
+                    "abo_variant_panel": "2.3.0",
+                    "aggregate_abo_reports.py": "2.5.0",
                     "pandas": "3.0.5",
                     "python": "3.13.15",
                     "pyyaml": "6.0.3",
@@ -424,7 +431,7 @@
             ],
             [
                 "ABO_evidence_summary_mqc.tsv:md5,cd002708e66d0edb35f167ab4c424fc8",
-                "ABO_run_qc.txt:md5,029b45198735540a28f194763bd984fb",
+                "ABO_run_qc.txt:md5,1a1d7433a531a6e9dcbc1718bcc9672a",
                 "ABO_AA_barcode01.coverage.txt:md5,a56b588d1055666e9249d0ff43258b2f",
                 "ABO_AA_barcode01.flagstat:md5,8e18b05edac99b4cf78279ee79977ec8",
                 "ABO_AA_barcode01.stats:md5,7fdf3859ca275a7a880544da080ef226",
@@ -532,7 +539,7 @@
                 "ABO_O2O2,,O,O,O,,O,,,Confirmed O.02 backbone(c.53G>T:T=97%); Possible O.02.02 (c.649C>T)(c.649C>T:T=43%); Possible O.02.02 +1 (c.689G>A)(c.689G>A:A=43%),High: Homozygous; phasing trivial; alleles named per haplotype,Low (<=40 reads),PASS,,n/a (no A allele),variant evidence,"
             ]
         ],
-        "timestamp": "2026-11-12T09:41:27.731608091",
+        "timestamp": "2026-11-12T11:46:04.839490838",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"

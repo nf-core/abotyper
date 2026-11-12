@@ -28,11 +28,18 @@
                 "3": [
                     [
                         "ABO_GETABOSNPS",
+                        "predict_abo_phenotype.py",
+                        "2.0.0"
+                    ]
+                ],
+                "4": [
+                    [
+                        "ABO_GETABOSNPS",
                         "pandas",
                         "3.0.5"
                     ]
                 ],
-                "4": [
+                "5": [
                     [
                         "ABO_GETABOSNPS",
                         "pyyaml",
@@ -75,10 +82,17 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_GETABOSNPS",
+                        "predict_abo_phenotype.py",
+                        "2.0.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:33:19.610312732",
+        "timestamp": "2026-11-12T11:37:36.479373769",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"
@@ -115,10 +129,17 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_GETABOSNPS",
+                        "predict_abo_phenotype.py",
+                        "2.0.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:33:05.688693179",
+        "timestamp": "2026-11-12T11:37:24.308273991",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"

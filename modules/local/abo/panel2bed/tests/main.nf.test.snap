@@ -16,13 +16,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_PANEL2BED",
+                        "panel_to_bed.py",
+                        "1.0.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T20:03:38.201344373",
+        "timestamp": "2026-11-12T11:37:48.488233643",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     },
     "abotyper - panel yaml -> BED - stub": {
@@ -39,6 +46,13 @@
                     ]
                 ],
                 "2": [
+                    [
+                        "ABO_PANEL2BED",
+                        "panel_to_bed.py",
+                        "1.0.0"
+                    ]
+                ],
+                "3": [
                     [
                         "ABO_PANEL2BED",
                         "pyyaml",
@@ -61,13 +75,20 @@
                         "pyyaml",
                         "6.0.3"
                     ]
+                ],
+                "versions_script": [
+                    [
+                        "ABO_PANEL2BED",
+                        "panel_to_bed.py",
+                        "1.0.0"
+                    ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:33:14.201568163",
+        "timestamp": "2026-11-12T11:38:02.252920432",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.5"
         }
     }
 }
