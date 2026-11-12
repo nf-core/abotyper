@@ -111,7 +111,7 @@ While we recommend using the above naming convention for optimal compatibility, 
 - **Ion Torrent** (currently undergoing testing)
 - **Illumina** (currently undergoing testing)
 
-The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping.
+The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping, and set the minimap2 preset with `--minimap2_preset` (`map-ont` by default; `map-pb`, `map-hifi`, `lr:hq` or `sr` for other read types). Only Oxford Nanopore data with `map-ont` has been validated.
 
 ## Running `nf-core/abotyper`
 
