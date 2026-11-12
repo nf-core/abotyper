@@ -64,7 +64,6 @@ TSV_HEADER = "\t".join([
     "C_Percent", "T_Percent", "Depth",
 ])
 COLUMNS = TSV_HEADER.split("\t")
-INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
 INDEL_WINDOW = 2
 INDEL_RE = re.compile(r"[+-](\d+)")
 
@@ -140,10 +139,6 @@ def load_pileup(path: Path) -> Dict[int, PileupColumn]:
     return cols
 
 
-def needs_window(marker: VariantMarker) -> bool:
-    return marker.variant_type in INDEL_LIKE_TYPES or marker.ref_base == "REF"
-
-
 def fmt(v: float) -> str:
     return str(int(v)) if float(v).is_integer() else f"{v:.2f}"
 
@@ -181,7 +176,7 @@ def run_indel_percent(pos: int, cols: Dict[int, PileupColumn]) -> Tuple[float, f
 def pileup_row(marker: VariantMarker, cols: Dict[int, PileupColumn]) -> Tuple[List[str], int]:
     """One table row (COLUMNS order) for a panel marker; returns (row, depth)."""
     pos = marker.resolved_position()
-    indel_like = needs_window(marker)
+    indel_like = marker.needs_window()
     window = INDEL_WINDOW if indel_like else 0
     lo, hi = marker.search_bounds(INDEL_WINDOW) if indel_like else (pos, pos)
     here = cols.get(pos)

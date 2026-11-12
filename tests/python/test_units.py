@@ -107,7 +107,7 @@ def rec(pos, ref, alts, gt, ad):
 def test_haplotype_sides_sized_by_their_own_allele_depth():
     """0|1 and 1|0 at AD 70/30 give the same counts, each side sized by the depth of the allele it carries."""
     panel = abo_panel.load_panel(PANEL)
-    pos = next(m.resolved_position() for m in panel.calibrated() if not c2h.needs_padding(m))
+    pos = next(m.resolved_position() for m in panel.calibrated() if not m.needs_window())
     for gt in [(0, 1), (1, 0)]:
         rows = c2h.build_rows(panel, {pos: rec(pos, "G", ["A"], gt, [70, 30])})
         haps = [r[3] for r in rows]

@@ -58,17 +58,6 @@ __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
 
-INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
-
-
-def needs_padding(marker: VariantMarker) -> bool:
-    """Same rule as clair2metrics.py / panel_to_bed.py: only true indel,
-    homopolymer, and multi-offset placeholder rows get a search window --
-    plain SNP rows stay exact, since several panel positions sit only 2-5bp
-    apart and a shared window would let one marker's record match another."""
-    return marker.variant_type in INDEL_LIKE_TYPES or marker.ref_base == "REF"
-
-
 class PhasedRecord:
     __slots__ = ("pos", "ref", "alts", "gt", "ps", "ad", "dp")
 
@@ -201,11 +190,11 @@ def build_rows(panel: Panel, records: Dict[int, PhasedRecord], window: int = 15)
     haplotype strings per phase set, repeated in proportion to that phase
     set's own median allele depth."""
     by_ps: Dict[str, List[Tuple[int, PhasedRecord, str]]] = {}
-    owned = frozenset(m.resolved_position() for m in panel.calibrated() if not needs_padding(m))
+    owned = frozenset(m.resolved_position() for m in panel.calibrated() if not m.needs_window())
 
     for marker in panel.calibrated():
         pos = marker.resolved_position()
-        if needs_padding(marker):
+        if marker.needs_window():
             lo, hi = marker.search_bounds(window)
             rec = find_phased_record(records, pos, lo, hi, marker, owned)
         else:

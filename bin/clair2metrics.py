@@ -74,7 +74,6 @@ TSV_HEADER = "\t".join([
     "C_Percent", "T_Percent", "Depth",
 ])
 
-INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
 # The +-15bp window is for FINDING an indel record that the caller anchored away from the
 # nominal position. Evidence that a position was actually covered (a reference block, or a
 # record of another allele) must be tight: a block 15bp away says nothing about this base.
@@ -177,10 +176,6 @@ def median(values: List[int]) -> float:
     return s[mid] if n % 2 else (s[mid - 1] + s[mid]) / 2
 
 
-def needs_padding(marker: VariantMarker) -> bool:
-    return marker.variant_type in INDEL_LIKE_TYPES or marker.ref_base == "REF"
-
-
 def bucket_for_token(tok: str) -> str:
     return BUCKET_MAP.get(tok.lower(), tok.strip().upper())
 
@@ -247,7 +242,7 @@ def marker_row(
     'fallback' (legacy only) or 'none'."""
     row = {"A": 0.0, "G": 0.0, "C": 0.0, "T": 0.0, "Del": 0.0, "Ins": 0.0}
     pos = marker.resolved_position()
-    lo, hi = marker.search_bounds(15) if needs_padding(marker) else (pos, pos)
+    lo, hi = marker.search_bounds(15) if marker.needs_window() else (pos, pos)
     window = max(pos - lo, hi - pos)
 
     matched_rec = None

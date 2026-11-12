@@ -73,6 +73,9 @@ _INT_FIELDS = {
     "cdna_pos", "legacy_exon6_pos", "legacy_exon7_pos",
     "ng006669_2_pos", "amplicon_pos", "min_reads",
 }
+# variant types whose call may be anchored away from the nominal position (searched in a window)
+INDEL_LIKE_TYPES = frozenset({"deletion", "insertion", "indel", "snp_or_indel"})
+
 _FLOAT_FIELDS = {
     "ref_threshold_pct", "alt_threshold_pct", "het_band_pct",
     "variant_threshold_pct",
@@ -209,6 +212,13 @@ class VariantMarker:
         if pos is not None:
             return f"Exon{exon_num}_pos{pos}"
         return f"Exon{exon_num}_c{self.cdna_pos}"
+
+    def needs_window(self) -> bool:
+        """True for indel and homopolymer rows, and for REF/ALT placeholder rows (which stand for more than one
+        genomic offset, e.g. the intronic splice markers at +4 and +5). These are searched in a window around the
+        position. Plain SNP rows stay exact: several panel positions sit only 2-5 bp apart, and a shared window
+        would let one marker read another's call."""
+        return self.variant_type in INDEL_LIKE_TYPES or self.ref_base == "REF"
 
     def is_calibrated(self) -> bool:
         return self.resolved_position() is not None

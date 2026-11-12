@@ -51,22 +51,12 @@ __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
 
-INDEL_LIKE_TYPES = {"deletion", "insertion", "indel", "snp_or_indel"}
-
-
-def needs_padding(marker: VariantMarker) -> bool:
-    """True for true indel/homopolymer rows AND for REF/ALT-placeholder
-    rows (which represent more than one specific genomic offset, e.g. the
-    intronic splice markers spanning both a +4 and +5 position)."""
-    return marker.variant_type in INDEL_LIKE_TYPES or marker.ref_base == "REF"
-
-
 def marker_to_interval(marker: VariantMarker, pad: int) -> tuple[int, int]:
     """Return a 0-based half-open (start, end) BED interval for one marker."""
     pos = marker.resolved_position()
     if pos is None:
         raise ValueError(f"{marker.id} has no resolved position (not calibrated)")
-    if needs_padding(marker):
+    if marker.needs_window():
         lo, hi = marker.search_bounds(pad)
         start, end = max(0, lo - 1), hi
     else:
@@ -108,7 +98,7 @@ def main() -> int:
         for start, end, name in rows:
             f.write(f"{args.chrom}\t{start}\t{end}\t{name}\n")
 
-    n_padded = sum(1 for m in panel.calibrated() if needs_padding(m))
+    n_padded = sum(1 for m in panel.calibrated() if m.needs_window())
     print(f"Wrote {len(rows)} BED intervals to {out_path} "
           f"({n_padded} padded ±{args.pad}bp, {len(rows) - n_padded} exact 1bp SNP rows)")
     return 0
