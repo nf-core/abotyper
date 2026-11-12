@@ -1,7 +1,0 @@
-name: abo_pileup
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - bioconda::htslib=1.25
-  - bioconda::samtools=1.25

@@ -118,10 +118,13 @@ workflow PIPELINE_INITIALISATION {
             meta, fastq_1, fastq_2 ->
                 // `control` is empty unless the samplesheet declares one
                 def control = meta.control ?: ''
+                // sample name and barcode reported in the result tables (see sampleNameAndBarcode)
+                def names   = sampleNameAndBarcode(meta.id, meta.barcode)
+                def extra   = [ control:control, sample_name:names.sample_name, barcode:names.barcode ]
                 if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true, control:control ], [ fastq_1 ] ]
+                    return [ meta.id, meta + extra + [ single_end:true ], [ fastq_1 ] ]
                 } else {
-                    return [ meta.id, meta + [ single_end:false, control:control ], [ fastq_1, fastq_2 ] ]
+                    return [ meta.id, meta + extra + [ single_end:false ], [ fastq_1, fastq_2 ] ]
                 }
         }
         .groupTuple()
@@ -208,6 +211,31 @@ def validateInputParameters() {
 }
 
 //
+// Sample name and barcode reported for a samplesheet row
+//
+// With a `barcode` column value, the sample is reported under its full `sample` name with that
+// barcode. Without one, a `sample` name ending in _barcode<digits> is split into name and barcode
+// (S1_barcode07 -> S1, barcode07); any other name is reported whole, and the barcode is left empty
+// (reported as barcode00). The typing step takes both from here, not from folder names.
+//
+def sampleNameAndBarcode(String id, barcode) {
+    if (barcode) {
+        return [ sample_name: id, barcode: normaliseBarcode(barcode.toString()) ]
+    }
+    def m = id =~ /(?i)^(.+)_barcode(\d+)$/
+    if (m.matches()) {
+        return [ sample_name: m.group(1), barcode: normaliseBarcode(m.group(2)) ]
+    }
+    return [ sample_name: id, barcode: '' ]
+}
+
+// 7, 07 or barcode7 -> barcode07 (two digits at least, as the barcode suffix of a sample name)
+def normaliseBarcode(String value) {
+    def num = value.replaceFirst(/(?i)^barcode/, '')
+    return (num as Integer) <= 99 ? "barcode${num.padLeft(2, '0')}" : "barcode${num}"
+}
+
+//
 // Validate channels from input samplesheet
 //
 def validateInputSamplesheet(input) {
@@ -223,6 +251,12 @@ def validateInputSamplesheet(input) {
     def control_ok = metas.collect{ meta -> meta.control }.unique().size == 1
     if (!control_ok) {
         error("Please check input samplesheet -> rows of the same sample must have the same 'control' value: ${metas[0].id}")
+    }
+
+    // ... and on its barcode
+    def barcode_ok = metas.collect{ meta -> meta.barcode }.unique().size == 1
+    if (!barcode_ok) {
+        error("Please check input samplesheet -> rows of the same sample must have the same 'barcode' value: ${metas[0].id}")
     }
 
     return [ metas[0], fastqs ]

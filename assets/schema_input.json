@@ -32,6 +32,12 @@
                 "enum": ["negative", "positive"],
                 "errorMessage": "control must be empty, 'negative' (no-template control) or 'positive' (positive control)",
                 "meta": ["control"]
+            },
+            "barcode": {
+                "type": "string",
+                "pattern": "^([Bb]arcode)?\\d+$",
+                "errorMessage": "barcode must be empty, a number (07) or barcode<number> (barcode07)",
+                "meta": ["barcode"]
             }
         },
         "required": ["sample", "fastq_1"]

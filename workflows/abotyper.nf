@@ -32,7 +32,7 @@ workflow ABOTYPER {
     abo_reference_fai    // channel: fai from params.abo_reference_fai
     abo_reference_fasta  // channel: fasta from params.abo_reference_fasta
     clair3_model         // map: url (download), path (channel of a local model folder) or packaged (model name)
-    abo_panel            // channel: path from params.abo_panel (variant panel YAML)
+    abo_panel            // channel: path from params.abo_panel, or [] for the panel bundled with abotyper-core
     clair3_region_bed    // channel: path from params.abo_clair3_region_bed, or [] for none
 
     main:

@@ -16,13 +16,13 @@ process ABO_SNPS2PHENO {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950'}"
 
     input:
     val sample_ids
     path sample_files, stageAs: 'sample_files/*'
-    path controls
+    path samples
     path panel_file
 
     output:
@@ -35,8 +35,9 @@ process ABO_SNPS2PHENO {
     tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
+    def panel  = panel_file ? "--panel ${panel_file}" : ''
     def args = task.ext.args ?: ''
-    def controls_arg = controls ? "--controls ${controls}" : ''
+    def samples_arg = samples ? "--samples ${samples}" : ''
     // Build the per_sample_processing/<id>/combined/ layout the script reads, inside the task
     """
     for id in ${sample_ids.join(' ')}; do
@@ -51,8 +52,8 @@ process ABO_SNPS2PHENO {
     set -o pipefail
     aggregate_abo_reports.py \\
         per_sample_processing \\
-        --panel ${panel_file} \\
-        ${controls_arg} \\
+        ${panel} \\
+        ${samples_arg} \\
         --threads ${task.cpus} \\
         ${args} 2>&1 | tee ABO_results.log
     """

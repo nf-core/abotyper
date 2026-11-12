@@ -11,7 +11,7 @@ nextflow_process {
 
     // Two samples, ABO_AA_barcode01 (AA) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is
     // the list of sample IDs and input 1 every per-sample file (<id>.<suffix>); the module builds the
-    // per_sample_processing/<id>/combined/ layout inside the task. No controls file (input 2).
+    // per_sample_processing/<id>/combined/ layout inside the task. No sample table (input 2).
 
     test("abotyper - two samples compiled into the final tables") {
 
@@ -23,7 +23,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
                 }
                 input[2] = []
-                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[3] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -54,7 +54,7 @@ nextflow_process {
 
     test("abotyper - declared negative control with reads is flagged") {
 
-        // ABO_AA_barcode01 is declared a negative control in the controls file; it has ABO reads,
+        // ABO_AA_barcode01 is declared a negative control in the sample table; it has ABO reads,
         // so the run QC must report possible contamination. Without the declaration it is a sample.
         when {
             process {
@@ -64,7 +64,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
                 }
                 input[2] = file("$projectDir/tests/fixtures/controls_AA_negative.tsv", checkIfExists: true)
-                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[3] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -73,6 +73,36 @@ nextflow_process {
             assertAll(
                 { assert process.success },
                 { assert (path(process.out.txt[0]).text + path(process.out.qc[0]).text).contains("possible contamination") }
+            )
+        }
+    }
+
+    test("abotyper - sample name and barcode from the sample table") {
+
+        // The sample table (from the samplesheet) names ABO_AA_barcode01 "DonorA" on barcode 11; the
+        // other row is empty, so ABO_BO1_barcode06 is still split from its ID (ABO_BO1, barcode06).
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ]
+                input[1] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[2] = file("$projectDir/tests/fixtures/samples_named.tsv", checkIfExists: true)
+                input[3] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def csv = path(process.out.csv[0]).readLines()
+            assertAll(
+                { assert process.success },
+                { assert csv.size() == 3 },
+                { assert csv.any { it.startsWith("DonorA,") } },
+                { assert csv.any { it.startsWith("ABO_BO1,") } },
+                // the Barcode column of ABO_result.txt (tab-separated, after Sequencing_ID)
+                { assert path(process.out.txt[0]).readLines().any { it.split("\t").toList().take(3).containsAll(["DonorA", "11"]) } }
             )
         }
     }
@@ -96,7 +126,7 @@ nextflow_process {
                 input[0] = renamed.values() as List
                 input[1] = staged
                 input[2] = []
-                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[3] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -125,7 +155,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
                 }
                 input[2] = []
-                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[3] = []  // panel bundled with abotyper-core
                 """
             }
         }

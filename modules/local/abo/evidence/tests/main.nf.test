@@ -19,7 +19,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
                 ]
-                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[1] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -62,7 +62,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
                     []
                 ]
-                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[1] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -94,7 +94,7 @@ nextflow_process {
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
                 ]
-                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[1] = []  // panel bundled with abotyper-core
                 """
             }
         }

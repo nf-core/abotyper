@@ -104,7 +104,7 @@
                     "exists": true,
                     "pattern": "^\\S+\\.(yaml|yml|json|csv|tsv)$",
                     "description": "ABO diagnostic variant panel (positions, calling thresholds, ISBT allele associations).",
-                    "help_text": "Defaults to `assets/refs/abo_variant_panel.yaml` in the pipeline directory. It is the single source of truth for every diagnostic position; add a variant by editing the panel, not the scripts.",
+                    "help_text": "Defaults to the panel bundled with abotyper-core (`abotyper_core/data/abo_variant_panel.yaml`, versioned with the package). It is the single source of truth for every diagnostic position; to change a variant, copy that file, edit it and pass it here.",
                     "fa_icon": "fas fa-table"
                 },
                 "abo_clair3_region_bed": {

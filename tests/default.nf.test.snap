@@ -3,25 +3,22 @@
         "content": [
             {
                 "ABO_CLAIR2HAPLOTYPES": {
-                    "abotyper-core": "0.1.0"
+                    "abotyper-core": "0.2.0"
                 },
                 "ABO_CLAIR2METRICS": {
-                    "abotyper-core": "0.1.0"
+                    "abotyper-core": "0.2.0"
                 },
                 "ABO_EVIDENCE": {
-                    "abotyper-core": "0.1.0"
+                    "abotyper-core": "0.2.0"
                 },
                 "ABO_GETABOSNPS": {
-                    "abotyper-core": "0.1.0"
+                    "abotyper-core": "0.2.0"
                 },
                 "ABO_PANEL2BED": {
-                    "abotyper-core": "0.1.0"
-                },
-                "ABO_PILEUP": {
-                    "samtools": 1.25
+                    "abotyper-core": "0.2.0"
                 },
                 "ABO_SNPS2PHENO": {
-                    "abotyper-core": "0.1.0"
+                    "abotyper-core": "0.2.0"
                 },
                 "BCFTOOLS_NORM": {
                     "bcftools": 1.25
@@ -45,6 +42,9 @@
                     "samtools": 1.25
                 },
                 "SAMTOOLS_FLAGSTAT": {
+                    "samtools": 1.25
+                },
+                "SAMTOOLS_MPILEUP": {
                     "samtools": 1.25
                 },
                 "SAMTOOLS_STATS": {
@@ -412,7 +412,7 @@
             ],
             [
                 "ABO_evidence_summary_mqc.tsv:md5,cd002708e66d0edb35f167ab4c424fc8",
-                "ABO_run_qc.txt:md5,1a1d7433a531a6e9dcbc1718bcc9672a",
+                "ABO_run_qc.txt:md5,892251e9428b614a951ca8014ef15c77",
                 "ABO_AA_barcode01.coverage.txt:md5,a56b588d1055666e9249d0ff43258b2f",
                 "ABO_AA_barcode01.flagstat:md5,8e18b05edac99b4cf78279ee79977ec8",
                 "ABO_AA_barcode01.stats:md5,7fdf3859ca275a7a880544da080ef226",
@@ -520,7 +520,7 @@
                 "ABO_O2O2,,O,O,O,,O,,,Confirmed O.02 backbone(c.53G>T:T=97%); Possible O.02.02 (c.649C>T)(c.649C>T:T=43%); Possible O.02.02 +1 (c.689G>A)(c.689G>A:A=43%),High: Homozygous; phasing trivial; alleles named per haplotype,Low (<=40 reads),PASS,,n/a (no A allele),variant evidence,"
             ]
         ],
-        "timestamp": "2026-11-12T18:46:09.310680006",
+        "timestamp": "2026-11-12T20:58:24.82649703",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

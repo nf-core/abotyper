@@ -52,7 +52,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/xlsxwriter-3.2.9-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-hebe6cf0_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_7.conda
-      - pypi: https://files.pythonhosted.org/packages/e4/78/a9e43274ed2e7dfe55dacb90fdeaee139d61c4241997622c28c17000b1af/abotyper_core-0.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/4d/49/e84b81116c389f79e9b8e5cd81f8cfc821860622ba91a585975a4e6be49c/abotyper_core-0.2.0-py3-none-any.whl
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
@@ -68,10 +68,10 @@ packages:
   purls: []
   size: 28948
   timestamp: 1770939786096
-- pypi: https://files.pythonhosted.org/packages/e4/78/a9e43274ed2e7dfe55dacb90fdeaee139d61c4241997622c28c17000b1af/abotyper_core-0.1.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/4d/49/e84b81116c389f79e9b8e5cd81f8cfc821860622ba91a585975a4e6be49c/abotyper_core-0.2.0-py3-none-any.whl
   name: abotyper-core
-  version: 0.1.0
-  sha256: 2f7fbdfcc0ea2a64e4a52fc31cdb5c406a83df727be7446b556c63796d55b6ab
+  version: 0.2.0
+  sha256: 84c4eafda4704b48afc105055430985da48f45163b9021f50fc008d3c9a2ab98
   requires_dist:
   - numpy>=1.26
   - openpyxl>=3.1

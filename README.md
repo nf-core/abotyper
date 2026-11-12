@@ -48,13 +48,13 @@ ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
    - Detailed statistics ([`SAMTOOLS_STATS`](modules/nf-core/samtools/stats/))
 4. **Variant calling** - Call small variants (with phasing) directly from the aligned BAM using Clair3 ([`CLAIR3`](modules/nf-core/clair3/))
 5. **Variant quantification** - Convert Clair3's gVCF and phased VCF into per-position allele frequencies and per-read-equivalent haplotypes ([`ABO_CLAIR2METRICS`](modules/local/abo/clair2metrics/), [`ABO_CLAIR2HAPLOTYPES`](modules/local/abo/clair2haplotypes/))
-6. **Independent BAM pileup** - Count bases at every panel position directly from the aligned BAM, as a second line of evidence ([`ABO_PILEUP`](modules/local/abo/pileup/))
+6. **Independent BAM pileup** - Count bases at every panel position directly from the aligned BAM, as a second line of evidence (nf-core [`samtools/mpileup`](modules/nf-core/samtools/mpileup/))
 7. **Evidence combination** - Compare Clair3 and the BAM pileup at every panel position, fill positions Clair3 had no evidence for, and flag disagreement ([`ABO_EVIDENCE`](modules/local/abo/evidence/))
 8. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABO_GETABOSNPS`](modules/local/abo/getabosnps/))
 9. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns, with ISBT-style allele names and QC flags ([`ABO_SNPS2PHENO`](modules/local/abo/snps2pheno/))
 10. **Quality control reporting** - Compile a QC report with read, alignment and evidence metrics ([`MULTIQC`](modules/nf-core/multiqc/))
 
-The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO reference. Variant marker positions and coordinate calibration are defined in `assets/refs/abo_variant_panel.yaml` (see [`bin/README.md`](bin/README.md) for details).
+The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO reference. Variant marker positions and coordinate calibration are defined in the variant panel bundled with [abotyper-core](https://github.com/fmobegi/abotyper-core) (`abotyper_core/data/abo_variant_panel.yaml`); pass your own with `--abo_panel`.
 
 ## Summary of tools and version used in the pipeline
 
@@ -70,7 +70,7 @@ The pipeline makes use of the following core dependencies:
 | bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
 | multiqc        | 1.35            | aggregate QC report               |
 | **Typing**     |                 |                                   |
-| abotyper-core  | 0.1.0           | panel, evidence and ABO typing    |
+| abotyper-core  | 0.2.0           | panel, evidence and ABO typing    |
 
 The typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) Python package (`pip install abotyper-core` or Bioconda), which has its own tests and command-line tools. It also provides `abotyper-rename-samples`, a standalone lab-export utility that is not part of the pipeline, and `abotyper-calibrate-panel`.
 

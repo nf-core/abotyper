@@ -52,6 +52,11 @@
                         "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
                         "installed_by": ["modules"]
                     },
+                    "samtools/mpileup": {
+                        "branch": "master",
+                        "git_sha": "80eb474060aa4aa6d7b4b00e0dc785174f156a28",
+                        "installed_by": ["modules"]
+                    },
                     "samtools/stats": {
                         "branch": "master",
                         "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",

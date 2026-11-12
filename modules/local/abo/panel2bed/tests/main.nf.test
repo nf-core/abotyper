@@ -14,7 +14,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[0] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -39,7 +39,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[0] = []  // panel bundled with abotyper-core
                 """
             }
         }
