@@ -52,6 +52,32 @@ nextflow_process {
         }
     }
 
+    test("abotyper - declared negative control with reads is flagged") {
+
+        // ABO_AA_barcode01 is declared a negative control in the controls file; it has ABO reads,
+        // so the run QC must report possible contamination. Without the declaration it is a sample.
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ]
+                input[1] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[2] = file("$projectDir/tests/fixtures/controls_AA_negative.tsv", checkIfExists: true)
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert path(process.out.txt[0]).text.contains("Negative control: reads present") },
+                { assert path(process.out.qc[0]).text.contains("possible contamination") }
+            )
+        }
+    }
+
     test("abotyper - two samples compiled - stub") {
 
         options "-stub"
