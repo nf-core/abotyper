@@ -245,6 +245,38 @@ class StructuralVariant:
     source: str = ""
 
 
+# The markers the typing logic reads by role. A panel can point a role at another marker id in meta.roles,
+# so a marker is renamed in the panel, never in the scripts.
+DEFAULT_ROLES = {
+    "o1": "o1_marker",                       # c.261delG
+    "b_796": "b_vs_ao_796",                  # c.796C>A
+    "o2_802": "o2_marker_802",               # c.802G>A
+    "b_803": "ao_vs_b_803",                  # c.803G>C
+    "o34_804": "o34_homopolymer_804",        # c.804 homopolymer
+    "a1a2_467": "a1_a2_467",                 # c.467C>T
+    "a2_1061del": "a1_a2_1061del",           # c.1061delC
+    "a2_266": "a2_marker_266",
+    "a2_268": "a2_marker_268",
+    "a2_297": "a2_marker_297_a201",
+    "background_907": "a2p_907_a206",        # pipeline background markers, not ISBT-defined
+    "background_1032": "a2p_1032_a201",
+    "ael_804": "ael_804_indel",
+}
+
+# Read-depth and read-fraction thresholds used by the typing logic; a panel can override them in meta.thresholds.
+DEFAULT_THRESHOLDS = {
+    "a2_min_reads": 30,                  # reads at c.796 (and c.1061) for an A2 / A1.02 / A2.06 call
+    "a2_panel_scan_min_reads": 500,      # reads at c.796 for the comprehensive A2-panel scan
+    "named_marker_min_reads": 30,        # floor for a non-primary marker to name or rule out an allele
+    "c297_min_alt_pct": 25,              # c.297A>G read percentage that counts as present
+    "reliability_very_low_reads": 20,    # read reliability bands at the weakest primary position
+    "reliability_low_reads": 40,
+    "reliability_robust_reads": 500,
+    "homozygous_min_pct": 80,            # alternate-read percentage classes used for zygosity
+    "heterozygous_min_pct": 20,
+}
+
+
 class Panel:
     """A loaded, indexed variant panel."""
 
@@ -255,10 +287,36 @@ class Panel:
         self.structural_variants = structural_variants or []
         self.meta = meta or {}
         self._by_id = {v.id: v for v in variants}
+        roles = self.meta.get("roles") or {}
+        thresholds = self.meta.get("thresholds") or {}
+        unknown = sorted(set(roles) - set(DEFAULT_ROLES)) + sorted(set(thresholds) - set(DEFAULT_THRESHOLDS))
+        if unknown:
+            raise PanelError(f"unknown key(s) in meta.roles / meta.thresholds: {unknown}")
+        self.roles = {**DEFAULT_ROLES, **{k: str(v) for k, v in roles.items()}}
+        self.thresholds = dict(DEFAULT_THRESHOLDS)
+        for k, v in thresholds.items():
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                raise PanelError(f"meta.thresholds.{k} must be a number, got {v!r}")
+            self.thresholds[k] = v
 
     # -- lookups -------------------------------------------------------
     def get(self, marker_id: str) -> Optional[VariantMarker]:
         return self._by_id.get(marker_id)
+
+    def role_id(self, role: str) -> str:
+        """Marker id that plays a role in the typing logic (see DEFAULT_ROLES)."""
+        return self.roles[role]
+
+    def role(self, role: str) -> Optional[VariantMarker]:
+        return self.get(self.roles[role])
+
+    def missing_roles(self) -> List[str]:
+        """Roles whose marker id is not in the panel, as 'role -> id'."""
+        return [f"{r} -> {i}" for r, i in self.roles.items() if i not in self._by_id]
+
+    def threshold(self, name: str):
+        """A calling threshold (see DEFAULT_THRESHOLDS)."""
+        return self.thresholds[name]
 
     def by_exon(self, exon_label: str) -> List[VariantMarker]:
         return [v for v in self.variants if v.exon == exon_label]

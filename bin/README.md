@@ -56,6 +56,15 @@ Check calibration status at any time with:
 python3 abo_panel.py --panel abo_variant_panel.yaml --summary
 ```
 
+## Marker roles and thresholds
+
+The typing logic in `aggregate_abo_reports.py` reads some markers by their role (for example `b_796` for c.796C>A)
+and uses read-depth and read-percentage thresholds. Both are set in the panel's `meta` block (`meta.roles`,
+`meta.thresholds`), with the defaults in `abo_panel.py` (`DEFAULT_ROLES`, `DEFAULT_THRESHOLDS`). To rename one of
+these markers, change its `id` and point its role at the new id; the scripts need no change. The aggregation stops
+at start-up if a role points at an id the panel does not define, and the loader rejects unknown role or threshold
+keys.
+
 ## Adding a new variant
 
 Add a row to `abo_variant_panel.yaml` (or the `.csv`). Minimum fields: `id`, `cdna_pos`, `cdna_change`, `exon`, `ref_base`, `alt_base`,`variant_type`, `category`, `call_rule` (`primary_biallelic` or`named_marker`), plus whichever thresholds/labels the call rule needs, see the schema comments at the top of the YAML file. Populate`ng006669_2_pos` directly if the position in `NG_006669.2` is known, or run `calibrate_panel_positions.py` to derive it.

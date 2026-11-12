@@ -188,8 +188,8 @@ _A_PRIMARY_CONTEXT = {"A2.01": (True, True), "A2.06": (False, True), "A1.02": (T
 def primary_carriers(panel):
     """(alleles carrying c.467C>T, alleles carrying c.1061delC) from the two primary markers' associated alleles."""
     out = []
-    for marker_id in ("a1_a2_467", "a1_a2_1061del"):
-        m = panel.get(marker_id) if panel is not None else None
+    for role in ("a1a2_467", "a2_1061del"):
+        m = panel.role(role) if panel is not None else None
         out.append(_marker_candidate_alleles(m) if m is not None else None)
     return tuple(out)
 
@@ -621,19 +621,9 @@ def _init_worker(parser):
     _WORKER_PARSER = parser
 
 
-# Panel marker IDs this script reads by name. The panel may add, drop or recalibrate any other marker,
-# but these must exist, or every sample would silently come out Unknown / REVIEW.
-REQUIRED_MARKER_IDS = (
-    "o1_marker", "o2_marker_802", "o34_homopolymer_804", "b_vs_ao_796", "ao_vs_b_803",
-    "a1_a2_467", "a1_a2_1061del", "a2_marker_266", "a2_marker_268", "a2_marker_297_a201",
-    "a2p_1032_a201", "a2p_907_a206", "ael_804_indel",
-)
-
-
 def missing_required_markers(panel) -> List[str]:
-    """Required marker IDs that the panel does not define."""
-    ids = {m.id for m in panel.variants}
-    return [i for i in REQUIRED_MARKER_IDS if i not in ids]
+    """Typing roles (panel meta.roles, or the defaults) whose marker id the panel does not define."""
+    return panel.missing_roles()
 
 
 def read_controls(path: Optional[str]) -> Dict[str, str]:
@@ -782,6 +772,13 @@ class ABOReportParser:
     # -----------------------------------------------------------------
     # Sample/filename handling
     # -----------------------------------------------------------------
+    def reliability_label(self, band: str) -> str:
+        """Read-reliability label, worded from the panel's thresholds ("Very Low(<=20 reads)" by default)."""
+        t = self.panel.threshold
+        return {"very_low": f"Very Low(<={t('reliability_very_low_reads')} reads)",
+                "low": f"Low (<={t('reliability_low_reads')} reads)",
+                "robust": f"Robust(>={t('reliability_robust_reads')} reads)"}[band]
+
     def extract_sample_info(self, filename):
         """Sample name and barcode from a sample folder name.
 
@@ -1114,13 +1111,13 @@ class ABOReportParser:
                     return None
                 return m.column_label()
 
-            col_o1 = col_for("o1_marker")
-            col_796 = col_for("b_vs_ao_796")
-            col_802 = col_for("o2_marker_802")
-            col_803 = col_for("ao_vs_b_803")
-            col_804 = col_for("o34_homopolymer_804")
-            col_467 = col_for("a1_a2_467")
-            col_1061 = col_for("a1_a2_1061del")
+            col_o1 = col_for(self.panel.role_id("o1"))
+            col_796 = col_for(self.panel.role_id("b_796"))
+            col_802 = col_for(self.panel.role_id("o2_802"))
+            col_803 = col_for(self.panel.role_id("b_803"))
+            col_804 = col_for(self.panel.role_id("o34_804"))
+            col_467 = col_for(self.panel.role_id("a1a2_467"))
+            col_1061 = col_for(self.panel.role_id("a2_1061del"))
 
             # Normalize the primary markers into the exact legacy vocabulary
             # the decision tree below matches on. The panel's display labels
@@ -1140,15 +1137,15 @@ class ABOReportParser:
                 return {"ref": ref_s, "alt": alt_s, "het": het_s, "none": ""}[state]
 
             type_exon6 = primary_type(
-                col_o1, "o1_marker", "A or B or O", "O1", "O1 and (A or B or O)")
+                col_o1, self.panel.role_id("o1"), "A or B or O", "O1", "O1 and (A or B or O)")
             type_exon7_422 = primary_type(
-                col_796, "b_vs_ao_796", "A or O", "B", "(A or O) and B")
+                col_796, self.panel.role_id("b_796"), "A or O", "B", "(A or O) and B")
             type_exon7_428 = primary_type(
-                col_802, "o2_marker_802", "O and (A or B)", "O2", "O2 and (O or A or B)")
+                col_802, self.panel.role_id("o2_802"), "O and (A or B)", "O2", "O2 and (O or A or B)")
             type_exon7_429 = primary_type(
-                col_803, "ao_vs_b_803", "A or O", "B", "(A or O) and B")
+                col_803, self.panel.role_id("b_803"), "A or O", "B", "(A or O) and B")
             type_exon7_431 = primary_type(
-                col_804, "o34_homopolymer_804", "O and (A or B)", "O3", "O3 and (O or A or B)")
+                col_804, self.panel.role_id("o34_804"), "O and (A or B)", "O3", "O3 and (O or A or B)")
             type_exon7_93 = safe_get_type(df, col_467) if col_467 else ""
 
             def primary_state(col, marker_id):
@@ -1157,8 +1154,8 @@ class ABOReportParser:
                     return "none"
                 return self._primary_state(m, dict(safe_get_row(df, col)))
 
-            state_exon7_685 = primary_state(col_1061, "a1_a2_1061del")
-            state_exon7_93 = primary_state(col_467, "a1_a2_467")
+            state_exon7_685 = primary_state(col_1061, self.panel.role_id("a2_1061del"))
+            state_exon7_93 = primary_state(col_467, self.panel.role_id("a1a2_467"))
             nreads_exon7_p685 = safe_get_reads(df, col_1061) if col_1061 else 0
             background_notes: List[str] = []   # panel changes that are not part of any ISBT allele definition
 
@@ -1189,7 +1186,7 @@ class ABOReportParser:
                 has_297 = "c.297G" in markers_found
                 # ISBT: ABO*A2.01 = c.467C>T + c.1061delC; ABO*A2.06 = c.1061delC alone. c.907G>A and c.1032G>A
                 # are pipeline background markers, not part of any ISBT definition, so they never name an allele.
-                if has_del and state_exon7_93 == "ref" and nreads_exon7_p422 >= 30:
+                if has_del and state_exon7_93 == "ref" and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads"):
                     return "A2.06", None
                 if has_297 and has_del:
                     return "A2.01", "c.297A>G"
@@ -1209,26 +1206,26 @@ class ABOReportParser:
                 # single A2.01 allele, so it reports as "A1 and A2", never
                 # the bare alt label "A2" -- check the semantic state (alt OR
                 # het), not the ref-only-vs-alt-only display string.
-                has_del = state_exon7_685 in ("alt", "het") and nreads_exon7_p422 >= 30
-                a907_marker = self.panel.get("a2p_907_a206")
-                a1032_marker = self.panel.get("a2p_1032_a201")
+                has_del = state_exon7_685 in ("alt", "het") and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads")
+                a907_marker = self.panel.role("background_907")
+                a1032_marker = self.panel.role("background_1032")
                 has_907 = False
                 has_1032 = False
                 if a907_marker and a907_marker.resolved_position() in row_lookup:
                     r = call_named_marker(a907_marker, dict(row_lookup[a907_marker.resolved_position()]),
                                            nreads=row_lookup[a907_marker.resolved_position()].get("#Reads", 0))
-                    has_907 = bool(r and r.get("fired")) and nreads_exon7_p422 >= 30
+                    has_907 = bool(r and r.get("fired")) and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads")
                 if a1032_marker and a1032_marker.resolved_position() in row_lookup:
                     r = call_named_marker(a1032_marker, dict(row_lookup[a1032_marker.resolved_position()]),
                                            nreads=row_lookup[a1032_marker.resolved_position()].get("#Reads", 0))
-                    has_1032 = bool(r and r.get("fired")) and nreads_exon7_p422 >= 30
+                    has_1032 = bool(r and r.get("fired")) and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads")
 
-                a297_marker = self.panel.get("a2_marker_297_a201")
+                a297_marker = self.panel.role("a2_297")
                 has_297 = False
                 a297_phase_note = None
                 if a297_marker and a297_marker.resolved_position() in row_lookup:
                     row = row_lookup[a297_marker.resolved_position()]
-                    has_297 = float(row.get("G", 0) or 0) >= 25
+                    has_297 = float(row.get("G", 0) or 0) >= self.panel.threshold("c297_min_alt_pct")
                     if has_297:
                         # c.297A>G is dual-purpose (panel notes): also part of
                         # the shared B-lineage backbone. If phasing shows it
@@ -1236,7 +1233,7 @@ class ABOReportParser:
                         # marker, it's likely just B-backbone noise, not
                         # independently confirmatory for A2.01 -- advisory
                         # only, does not change has_297 or any call below.
-                        b_marker = self.panel.get("b_vs_ao_796")
+                        b_marker = self.panel.role("b_796")
                         if b_marker and b_marker.resolved_position() is not None:
                             rel = phase_relationship(
                                 resolved_phase_evidence,
@@ -1274,8 +1271,8 @@ class ABOReportParser:
                     )
 
                 if not o1v_fired:
-                    m266 = self.panel.get("a2_marker_266")
-                    m268 = self.panel.get("a2_marker_268")
+                    m266 = self.panel.role("a2_266")
+                    m268 = self.panel.role("a2_268")
                     for m_marker, label in [(m266, "c.266T"), (m268, "c.268C")]:
                         if m_marker and m_marker.resolved_position() in row_lookup:
                             row = row_lookup[m_marker.resolved_position()]
@@ -1301,9 +1298,9 @@ class ABOReportParser:
                             and reads_here and reads_here >= (m_.min_reads or 0)):
                         self._absent_markers.append(m_)
 
-                if nreads_exon7_p422 >= 500 and not o1v_fired:
+                if nreads_exon7_p422 >= self.panel.threshold("a2_panel_scan_min_reads") and not o1v_fired:
                     for m_ in self.panel.by_category("a2_panel"):
-                        if m_.id in ("a2p_907_a206", "a2p_1032_a201"):
+                        if m_.id in (self.panel.role_id("background_907"), self.panel.role_id("background_1032")):
                             continue  # scored separately above
                         pos = m_.resolved_position()
                         if pos is None or pos not in row_lookup:
@@ -1321,13 +1318,13 @@ class ABOReportParser:
                     # the A2 logic does not use these positions here (an O1v-type sample, or too few reads), but a
                     # marker that is clearly carried still decides the allele name, e.g. the c.771/c.829 cassette
                     for m_ in self.panel.by_category("a2_panel"):
-                        if m_.id in ("a2p_907_a206", "a2p_1032_a201", "a2_marker_297_a201"):
+                        if m_.id in (self.panel.role_id("background_907"), self.panel.role_id("background_1032"), self.panel.role_id("a2_297")):
                             continue
                         pos = m_.resolved_position()
                         if pos is None or pos not in row_lookup:
                             continue
                         row = row_lookup[pos]
-                        if not row.get("#Reads", 0) or row.get("#Reads", 0) < max(30, m_.min_reads or 0):
+                        if not row.get("#Reads", 0) or row.get("#Reads", 0) < max(self.panel.threshold("named_marker_min_reads"), m_.min_reads or 0):
                             continue
                         r = call_named_marker(m_, {"A": row.get("A", 0), "G": row.get("G", 0),
                                                    "C": row.get("C", 0), "T": row.get("T", 0)}, nreads=row.get("#Reads", 0))
@@ -1372,7 +1369,7 @@ class ABOReportParser:
                         # scan_a2_markers()/call_named_marker() only report
                         # whether the marker fired, not its zygosity.
                         driving_marker_id = {
-                            "c.297G": "a2_marker_297_a201",
+                            "c.297G": self.panel.role_id("a2_297"),
                         }
                         for label, marker_id in driving_marker_id.items():
                             if label not in markers:
@@ -1390,7 +1387,7 @@ class ABOReportParser:
                 # ISBT: ABO*A1.02 = c.467C>T alone. Named only when c.1061delC is clearly absent on enough reads,
                 # because a missed deletion looks the same and was the usual cause of this pattern in earlier audits.
                 if (state_exon7_93 in ("alt", "het") and state_exon7_685 == "ref"
-                        and nreads_exon7_p685 >= 30 and nreads_exon7_p422 >= 30):
+                        and nreads_exon7_p685 >= self.panel.threshold("a2_min_reads") and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads")):
                     return "A1.02", warning_text, ("het" if state_exon7_93 == "het" else "hom")
                 if type_exon7_93 in ("A1.02 or A2", "A1"):
                     return "A1", warning_text, "hom"
@@ -1498,14 +1495,14 @@ class ABOReportParser:
             # cassette) decides which ISBT allele that allele is named.
             if not a2_scanned[0]:
                 for m_ in list(self.panel.by_category("a2_panel")):
-                    if m_.id in ("a2p_907_a206", "a2p_1032_a201"):
+                    if m_.id in (self.panel.role_id("background_907"), self.panel.role_id("background_1032")):
                         continue
                     pos = m_.resolved_position()
                     if pos is None or pos not in row_lookup:
                         continue
                     row = row_lookup[pos]
                     reads_here = row.get("#Reads", 0) or 0
-                    if reads_here < max(30, m_.min_reads or 0):
+                    if reads_here < max(self.panel.threshold("named_marker_min_reads"), m_.min_reads or 0):
                         continue
                     r = call_named_marker(m_, {"A": row.get("A", 0), "G": row.get("G", 0),
                                                "C": row.get("C", 0), "T": row.get("T", 0)}, nreads=reads_here)
@@ -1569,12 +1566,12 @@ class ABOReportParser:
 
             if valid_read_counts:
                 min_reads = min(valid_read_counts)
-                if min_reads <= 20:
-                    Reliability = "Very Low(<=20 reads)"
-                elif min_reads <= 40:
-                    Reliability = "Low (<=40 reads)"
-                elif min_reads >= 500:
-                    Reliability = "Robust(>=500 reads)"
+                if min_reads <= self.panel.threshold("reliability_very_low_reads"):
+                    Reliability = self.reliability_label("very_low")
+                elif min_reads <= self.panel.threshold("reliability_low_reads"):
+                    Reliability = self.reliability_label("low")
+                elif min_reads >= self.panel.threshold("reliability_robust_reads"):
+                    Reliability = self.reliability_label("robust")
                 else:
                     Reliability = "Normal"
                 if max(valid_read_counts) / min(valid_read_counts) > 5:
@@ -1612,21 +1609,21 @@ class ABOReportParser:
             def vstate(frac):
                 if frac is None:
                     return None
-                return "hom" if frac >= 80 else ("het" if frac >= 20 else "ref")
+                return "hom" if frac >= self.panel.threshold("homozygous_min_pct") else ("het" if frac >= self.panel.threshold("heterozygous_min_pct") else "ref")
 
-            s261 = vstate(alt_frac("o1_marker"))
-            s796 = vstate(alt_frac("b_vs_ao_796"))
-            s802 = vstate(alt_frac("o2_marker_802"))
-            s803 = vstate(alt_frac("ao_vs_b_803"))
-            s467 = vstate(alt_frac("a1_a2_467"))
-            s1061 = vstate(alt_frac("a1_a2_1061del"))
+            s261 = vstate(alt_frac(self.panel.role_id("o1")))
+            s796 = vstate(alt_frac(self.panel.role_id("b_796")))
+            s802 = vstate(alt_frac(self.panel.role_id("o2_802")))
+            s803 = vstate(alt_frac(self.panel.role_id("b_803")))
+            s467 = vstate(alt_frac(self.panel.role_id("a1a2_467")))
+            s1061 = vstate(alt_frac(self.panel.role_id("a2_1061del")))
             primary_states = [s for s in (s261, s796, s802, s803, s467, s1061) if s is not None]
 
             # evidence actually present at each primary position
             no_evidence, primary_reads, unscored = [], [], []
-            for pid, short in (("o1_marker", "c.261delG"), ("b_vs_ao_796", "c.796C>A"),
-                               ("o2_marker_802", "c.802G>A"), ("ao_vs_b_803", "c.803G>C"),
-                               ("a1_a2_467", "c.467C>T"), ("a1_a2_1061del", "c.1061delC")):
+            for pid, short in ((self.panel.role_id("o1"), "c.261delG"), (self.panel.role_id("b_796"), "c.796C>A"),
+                               (self.panel.role_id("o2_802"), "c.802G>A"), (self.panel.role_id("b_803"), "c.803G>C"),
+                               (self.panel.role_id("a1a2_467"), "c.467C>T"), (self.panel.role_id("a2_1061del"), "c.1061delC")):
                 m = self.panel.get(pid)
                 if m is None or m.resolved_position() is None:
                     continue
@@ -1702,7 +1699,7 @@ class ABOReportParser:
                     qc_review.append("reported A2 without a primary A2 marker")
                 if A2Trace.startswith("4"):
                     a2_reads = [cell(self.panel.get(p).column_label(), "#Reads")
-                                for p in ("a1_a2_467", "a1_a2_1061del")
+                                for p in (self.panel.role_id("a1a2_467"), self.panel.role_id("a2_1061del"))
                                 if self.panel.get(p) is not None and self.panel.get(p).resolved_position() is not None]
                     if a2_reads and min(a2_reads) < self.min_depth:
                         kind = "same count at every primary position" if reads_uniform else "site-level"
@@ -1763,7 +1760,7 @@ class ABOReportParser:
             elif not primary_reads or highest <= 0:
                 DepthCheck = "No data"
                 qc_review.append("no reads at the primary positions")
-            elif lowest <= 20:
+            elif lowest <= self.panel.threshold("reliability_very_low_reads"):
                 DepthCheck = f"Very low ({int(lowest)} reads)"
                 qc_review.append(f"low depth at primary positions (min {int(lowest)} reads < {self.min_depth})")
             elif lowest < self.min_depth:
@@ -1786,7 +1783,7 @@ class ABOReportParser:
             # A primary position with zero reads is missing evidence, not a position to skip.
             _zero = [r for r in primary_reads if r <= 0]
             if _zero:
-                Reliability = "Very Low(<=20 reads)"
+                Reliability = self.reliability_label("very_low")
 
             ASubtype = a_subtype_warning or ""
 
@@ -2209,9 +2206,9 @@ class ABOReportParser:
             return None                                            # not two clean haplotypes (hom, or a broken phase set)
         haps = [set(int(p) for p in re.findall(r"p(\d+)=", h)) for h, _ in ranked[:2]]
         ids = {}
-        for key, marker_id in (("o1", "o1_marker"), ("o2", "o2_marker_802"), ("o3", "o34_homopolymer_804"),
-                               ("b796", "b_vs_ao_796"), ("b803", "ao_vs_b_803"),
-                               ("a467", "a1_a2_467"), ("a1061", "a1_a2_1061del")):
+        for key, marker_id in (("o1", self.panel.role_id("o1")), ("o2", self.panel.role_id("o2_802")), ("o3", self.panel.role_id("o34_804")),
+                               ("b796", self.panel.role_id("b_796")), ("b803", self.panel.role_id("b_803")),
+                               ("a467", self.panel.role_id("a1a2_467")), ("a1061", self.panel.role_id("a2_1061del"))):
             m = self.panel.get(marker_id)
             if m is not None and m.resolved_position() is not None:
                 ids[key] = m.resolved_position()
@@ -2225,7 +2222,7 @@ class ABOReportParser:
         fired_pos = [(mk, alt, mk.resolved_position()) for mk, alt in (_unpack_fired(x) for x in fired)]
         for mk, _, p in fired_pos:
             if p is not None and not (p in haps[0] or p in haps[1]):
-                if (self._fired_pct.get(mk.id) or 0) >= 80:        # homozygous marker: both alleles carry it
+                if (self._fired_pct.get(mk.id) or 0) >= self.panel.threshold("homozygous_min_pct"):        # homozygous marker: both alleles carry it
                     haps[0].add(p)
                     haps[1].add(p)
         if any(p is None or not (p in haps[0] or p in haps[1]) for _, _, p in fired_pos):
@@ -2527,9 +2524,9 @@ class ABOReportParser:
                         info = calls[row][lab]
                         if info["state"] == "nodata":
                             fmt = grey_cell
-                        elif info["reads"] <= 20:
+                        elif info["reads"] <= self.panel.threshold("reliability_very_low_reads"):
                             fmt = red_cell          # very low depth: the call is not reliable
-                        elif info["reads"] <= 40:
+                        elif info["reads"] <= self.panel.threshold("reliability_low_reads"):
                             fmt = orange_cell       # low depth
                         elif info["state"] == "alt":
                             fmt = alt_cell
@@ -2544,11 +2541,11 @@ class ABOReportParser:
                 try:
                     worksheet.conditional_format(
                         f"A3:{last_col}{num_rows + 2}",
-                        {"type": "formula", "criteria": f'=${reliability_col}3="Very Low(<=20 reads)"', "format": red_bg_format},
+                        {"type": "formula", "criteria": f'=${reliability_col}3="{self.reliability_label("very_low")}"', "format": red_bg_format},
                     )
                     worksheet.conditional_format(
                         f"A3:{last_col}{num_rows + 2}",
-                        {"type": "formula", "criteria": f'=${reliability_col}3="Low (<=40 reads)"', "format": orange_bg_format},
+                        {"type": "formula", "criteria": f'=${reliability_col}3="{self.reliability_label("low")}"', "format": orange_bg_format},
                     )
                 except Exception as format_err:
                     print(f"Warning: Could not apply row-level conditional formatting: {format_err}")

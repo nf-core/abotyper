@@ -20,6 +20,7 @@ GOLDEN = Path(__file__).resolve().parent / "golden"
 PANEL = ROOT / "assets" / "refs" / "abo_variant_panel.yaml"
 SAMPLES = sorted(p.name for p in DATA.iterdir() if p.is_dir())
 UPDATE = os.environ.get("UPDATE_GOLDEN") == "1"
+STATE = {}   # paths produced by the session's chain run, for tests that rerun one step with other settings
 
 sys.path.insert(0, str(BIN))   # the scripts import abo_panel from their own folder, as in the pipeline
 
@@ -86,6 +87,7 @@ def chain(tmp_path_factory):
         for f in ("coverage.txt", "stats", "flagstat"):
             shutil.copy(d / f"{s}.{f}", c)
     run("aggregate_abo_reports.py", "per_sample_processing", "--panel", PANEL, "--threads", "1", cwd=agg)
+    STATE["aggregate_dir"] = agg
     for f in ("ABO_result.txt", "final_export.csv", "ABO_run_qc.txt", "ABO_evidence_summary_mqc.tsv"):
         out[f"aggregate/{f}"] = (agg / f).read_text(encoding="utf-8")
     out["aggregate/ABO_result.xlsx.tsv"] = dump_xlsx(agg / "ABO_result.xlsx")

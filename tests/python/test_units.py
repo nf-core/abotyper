@@ -65,11 +65,11 @@ def test_bad_rows_fail(tmp_path, panel_yaml, mutate):
         abo_panel.load_panel(write_yaml(tmp_path, data))
 
 
-def test_missing_required_marker_is_reported(panel_yaml, tmp_path):
+def test_missing_required_role_is_reported(panel_yaml, tmp_path):
     data = copy.deepcopy(panel_yaml)
     data["variants"] = [v for v in data["variants"] if v["id"] != "b_vs_ao_796"]
     panel = abo_panel.load_panel(write_yaml(tmp_path, data))
-    assert agg.missing_required_markers(panel) == ["b_vs_ao_796"]
+    assert agg.missing_required_markers(panel) == ["b_796 -> b_vs_ao_796"]
 
 
 # ---------------------------------------------------------------- sample names and controls
