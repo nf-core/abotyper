@@ -29,7 +29,6 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abot
 params.abo_reference_fai   = getGenomeAttribute('abo_reference_fai')   ?: params.abo_reference_fai
 params.abo_reference_fasta = getGenomeAttribute('abo_reference_fasta') ?: params.abo_reference_fasta
 params.clair3_model_url    = getGenomeAttribute('clair3_model_url')    ?: params.clair3_model_url
-params.clair3_model        = getGenomeAttribute('clair3_model')        ?: params.clair3_model
 params.abo_panel           = getGenomeAttribute('abo_panel')           ?: params.abo_panel
 
 /*
