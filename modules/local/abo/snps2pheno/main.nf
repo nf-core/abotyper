@@ -1,12 +1,14 @@
 /*
   MODULE: ABO_SNPS2PHENO
   Description:
-    Runs aggregate_abo_reports.py over every sample's combined/ directory
-    (*.ABOPhenotype.txt from ABO_GETABOSNPS, *.Haplotypes.tsv from
-    ABO_CLAIR2HAPLOTYPES), scoring primary and named-marker calls per the
-    panel's thresholds, resolving Phenotype/Genotype/ExtendedGenotype, and
-    writing the pipeline's final output: ABO_result.txt/.xlsx and
-    final_export.csv. Runs once per pipeline run, not per sample.
+    Runs aggregate_abo_reports.py over every sample's files (*.ABOPhenotype.txt
+    from ABO_GETABOSNPS, *.Haplotypes.tsv from ABO_CLAIR2HAPLOTYPES, the
+    ABO_EVIDENCE tables and the samtools coverage/stats/flagstat files), which
+    are staged into the task and laid out as per_sample_processing/<id>/combined/.
+    Controls declared in the samplesheet arrive as a two-column table.
+    Scores primary and named-marker calls per the panel's thresholds, resolves
+    Phenotype/Genotype/ExtendedGenotype, and writes the pipeline's final output:
+    ABO_result.txt/.xlsx and final_export.csv. Runs once per pipeline run, not per sample.
 */
 process ABO_SNPS2PHENO {
     tag "COMPILING ABO RESULTS"
