@@ -21,22 +21,8 @@
                 "2": [
                     [
                         "ABO_GETABOSNPS",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "3": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "4": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ],
                 "log": [
@@ -55,33 +41,19 @@
                         "ABO_AA_barcode01.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
-                "versions_pandas": [
+                "versions_abotyper_core": [
                     [
                         "ABO_GETABOSNPS",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "versions_python": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:33:19.610312732",
+        "timestamp": "2026-11-12T18:17:08.828704041",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.10.5"
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
         }
     },
     "abotyper - ABO_AA_barcode01 - metrics + coverage -> ABOPhenotype report": {
@@ -95,33 +67,19 @@
                 ]
             ],
             {
-                "versions_pandas": [
+                "versions_abotyper_core": [
                     [
                         "ABO_GETABOSNPS",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "versions_python": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_GETABOSNPS",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:33:05.688693179",
+        "timestamp": "2026-11-12T18:16:45.227873909",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.10.5"
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
         }
     }
 }
