@@ -6,58 +6,59 @@
 
 ## Introduction
 
-A pipeline for characterising the Human Blood Group and Red Cell Antigens using Oxford Nanopore third-generation sequencing data.
+nf-core/abotyper types the ABO blood group from Oxford Nanopore amplicon reads covering ABO exons 2–7. Reads are aligned to the ABO RefSeqGene (NG_006669.2), variants are called with Clair3 and checked against an independent BAM pileup, and the calls are scored against a diagnostic variant panel to give the ABO phenotype, genotype and ISBT allele names, including A1/A2 subtypes. Results are for research use only; see [intended use](intended_use.md).
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row and the columns shown below. The pipeline was validated on Oxford Nanopore reads; single-end reads from other long-read platforms or Ion Torrent, and paired-end reads, are accepted (set `--minimap2_preset` to match) but have not been validated.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+sample,fastq_1,fastq_2,control
+SAMPLE1_barcode01,/path/to/SAMPLE1_barcode01.fastq.gz,,
+SAMPLE2_barcode02,/path/to/SAMPLE2_barcode02.fastq.gz,,
+NTC_barcode95,/path/to/NTC_barcode95.fastq.gz,,negative
+POSCTRL_barcode96,/path/to/POSCTRL_barcode96.fastq.gz,,positive
 ```
 
-### Full samplesheet
-
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
-```
-
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column    | Description                                                                                                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`  | Sample name, used in every result table. Any name without spaces; a trailing `_barcode<NN>` is reported as the barcode. See below.                                                |
+| `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                              |
+| `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                         |
+| `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
+### Sample names
+
+Any sample name without spaces is accepted, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. A name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
+
+### Controls
+
+A sample marked `negative` is expected to have few or no ABO reads: low depth is reported as the expected result, and reads above the depth threshold are flagged as possible contamination. A sample marked `positive` must reach normal depth, or it is flagged as a failed control. Every other sample is typed and checked in the same way, whatever its name.
+
+### Multiple runs of the same sample
+
+Rows with the same `sample` name are treated as one sample: their reads are concatenated before alignment. The rows must have the same `control` value and must all be single-end or all paired-end.
+
+```csv title="samplesheet.csv"
+sample,fastq_1,fastq_2,control
+SAMPLE1_barcode01,/path/to/run1/SAMPLE1_barcode01.fastq.gz,,
+SAMPLE1_barcode01,/path/to/run2/SAMPLE1_barcode01.fastq.gz,,
+```
+
+To type the same sample twice as separate replicates, give each library its own name (for example `SAMPLE1_barcode01` and `SAMPLE1_barcode13`); replicate libraries of the same sample are compared in the result tables.
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/abotyper --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run nf-core/abotyper --input ./samplesheet.csv --outdir ./results -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -89,7 +90,6 @@ with:
 ```yaml title="params.yaml"
 input: './samplesheet.csv'
 outdir: './results/'
-genome: 'GRCh37'
 <...>
 ```
 

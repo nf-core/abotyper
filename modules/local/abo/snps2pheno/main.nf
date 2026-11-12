@@ -1,12 +1,14 @@
 /*
   MODULE: ABO_SNPS2PHENO
   Description:
-    Runs aggregate_abo_reports.py over every sample's combined/ directory
-    (*.ABOPhenotype.txt from ABO_GETABOSNPS, *.Haplotypes.tsv from
-    ABO_CLAIR2HAPLOTYPES), scoring primary and named-marker calls per the
-    panel's thresholds, resolving Phenotype/Genotype/ExtendedGenotype, and
-    writing the pipeline's final output: ABO_result.txt/.xlsx and
-    final_export.csv. Runs once per pipeline run, not per sample.
+    Runs aggregate_abo_reports.py over every sample's files (*.ABOPhenotype.txt
+    from ABO_GETABOSNPS, *.Haplotypes.tsv from ABO_CLAIR2HAPLOTYPES, the
+    ABO_EVIDENCE tables and the samtools coverage/stats/flagstat files), which
+    are staged into the task and laid out as per_sample_processing/<id>/combined/.
+    Controls declared in the samplesheet arrive as a two-column table.
+    Scores primary and named-marker calls per the panel's thresholds, resolves
+    Phenotype/Genotype/ExtendedGenotype, and writes the pipeline's final output:
+    ABO_result.txt/.xlsx and final_export.csv. Runs once per pipeline run, not per sample.
 */
 process ABO_SNPS2PHENO {
     tag "COMPILING ABO RESULTS"
@@ -17,11 +19,10 @@ process ABO_SNPS2PHENO {
         ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:e206f33f53f3639b'
         : 'community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:4325a71f45ad8e44'}"
 
-    publishDir "${params.outdir}", mode: 'copy'
-
     input:
-    path samples_dir
-    path per_sample_processing
+    val sample_ids
+    path sample_files, stageAs: 'sample_files/*'
+    path controls
     path panel_file
 
     output:
@@ -33,15 +34,28 @@ process ABO_SNPS2PHENO {
     path "ABO_evidence_summary_mqc.tsv", emit: mqc, optional: true
     tuple val("${task.process}"), val('python'), eval('python --version | sed "s/Python //"'), emit: versions_python, topic: versions
     tuple val("${task.process}"), val('pandas'), eval('python -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
-    tuple val("${task.process}"), val('numpy'), eval('python -c "import numpy; print(numpy.__version__)"'), emit: versions_numpy, topic: versions
+    tuple val("${task.process}"), val('pyyaml'), eval('python -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
     tuple val("${task.process}"), val('xlsxwriter'), eval('python -c "import xlsxwriter; print(xlsxwriter.__version__)"'), emit: versions_xlsxwriter, topic: versions
 
     script:
     def args = task.ext.args ?: ''
+    def controls_arg = controls ? "--controls ${controls}" : ''
+    // Build the per_sample_processing/<id>/combined/ layout the script reads, inside the task
     """
+    for id in ${sample_ids.join(' ')}; do
+        mkdir -p "per_sample_processing/\${id}/combined"
+        for suffix in ABOPhenotype.txt Haplotypes.tsv evidence_status.tsv concordance.tsv coverage.txt stats flagstat; do
+            if [ -e "sample_files/\${id}.\${suffix}" ]; then
+                ln -s "../../../sample_files/\${id}.\${suffix}" "per_sample_processing/\${id}/combined/"
+            fi
+        done
+    done
+
+    set -o pipefail
     aggregate_abo_reports.py \\
-        ${per_sample_processing} \\
+        per_sample_processing \\
         --panel ${panel_file} \\
+        ${controls_arg} \\
         --threads ${task.cpus} \\
         ${args} 2>&1 | tee ABO_results.log
     """
@@ -54,6 +68,5 @@ process ABO_SNPS2PHENO {
     touch ABO_result.xlsx
     touch ABO_run_qc.txt
     touch ABO_evidence_summary_mqc.tsv
-    touch ABO_result.txt
     """
 }

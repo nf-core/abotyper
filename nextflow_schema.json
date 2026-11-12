@@ -107,22 +107,13 @@
                     "help_text": "Defaults to `assets/refs/abo_variant_panel.yaml` in the pipeline directory. It is the single source of truth for every diagnostic position; add a variant by editing the panel, not the scripts.",
                     "fa_icon": "fas fa-table"
                 },
-                "abo_bed": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "pattern": "^\\S+\\.bed$",
-                    "description": "Panel BED file used as a fallback for the panel-filtering step.",
-                    "help_text": "Regenerated from `--abo_panel` at run time by `ABO_PANEL2BED`; the copy in `assets/refs/` is only a fallback.",
-                    "fa_icon": "fas fa-align-left"
-                },
                 "abo_clair3_region_bed": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
                     "pattern": "^\\S+\\.bed$",
                     "description": "BED file restricting Clair3 calling (and gVCF reference blocks) to the ABO exon 2-7 region.",
-                    "help_text": "Passed to Clair3 as `--bed_fn`. Defaults to `assets/refs/abo_clair3_region.bed`. It must be readable inside the container and should stay wider than the panel positions so phasing has flanking variants.",
+                    "help_text": "Passed to Clair3 as `--bed_fn`. Defaults to `assets/refs/abo_clair3_region.bed`. It should stay wider than the panel positions so phasing has flanking variants.",
                     "fa_icon": "fas fa-align-left"
                 },
                 "clair3_model_url": {
@@ -131,18 +122,13 @@
                     "help_text": "Downloaded once per run. Pick the model that matches your flow cell and basecaller.",
                     "fa_icon": "fas fa-cloud-download-alt"
                 },
-                "renaming_file": {
+                "minimap2_preset": {
                     "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "description": "Optional tab-delimited file mapping `sequencingID` to `sampleName` to rename samples in the final tables.",
-                    "fa_icon": "fas fa-file-signature"
-                },
-                "skip_renaming": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Skip the optional sample renaming step.",
-                    "fa_icon": "fas fa-forward"
+                    "default": "map-ont",
+                    "enum": ["map-ont", "lr:hq", "map-pb", "map-hifi", "sr"],
+                    "description": "minimap2 alignment preset (`-x`) for the sequencing platform.",
+                    "help_text": "`map-ont` (default) for Oxford Nanopore reads, the platform the pipeline was validated on; `lr:hq` for high-accuracy Nanopore reads (Q20+); `map-pb` or `map-hifi` for PacBio CLR or HiFi; `sr` for short reads. Results from presets other than `map-ont` have not been validated.",
+                    "fa_icon": "fas fa-sliders-h"
                 }
             }
         },
@@ -295,12 +281,6 @@
                     "exists": true,
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
-                },
-                "logo": {
-                    "type": "string",
-                    "description": "Logo shown with the pipeline (defaults to the file set in `nextflow.config`).",
-                    "fa_icon": "fas fa-image",
-                    "hidden": true
                 },
                 "pipelines_testdata_base_path": {
                     "type": "string",

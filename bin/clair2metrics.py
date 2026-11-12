@@ -62,7 +62,7 @@ __credits__ = [
     "Mathijs Groeneweg",
     "Claude Sonnet 5",
 ]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "1.1.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"

@@ -25,7 +25,7 @@ __credits__ = [
     "Mathijs Groeneweg",
     "Claude Sonnet 5",
 ]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "2.4.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
@@ -503,24 +503,24 @@ class PhaseEvidence:
 
 def parse_haplotypes_tsv(haplo_file: str) -> Optional[PhaseEvidence]:
     """Parse a Haplotypes.tsv file produced by pysam_haploscan.py."""
-    if not haplo_file or not os.path.exists(haplo_file):
+    if not haplo_file or not os.path.exists(haplo_file) or os.path.getsize(haplo_file) == 0:
         return None
 
+    # a file that exists but cannot be parsed raises: the sample is reported as failed, not as unphased
     try:
         df = pd.read_csv(haplo_file, sep="\t", encoding="utf-8")
-        if df.empty:
-            return None
-
-        evidence = PhaseEvidence(total_reads=len(df))
-
-        if "Haplotype" in df.columns:
-            for haplo_str, count in df["Haplotype"].value_counts().items():
-                evidence.haplotype_counts[str(haplo_str)] = int(count)
-
-        return evidence
-
-    except Exception:
+    except pd.errors.EmptyDataError:
         return None
+    if df.empty:
+        return None
+
+    evidence = PhaseEvidence(total_reads=len(df))
+
+    if "Haplotype" in df.columns:
+        for haplo_str, count in df["Haplotype"].value_counts().items():
+            evidence.haplotype_counts[str(haplo_str)] = int(count)
+
+    return evidence
 
 
 def compute_phase_confidence(
@@ -621,6 +621,43 @@ def _init_worker(parser):
     _WORKER_PARSER = parser
 
 
+# Panel marker IDs this script reads by name. The panel may add, drop or recalibrate any other marker,
+# but these must exist, or every sample would silently come out Unknown / REVIEW.
+REQUIRED_MARKER_IDS = (
+    "o1_marker", "o2_marker_802", "o34_homopolymer_804", "b_vs_ao_796", "ao_vs_b_803",
+    "a1_a2_467", "a1_a2_1061del", "a2_marker_266", "a2_marker_268", "a2_marker_297_a201",
+    "a2p_1032_a201", "a2p_907_a206", "ael_804_indel",
+)
+
+
+def missing_required_markers(panel) -> List[str]:
+    """Required marker IDs that the panel does not define."""
+    ids = {m.id for m in panel.variants}
+    return [i for i in REQUIRED_MARKER_IDS if i not in ids]
+
+
+def read_controls(path: Optional[str]) -> Dict[str, str]:
+    """Controls declared in the samplesheet: {sample id: 'negative' | 'positive'}.
+
+    Two tab-separated columns (sample id, control type); an empty type marks a sample.
+    """
+    controls: Dict[str, str] = {}
+    if not path:
+        return controls
+    with open(path, encoding="utf-8") as fh:
+        for n, line in enumerate(fh, start=1):
+            if not line.strip():
+                continue
+            parts = line.rstrip("\n").split("\t")
+            sample = parts[0].strip()
+            kind = parts[1].strip().lower() if len(parts) > 1 else ""
+            if kind not in ("", "negative", "positive"):
+                raise ValueError(f"{path} line {n}: control must be empty, 'negative' or 'positive', got '{kind}'")
+            if kind:
+                controls[sample] = kind
+    return controls
+
+
 def _process_one(filename):
     """Run process_file for one sample in a worker; return everything it recorded plus its log."""
     import contextlib
@@ -647,14 +684,17 @@ class ABOReportParser:
 
     def __init__(self, input_dir, panel: Panel, default_barcode="barcode00",
                  min_depth=30, qc_report="ABO_run_qc.txt", nanoplot_dir=None, threads=1,
-                 negative_control_pattern="NEG", positive_control_pattern="POS"):
+                 negative_control_pattern=None, positive_control_pattern=None, controls=None):
         self.input_dir = input_dir
         self.panel = panel
         self.default_barcode = default_barcode
         self.results = []
         self.failed_samples = []
+        self.output_errors = []               # outputs that could not be written: the run must fail
+        self.controls = dict(controls or {})  # {sample folder name: 'negative' | 'positive'}, from --controls
+        self._current_control = ""            # control type of the sample being processed
         self.min_depth = min_depth            # reads below which an A1 call is flagged and a sample fails the depth check
-        # sample names matching this pattern are negative controls: low depth is expected, reads are not
+        # optional, off by default: sample names matching this pattern are also negative controls
         self.negative_control_re = re.compile(negative_control_pattern, re.IGNORECASE) if negative_control_pattern else None
         # positive controls must show normal depth: a thin positive control means the run or the library failed
         self.positive_control_re = re.compile(positive_control_pattern, re.IGNORECASE) if positive_control_pattern else None
@@ -689,13 +729,9 @@ class ABOReportParser:
 
         self.initialize_columns()
 
-        self.pattern_with_barcode = re.compile(
-            r"^[A-Z0-9]+(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$",
-            re.IGNORECASE,
-        )
-        self.pattern_without_barcode = re.compile(
-            r"^[A-Z0-9]+(_[A-Z0-9]+)*$", re.IGNORECASE
-        )
+        # A sample folder is named by the samplesheet ID. Any name is accepted; a trailing
+        # "_barcode<digits>" is reported as the barcode, anything else is part of the sample name.
+        self.barcode_suffix = re.compile(r"^(?P<name>.+)_barcode(?P<num>\d+)$", re.IGNORECASE)
 
         self.processing_stats = {
             "with_barcode": 0,
@@ -747,27 +783,18 @@ class ABOReportParser:
     # Sample/filename handling
     # -----------------------------------------------------------------
     def extract_sample_info(self, filename):
-        """Extract sample name and barcode from filename."""
-        if "_barcode" in filename:
-            parts = filename.rsplit("_barcode", 1)
-            sample_name = parts[0]
-            try:
-                barcode_num = parts[1]
-                barcode_int = int(barcode_num)
-                if 0 <= barcode_int <= 99:
-                    barcode = f"barcode{barcode_num.zfill(2)}"
-                else:
-                    print(f"Warning: Unusual barcode number {barcode_int} for {filename}")
-                    barcode = f"barcode{barcode_num}"
-            except ValueError:
-                print(f"Warning: Invalid barcode format in {filename}, using as-is")
-                barcode = f"barcode{parts[1]}"
-            return sample_name, barcode, "explicit"
-        else:
-            sample_name = filename
-            barcode = self.default_barcode
-            print(f"No barcode found in '{filename}', using default barcode: {barcode}")
-            return sample_name, barcode, "default"
+        """Sample name and barcode from a sample folder name.
+
+        "S1_barcode07" gives ("S1", "barcode07"). A name without a trailing _barcode<digits> keeps the whole
+        name and gets the default barcode, so "patient-01", "S1.r1" and "X_barcode06_rep2" are all valid.
+        """
+        m = self.barcode_suffix.match(filename)
+        if m:
+            num = m.group("num")
+            barcode = f"barcode{num.zfill(2)}" if int(num) <= 99 else f"barcode{num}"
+            return m.group("name"), barcode, "explicit"
+        print(f"No barcode found in '{filename}', using default barcode: {self.default_barcode}")
+        return filename, self.default_barcode, "default"
 
     # -----------------------------------------------------------------
     # Per-exon report parser
@@ -1714,8 +1741,11 @@ class ABOReportParser:
             #   negative control  : few reads is the expected, correct result; reads above --min-depth mean
             #                       possible contamination -> REVIEW
             #   positive control  : needs normal depth like a patient sample; thin reads mean a failed control -> REVIEW
-            is_negative = bool(self.negative_control_re and self.negative_control_re.search(_sid))
-            is_positive = bool(not is_negative and self.positive_control_re and self.positive_control_re.search(_sid))
+            declared = self._current_control
+            is_negative = declared == "negative" or bool(
+                not declared and self.negative_control_re and self.negative_control_re.search(_sid))
+            is_positive = declared == "positive" or bool(
+                not declared and not is_negative and self.positive_control_re and self.positive_control_re.search(_sid))
             lowest = min(primary_reads) if primary_reads else 0
             highest = max(primary_reads) if primary_reads else 0
             if is_negative:
@@ -1829,6 +1859,7 @@ class ABOReportParser:
         try:
             sample_name, barcode, pattern_type = self.extract_sample_info(filename)
             sample_dir = os.path.join(self.input_dir, filename)
+            self._current_control = self.controls.get(filename, "")
 
             result_df = pd.DataFrame(columns=self.columns)
             result_df.loc[0, ("", "Barcode")] = barcode.replace("barcode", "")
@@ -1902,6 +1933,7 @@ class ABOReportParser:
             print(f"Error processing {filename}: {str(e)}")
             import traceback
             traceback.print_exc()
+            self.failed_samples.append({"sample": filename, "reason": f"Processing error: {e}"})
 
     def _record_sample_metrics(self, result_df, sample_name, barcode, sample_dir):
         """Collect the Typing-sheet metrics for one sample (never raises)."""
@@ -1952,8 +1984,13 @@ class ABOReportParser:
                 old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
                 result_df.at[0, ("Notes", "QCFlags")] = (old + "; " if old else "") + "; ".join(msgs)
                 result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
-        except Exception:
-            pass
+        except Exception as status_err:
+            # without the evidence summary the Clair3/BAM checks cannot be made: never report PASS
+            print(f"Warning: could not read the evidence status for {sample_name}: {status_err}")
+            old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
+            result_df.at[0, ("Notes", "QCFlags")] = ((old + "; " if old else "")
+                                                     + f"evidence status unreadable ({status_err})")
+            result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
         try:
             # NanoPlot runs on the raw reads, so it is the better source for read count/length
             ns_file = find_nanostats(sample_dir, self.nanoplot_dir, str(sample_name), str(barcode))
@@ -2272,15 +2309,7 @@ class ABOReportParser:
         valid_directories = []
         for filename in os.listdir(self.input_dir):
             if os.path.isdir(os.path.join(self.input_dir, filename)):
-                match_with_barcode = self.pattern_with_barcode.match(filename)
-                match_without_barcode = self.pattern_without_barcode.match(filename)
-                if match_with_barcode or match_without_barcode:
-                    valid_directories.append(filename)
-                else:
-                    self.processing_stats["pattern_failed"] += 1
-                    self.failed_samples.append(
-                        {"sample": filename, "reason": "Filename pattern not recognized"}
-                    )
+                valid_directories.append(filename)
 
         if not valid_directories:
             print("No valid sample directories found matching expected patterns.")
@@ -2458,7 +2487,8 @@ class ABOReportParser:
                         {"type": "cell", "criteria": "<=", "value": self.min_depth, "format": orange_bg_format},
                     )
             except Exception as typing_err:
-                print(f"Warning: could not write Typing sheet: {typing_err}")
+                print(f"ERROR: could not write Typing sheet: {typing_err}")
+                self.output_errors.append(f"Typing sheet: {typing_err}")
 
             # Sheet 2: Variants (one column per panel position)
             variants_df.to_excel(writer, sheet_name="Variants", header=False, index=False, startrow=2)
@@ -2881,13 +2911,15 @@ class ABOReportParser:
             except OSError as e:
                 print(f"Could not write QC report: {e}")
 
-    def run(self):
-        """Run the ABOReportParser."""
+    def run(self) -> int:
+        """Run the ABOReportParser. Returns the exit status: 1 when any sample failed or an output
+        could not be written (the outputs that could be written are still written), else 0."""
         self.process_files()
         final_df = self.merge_dataframes()
         if final_df.empty:
             print("No results to report. Exiting.")
-            return
+            self._print_failures()
+            return 1
         print("\n\nFinal Results:")
         print("-" * 336)
         print(final_df.to_string(index=False))
@@ -2976,6 +3008,18 @@ class ABOReportParser:
 
         print(f"============================")
         self.report_qc(final_df)
+        return self._print_failures()
+
+    def _print_failures(self) -> int:
+        """Summarise failed samples and output errors; return the exit status."""
+        if not self.failed_samples and not self.output_errors:
+            return 0
+        print("\nERROR: the run is incomplete.", file=sys.stderr)
+        for sample in self.failed_samples:
+            print(f"  failed sample {sample['sample']}: {sample['reason']}", file=sys.stderr)
+        for err in self.output_errors:
+            print(f"  output not written: {err}", file=sys.stderr)
+        return 1
 
 
 # ===========================================================================
@@ -3037,14 +3081,17 @@ For more information, see: https://github.com/fmobegi/nf-core-abotyper
     parser.add_argument("--min-depth", type=int, default=30, metavar="N",
                          help="Flag A1 calls made on fewer than N reads at c.467/c.1061delC, and samples with fewer than "
                               "N reads at a primary position (depth check) (default: %(default)s)")
-    parser.add_argument("--positive-control-pattern", default="POS", metavar="REGEX",
-                         help="Sample names matching this regular expression (case-insensitive) are positive controls: "
-                              "they need normal depth, and fewer than --min-depth reads fails the control; "
-                              "use '' to disable (default: %(default)s)")
-    parser.add_argument("--negative-control-pattern", default="NEG", metavar="REGEX",
-                         help="Sample names matching this regular expression (case-insensitive) are negative controls: "
-                              "few reads is the expected result and reads above --min-depth are flagged as possible "
-                              "contamination; use '' to treat every sample alike (default: %(default)s)")
+    parser.add_argument("--controls", default=None, metavar="FILE",
+                         help="Tab-separated file of sample folder name and control type ('negative', 'positive' or "
+                              "empty), from the samplesheet `control` column. Negative controls are expected to have "
+                              "few reads, and reads above --min-depth are flagged as possible contamination; positive "
+                              "controls need normal depth.")
+    parser.add_argument("--positive-control-pattern", default=None, metavar="REGEX",
+                         help="Optional: also treat sample names matching this regular expression (case-insensitive) "
+                              "as positive controls when --controls does not list them (default: off)")
+    parser.add_argument("--negative-control-pattern", default=None, metavar="REGEX",
+                         help="Optional: also treat sample names matching this regular expression (case-insensitive) "
+                              "as negative controls when --controls does not list them (default: off)")
     parser.add_argument("--qc-report", default="ABO_run_qc.txt", metavar="FILE",
                          help="Write the run-level QC summary here; use '' to disable (default: %(default)s)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output for debugging")
@@ -3084,6 +3131,18 @@ if __name__ == "__main__":
         print(f"! CRITICAL: could not load variant panel '{args.panel}': {exc}")
         sys.exit(1)
 
+    missing = missing_required_markers(panel)
+    if missing:
+        print(f"! CRITICAL: the variant panel '{args.panel}' does not define marker(s) this script needs: "
+              f"{', '.join(missing)}. Restore them (they may be recalibrated, not renamed).")
+        sys.exit(1)
+
+    try:
+        controls = read_controls(args.controls)
+    except (OSError, ValueError) as exc:
+        print(f"! CRITICAL: could not read the controls file '{args.controls}': {exc}")
+        sys.exit(1)
+
     print(f"Using default barcode: {args.default_barcode}")
     print(f"Loaded panel v{panel.meta.get('panel_version', '?')} with {len(panel.variants)} variants "
           f"({len(panel.calibrated())} usable now, {len(panel.uncalibrated())} awaiting calibration)")
@@ -3092,6 +3151,8 @@ if __name__ == "__main__":
                                       min_depth=args.min_depth, qc_report=args.qc_report,
                                       nanoplot_dir=args.nanoplot_dir, threads=args.threads,
                                       negative_control_pattern=args.negative_control_pattern,
-                                      positive_control_pattern=args.positive_control_pattern)
-    parser_instance.run()
-    print("All done!\n")
+                                      positive_control_pattern=args.positive_control_pattern,
+                                      controls=controls)
+    status = parser_instance.run()
+    print("All done!\n" if status == 0 else "Finished with errors.\n")
+    sys.exit(status)

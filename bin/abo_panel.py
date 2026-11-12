@@ -48,7 +48,7 @@ __credits__ = [
     "Mathijs Groeneweg",
     "Claude Sonnet 5",
 ]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "2.0.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
@@ -79,20 +79,36 @@ _FLOAT_FIELDS = {
 }
 
 
-def _coerce(key: str, value):
-    """Coerce a raw (possibly stringified) value to its proper type."""
-    if value is None or value == "":
+class PanelError(ValueError):
+    """The panel file has a value or key the loader cannot use. Raised instead of guessing,
+    because the panel decides where every marker is read and how it is called."""
+
+
+def _coerce(key: str, value, row_id: str = "?"):
+    """Coerce a raw (possibly stringified) value to its proper type; raise PanelError on a bad value.
+
+    An integer field accepts an integral float such as 24281.0 (what a spreadsheet may write back)
+    but not 24281.5 or text, so a damaged cell can never fall back to another coordinate.
+    """
+    if value is None or (isinstance(value, str) and value.strip() == ""):
         return None
     if key in _INT_FIELDS:
+        if isinstance(value, bool):
+            raise PanelError(f"panel row '{row_id}': {key} must be an integer, got {value!r}")
         try:
-            return int(value)
-        except (ValueError, TypeError):
-            return None
+            number = float(str(value).strip())
+        except ValueError:
+            raise PanelError(f"panel row '{row_id}': {key} must be an integer, got {value!r}") from None
+        if not number.is_integer():
+            raise PanelError(f"panel row '{row_id}': {key} must be an integer, got {value!r}")
+        return int(number)
     if key in _FLOAT_FIELDS:
+        if isinstance(value, bool):
+            raise PanelError(f"panel row '{row_id}': {key} must be a number, got {value!r}")
         try:
-            return float(value)
-        except (ValueError, TypeError):
-            return None
+            return float(str(value).strip())
+        except ValueError:
+            raise PanelError(f"panel row '{row_id}': {key} must be a number, got {value!r}") from None
     return str(value)
 
 
@@ -329,11 +345,24 @@ def load_panel(path: Union[str, Path]) -> Panel:
             f"Unsupported panel format '{suffix}'. Use .yaml/.yml/.json/.csv/.tsv"
         )
 
+    if not isinstance(raw, dict) or not raw.get("variants"):
+        raise PanelError(f"{path}: no 'variants' found in the panel")
     variants = []
-    for row in raw.get("variants", []):
-        clean = {k: _coerce(k, v) for k, v in row.items() if k in FIELD_NAMES}
-        # Required minimum fields
-        clean.setdefault("id", row.get("id", f"unnamed_{len(variants)}"))
+    seen_ids = set()
+    for n, row in enumerate(raw.get("variants", []), start=1):
+        if not isinstance(row, dict):
+            raise PanelError(f"{path}: variant entry {n} is not a mapping")
+        row_id = str(row.get("id") or "").strip()
+        if not row_id:
+            raise PanelError(f"{path}: variant entry {n} has no id")
+        if row_id in seen_ids:
+            raise PanelError(f"{path}: duplicate variant id '{row_id}'")
+        seen_ids.add(row_id)
+        unknown = sorted(k for k in row if k not in FIELD_NAMES)
+        if unknown:
+            raise PanelError(f"{path}: variant '{row_id}' has unknown key(s) {unknown}; "
+                             f"known keys are {FIELD_NAMES}")
+        clean = {k: _coerce(k, v, row_id) for k, v in row.items()}
         for f_ in fields(VariantMarker):
             if f_.name not in clean:
                 clean[f_.name] = f_.default if not isinstance(f_.default, type(field())) else None
@@ -342,14 +371,16 @@ def load_panel(path: Union[str, Path]) -> Panel:
 
     svs = []
     for row in raw.get("structural_variants", []) or []:
-        clean = {k: row.get(k) for k in
-                 ["id", "cdna_change", "exon", "size_bp_approx",
-                  "associated_alleles", "notes", "source"]}
+        sv_keys = ["id", "cdna_change", "exon", "size_bp_approx",
+                   "associated_alleles", "notes", "source"]
+        # a flat CSV/TSV panel carries every variant column on structural rows too; only non-empty ones count
+        unknown = sorted(k for k, v in row.items()
+                         if k not in sv_keys and not (k in FIELD_NAMES and v in (None, "")))
+        if unknown:
+            raise PanelError(f"{path}: structural variant '{row.get('id')}' has unknown key(s) {unknown}")
+        clean = {k: row.get(k) for k in sv_keys}
         if clean.get("size_bp_approx") not in (None, ""):
-            try:
-                clean["size_bp_approx"] = int(clean["size_bp_approx"])
-            except (ValueError, TypeError):
-                clean["size_bp_approx"] = None
+            clean["size_bp_approx"] = _coerce("min_reads", clean["size_bp_approx"], str(row.get("id")))
         svs.append(StructuralVariant(**clean))
 
     return Panel(variants=variants, structural_variants=svs, meta=raw.get("meta", {}))

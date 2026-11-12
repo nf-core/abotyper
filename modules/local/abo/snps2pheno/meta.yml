@@ -24,12 +24,12 @@ tools:
       documentation: https://pandas.pydata.org/docs/
       tool_dev_url: https://github.com/pandas-dev/pandas
       licence: ["BSD-3-Clause"]
-  - numpy:
-      description: Fundamental package for scientific computing with Python
-      homepage: https://numpy.org/
-      documentation: https://numpy.org/doc/
-      tool_dev_url: https://github.com/numpy/numpy
-      licence: ["BSD-3-Clause"]
+  - pyyaml:
+      description: YAML parser and emitter for Python
+      homepage: https://pyyaml.org/
+      documentation: https://pyyaml.org/wiki/PyYAMLDocumentation
+      tool_dev_url: https://github.com/yaml/pyyaml
+      licence: ["MIT"]
   - xlsxwriter:
       description: Python module for creating Excel XLSX files
       homepage: https://xlsxwriter.readthedocs.io/
@@ -44,21 +44,28 @@ tools:
       licence: ["MIT"]
 
 input:
-  - - samples_dir:
-        type: directory
-        description: Directory containing processed sample results with ABO phenotype predictions
-        pattern: "*/"
-        required: true
-  - - per_sample_processing:
-        type: directory
-        description: Root directory containing per-sample processing results organized by sample ID and exon
-        pattern: "per_sample_processing/"
-        required: true
-  - - panel_file:
-        type: file
-        description: ABO variant panel file (abo_variant_panel.yaml / .json / .csv / .tsv)
-        pattern: "*.{yaml,yml,json,csv,tsv}"
-        required: true
+  - sample_ids:
+      type: list
+      description: Sample IDs to aggregate; each names its files as <id>.<suffix>
+  - sample_files:
+      type: file
+      description: |
+        Per-sample files read by aggregate_abo_reports.py (*.ABOPhenotype.txt, *.Haplotypes.tsv,
+        *.evidence_status.tsv, *.concordance.tsv, *.coverage.txt, *.stats, *.flagstat)
+      pattern: "*"
+      ontologies: []
+  - controls:
+      type: file
+      description: |
+        Optional two-column TSV (sample ID, control type) from the samplesheet `control` column;
+        `negative` and `positive` mark controls, empty marks a sample. Pass [] for none.
+      pattern: "*.tsv"
+      ontologies: []
+  - panel_file:
+      type: file
+      description: ABO variant panel file (abo_variant_panel.yaml / .json / .csv / .tsv)
+      pattern: "*.{yaml,yml,json,csv,tsv}"
+      ontologies: []
 
 output:
   txt:
@@ -81,6 +88,16 @@ output:
           type: file
           description: CSV file containing final exported ABO results suitable for downstream analysis
           pattern: "final_export.csv"
+  qc:
+    - - "ABO_run_qc.txt":
+          type: file
+          description: Run-level QC summary (research-use statement, depth and evidence checks per sample)
+          pattern: "ABO_run_qc.txt"
+  mqc:
+    - - "ABO_evidence_summary_mqc.tsv":
+          type: file
+          description: Per-sample evidence summary (Clair3 and BAM pileup) as a MultiQC custom-content table
+          pattern: "ABO_evidence_summary_mqc.tsv"
   versions_python:
     - - ${task.process}:
           type: string
@@ -101,16 +118,16 @@ output:
       - python -c "import pandas; print(pandas.__version__)":
           type: eval
           description: The expression to obtain the version of pandas
-  versions_numpy:
+  versions_pyyaml:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - numpy:
+      - pyyaml:
           type: string
           description: Name of the library
-      - python -c "import numpy; print(numpy.__version__)":
+      - python -c "import yaml; print(yaml.__version__)":
           type: eval
-          description: The expression to obtain the version of numpy
+          description: The expression to obtain the version of PyYAML
   versions_xlsxwriter:
     - - ${task.process}:
           type: string
@@ -145,12 +162,12 @@ topics:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - numpy:
+      - pyyaml:
           type: string
           description: Name of the library
-      - python -c "import numpy; print(numpy.__version__)":
+      - python -c "import yaml; print(yaml.__version__)":
           type: eval
-          description: The expression to obtain the version of numpy
+          description: The expression to obtain the version of PyYAML
     - - ${task.process}:
           type: string
           description: Name of the process

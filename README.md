@@ -12,7 +12,7 @@
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/nf-core/abotyper)
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
-[![nf-core template version](https://img.shields.io/badge/nf--core_template-4.2.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.2.1)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-4.2.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.2.2)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -79,34 +79,25 @@ The pipeline makes use of the following core dependencies:
 
 ## Required input files structure
 
-Ensure that all input fastq files have a naming convention that matches this regular expression (`regex`)
+The samplesheet has one row per sample, with the columns `sample`, `fastq_1`, an optional `fastq_2` for paired-end reads and an optional `control` (see [usage](docs/usage.md)).
+The `sample` name is used in every result table. Any name without spaces is accepted. A name ending in `_barcode<digits>` is reported with that barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with `barcode00`.
 
-```python
-## python regex for matching samples
-pattern = r"^[A-Z0-9]+(-[A-Z0-9]+){0,2}_barcode\d+$"
-```
-
-The regex does the following:
-
-- `^[A-Z0-9]+` allows a sample name that starts with any combination of letters `A-to-Z` and digits `0-to-9` (matching is case-insensitive).
-- `(-[A-Z0-9]+){0,2}` handles up to two optional segments of letters or digits separated by a dash(-).
-- `_barcode\d+$` ensures the filename ends with_barcode followed by digits to denote barcode numbers.
-
-There is a file handling logic in the code `filename.split("_")` that assumes the barcode is always the last part of the filename.
-The names are split into `basename` and `barcode` which are then used in later reporting.Please Adjust this if necessary based on actual filename structure in your assays.
-
-Here are a few examples of acceptable input file names:
+Here are a few examples of sample names:
 
 ```txt
-POSCTRL_barcode13.fastq
-NEGCTRL_barcode12.fastq
-CONTROLPOS_barcode19.fastq
-2025705_barcode14.fastq
-Sample-45-44874_barcode25.fastq
-Sample1-2024-12345_barcode22.fastq
+POSCTRL_barcode13
+NTC_barcode12
+2025705_barcode14
+Sample-45-44874_barcode25
+Sample1-2024-12345_barcode22
+ABO_AA_barcode01
+patient-01
+S1.r1
 ```
 
-> *.gz files are also accepted. I just modified the schema to allow both compressed and uncompressed files. A feature that is becoming less common in nf-core pipelines but provides more flexibility.
+Controls are declared in the `control` column (`negative` or `positive`), not recognised from the sample name.
+
+> `.gz` files are also accepted.
 
 ## Sequencing platform compatibility
 
@@ -118,7 +109,7 @@ While we recommend using the above naming convention for optimal compatibility, 
 - **Ion Torrent** (currently undergoing testing)
 - **Illumina** (currently undergoing testing)
 
-The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping.
+The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping, and set the minimap2 preset with `--minimap2_preset` (`map-ont` by default; `map-pb`, `map-hifi`, `lr:hq` or `sr` for other read types). Only Oxford Nanopore data with `map-ont` has been validated.
 
 ## Running `nf-core/abotyper`
 
@@ -128,10 +119,10 @@ To run this pipeline, use:
 
 ```bash
 # Quick test
-nextflow run nf-core-abotyper/main.nf --outdir test_working -profile test,conda -resume
+nextflow run nf-core/abotyper --outdir test_working -profile test,conda -resume
 
 # Complete run
-nextflow nf-core/abotyper \
+nextflow run nf-core/abotyper \
   -resume \
   -profile <docker/singularity/.../institute> \
   --input samplesheet.csv \
@@ -140,9 +131,6 @@ nextflow nf-core/abotyper \
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/running/run-pipelines#using-parameter-files).
-
-The code by permits renaming of samples using a tab-delimited file with `sequencingID` and `sampleName` (see `nextflow.config` file under `$params.renaming_file`).
-This option is controlled by the parameter `$params.skip_renaming` and can be overridden via the commandline using option `--skip_renaming true` to skip the process.
 
 ## Output
 
@@ -246,18 +234,6 @@ If you use nf-core/abotyper for your analysis, please cite it using the followin
 > **Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing.**
 >
 > Fredrick M. Mobegi, Samuel Bruce, Naser El-Lagta, Felipe Ayora, Benedict M. Matern, Mathijs Groeneweg, Lloyd J. D'Orsogna & Dianne De Santis.
->
-> _Int. J. Mol. Sci._ 2025 Jun 06. doi: [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443).
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 >
 > _Int. J. Mol. Sci._ 2025 Jun 06. doi: [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443).
 

@@ -36,7 +36,6 @@ OUTDIR/
 │       │   ├── SAMPLE1_barcode01.concordance.tsv
 │       │   ├── SAMPLE1_barcode01.evidence_status.tsv
 │       │   └── SAMPLE1_barcode01.pileup_metrics.tsv
-│       ├── combined
 │       ├── SAMPLE1_barcode01.ABOPhenotype.txt
 │       └── SAMPLE1_barcode01.log.txt
 ├── pipeline_info

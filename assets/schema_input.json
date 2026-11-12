@@ -26,6 +26,12 @@
                 "exists": true,
                 "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz', or '.fastq.gz'"
+            },
+            "control": {
+                "type": "string",
+                "enum": ["negative", "positive"],
+                "errorMessage": "control must be empty, 'negative' (no-template control) or 'positive' (positive control)",
+                "meta": ["control"]
             }
         },
         "required": ["sample", "fastq_1"]
