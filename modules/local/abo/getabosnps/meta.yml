@@ -9,18 +9,12 @@ keywords:
   - variant calling
   - genotyping
 tools:
-  - python:
-      description: Python programming language
-      homepage: https://www.python.org/
-      documentation: https://docs.python.org/
-      tool_dev_url: https://github.com/python/cpython
-      licence: ["Python Software Foundation License"]
-  - pandas:
-      description: Powerful data structures for data analysis, time series, and statistics
-      homepage: https://pandas.pydata.org/
-      documentation: https://pandas.pydata.org/docs/
-      tool_dev_url: https://github.com/pandas-dev/pandas
-      licence: ["BSD-3-Clause"]
+  - abotyper-core:
+      description: ABO blood group typing logic of nf-core/abotyper, as a Python package and command-line tools
+      homepage: https://github.com/fmobegi/abotyper-core
+      documentation: https://github.com/fmobegi/abotyper-core#readme
+      tool_dev_url: https://github.com/fmobegi/abotyper-core
+      licence: ["MIT"]
 
 input:
   - - meta:
@@ -69,68 +63,54 @@ output:
           type: file
           description: Log file containing processing information and any warnings/errors
           pattern: "*.log.txt"
-  versions_python:
+  versions_abotyper_core:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - python:
+      - abotyper-core:
           type: string
           description: Name of the tool
-      - python3 --version | sed "s/Python //":
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
           type: eval
-          description: The expression to obtain the version of Python
-  versions_pandas:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pandas:
-          type: string
-          description: Name of the library
-      - python3 -c "import pandas; print(pandas.__version__)":
-          type: eval
-          description: The expression to obtain the version of pandas
-  versions_pyyaml:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pyyaml:
-          type: string
-          description: Name of the library
-      - python3 -c "import yaml; print(yaml.__version__)":
-          type: eval
-          description: The expression to obtain the version of PyYAML
+          description: The expression to obtain the version of abotyper-core
 
 topics:
   versions:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - python:
+      - abotyper-core:
           type: string
           description: Name of the tool
-      - python3 --version | sed "s/Python //":
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
           type: eval
-          description: The expression to obtain the version of Python
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pandas:
-          type: string
-          description: Name of the library
-      - python3 -c "import pandas; print(pandas.__version__)":
-          type: eval
-          description: The expression to obtain the version of pandas
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pyyaml:
-          type: string
-          description: Name of the library
-      - python3 -c "import yaml; print(yaml.__version__)":
-          type: eval
-          description: The expression to obtain the version of PyYAML
+          description: The expression to obtain the version of abotyper-core
 
 authors:
   - "@fmobegi"
 maintainers:
   - "@fmobegi"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:5f56906f1b4dd058
+      build_id: bd-5f56906f1b4dd058_1
+      scan_id: sc-d6f4000ba6bd9621_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2
+      build_id: bd-81dee64f9dbf35a2_1
+      scan_id: sc-e8fc87b2d855b58f_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:501f4af930d696d0
+      build_id: bd-501f4af930d696d0_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:2e0bf81419c88f48
+      build_id: bd-2e0bf81419c88f48_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/55/557a9c76935cf3747eb51032eba0e3f84934306b8301c8e0d5f498dddd8655d9/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_amd64-bd-81dee64f9dbf35a2_1.txt
+    linux/arm64:
+      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_arm64-bd-5f56906f1b4dd058_1.txt

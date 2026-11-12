@@ -7,7 +7,7 @@
     calls over the whole exon 2-7 region (params.abo_clair3_region_bed).
 
     Indel/homopolymer/multi-offset panel rows are padded on both sides
-    (see bin/panel_to_bed.py); plain SNP rows stay an exact 1bp interval.
+    (see abotyper-core, panel_to_bed); plain SNP rows stay an exact 1bp interval.
     Runs once against the reference-wide panel file (no per-sample meta),
     matching CLAIR3_DOWNLOADMODEL's broadcast pattern in
     variants_quantification.
@@ -18,16 +18,15 @@ process ABO_PANEL2BED {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/python_pyyaml:10a1a757f29eaf02'
-        : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2'}"
 
     input:
     path panel_file
 
     output:
     path "*.bed", emit: bed
-    tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
-    tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
+    tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
     def args   = task.ext.args ?: ''

@@ -86,7 +86,7 @@
                     "exists": true,
                     "pattern": "^\\S+\\.fa(sta)?(\\.gz)?$",
                     "description": "ABO reference FASTA (NG_006669.2, 42,144 bp) that reads are aligned to.",
-                    "help_text": "Defaults to `assets/refs/NG_006669v2.fasta` in the pipeline directory. The variant panel coordinates are NG_006669.2 coordinates; use `bin/calibrate_panel_positions.py` if you change the reference.",
+                    "help_text": "Defaults to `assets/refs/NG_006669v2.fasta` in the pipeline directory. The variant panel coordinates are NG_006669.2 coordinates; use `abotyper-calibrate-panel` from abotyper-core if you change the reference.",
                     "fa_icon": "fas fa-dna"
                 },
                 "abo_reference_fai": {

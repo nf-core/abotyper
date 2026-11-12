@@ -37,15 +37,8 @@
                 "4": [
                     [
                         "ABO_EVIDENCE",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "5": [
-                    [
-                        "ABO_EVIDENCE",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ],
                 "concordance": [
@@ -80,26 +73,19 @@
                         "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
-                "versions_python": [
+                "versions_abotyper_core": [
                     [
                         "ABO_EVIDENCE",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_EVIDENCE",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:30:35.602274627",
+        "timestamp": "2026-11-12T18:16:07.612145444",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nextflow": "26.10.2"
         }
     },
     "abotyper - ABO_AA_barcode01 - Clair3 produced nothing (BAM pileup only)": {
@@ -154,23 +140,16 @@
                 ]
             ],
             {
-                "versions_python": [
+                "versions_abotyper_core": [
                     [
                         "ABO_EVIDENCE",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_EVIDENCE",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-07T15:29:57.484036763",
+        "timestamp": "2026-11-12T18:15:17.560886902",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

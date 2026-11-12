@@ -5,40 +5,19 @@
                 "final_export.csv:md5,dc556698e756671bcc4ddfc6cc25893e"
             ],
             {
-                "versions_pandas": [
+                "versions_abotyper_core": [
                     [
                         "ABO_SNPS2PHENO",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "versions_python": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "pyyaml",
-                        "6.0.3"
-                    ]
-                ],
-                "versions_xlsxwriter": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "xlsxwriter",
-                        "3.2.9"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:34:26.390373343",
+        "timestamp": "2026-11-12T18:18:49.632243803",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.10.5"
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
         }
     },
     "abotyper - two samples compiled - stub": {
@@ -65,29 +44,8 @@
                 "6": [
                     [
                         "ABO_SNPS2PHENO",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "7": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "8": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "pyyaml",
-                        "6.0.3"
-                    ]
-                ],
-                "9": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "xlsxwriter",
-                        "3.2.9"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ],
                 "csv": [
@@ -105,32 +63,11 @@
                 "txt": [
                     "ABO_result.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
-                "versions_pandas": [
+                "versions_abotyper_core": [
                     [
                         "ABO_SNPS2PHENO",
-                        "pandas",
-                        "3.0.5"
-                    ]
-                ],
-                "versions_python": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "pyyaml",
-                        "6.0.3"
-                    ]
-                ],
-                "versions_xlsxwriter": [
-                    [
-                        "ABO_SNPS2PHENO",
-                        "xlsxwriter",
-                        "3.2.9"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ],
                 "xls": [
@@ -138,10 +75,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-12T09:34:51.139187333",
+        "timestamp": "2026-11-12T18:20:17.930491361",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.10.5"
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
         }
     }
 }

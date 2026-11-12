@@ -60,22 +60,19 @@ The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO ref
 
 The pipeline makes use of the following core dependencies:
 
-| Dependency             | Minimum version | Used for                          |
-| ---------------------- | --------------- | --------------------------------- |
-| **Core Tools**         |                 |                                   |
-| nanoplot               | 1.48.0          | long-read quality control         |
-| minimap2               | 2.30            | long-read alignment               |
-| samtools               | 1.23            | BAM sort, index, alignment QC     |
-| clair3                 | 2.0.0           | variant calling, phasing          |
-| bcftools               | 1.23.1          | VCF normalize, filter (QC export) |
-| multiqc                | 1.35            | aggregate QC report               |
-| **Python Environment** |                 |                                   |
-| python                 | 3.13.5          | runtime for `bin/` scripts        |
-| pandas                 | 2.3.1           | tabular data handling             |
-| pyyaml                 | 6.0             | variant panel YAML parsing        |
-| xlsxwriter             | 3.2.5           | final Excel report output         |
+| Dependency     | Minimum version | Used for                          |
+| -------------- | --------------- | --------------------------------- |
+| **Core Tools** |                 |                                   |
+| nanoplot       | 1.48.0          | long-read quality control         |
+| minimap2       | 2.30            | long-read alignment               |
+| samtools       | 1.23            | BAM sort, index, alignment QC     |
+| clair3         | 2.0.0           | variant calling, phasing          |
+| bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
+| multiqc        | 1.35            | aggregate QC report               |
+| **Typing**     |                 |                                   |
+| abotyper-core  | 0.1.0           | panel, evidence and ABO typing    |
 
-`bin/rename_samples.py` is a standalone lab-export utility, not wired into any pipeline process — if you run it manually it needs its own `pandas` + `numpy` environment, separate from the above.
+The typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) Python package (`pip install abotyper-core` or Bioconda), which has its own tests and command-line tools. It also provides `abotyper-rename-samples`, a standalone lab-export utility that is not part of the pipeline, and `abotyper-calibrate-panel`.
 
 ## Required input files structure
 

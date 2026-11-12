@@ -15,7 +15,7 @@
         positions filled from the BAM) that aggregate_abo_reports.py turns into
         Typing-sheet columns and REVIEW flags
 
-    See bin/pileup2metrics.py.
+    See abotyper-core (pileup2metrics).
 */
 process ABO_EVIDENCE {
     tag "${meta.id}"
@@ -23,8 +23,8 @@ process ABO_EVIDENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/python_pyyaml:10a1a757f29eaf02'
-        : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2'}"
 
     input:
     // staged in clair3/ so its name (<id>.AlignmentStatistics.tsv) does not collide with the
@@ -37,8 +37,7 @@ process ABO_EVIDENCE {
     tuple val(meta), path("*.evidence_status.tsv"),     emit: status
     tuple val(meta), path("*.concordance.tsv"),         emit: concordance
     tuple val(meta), path("*.pileup_metrics.tsv"),      emit: pileup_tsv
-    tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
-    tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
+    tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

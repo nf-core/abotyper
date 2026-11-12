@@ -15,8 +15,8 @@ process ABO_GETABOSNPS {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml:a1b47a7a3bb7f9c7'
-        : 'community.wave.seqera.io/library/pandas_python_pyyaml:e40312b9d861eff3'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2'}"
 
     input:
     tuple val(meta), path(variants_freq), path(coverage)
@@ -25,9 +25,7 @@ process ABO_GETABOSNPS {
     output:
     tuple val(meta), path("*.ABOPhenotype.txt"), emit: phenotype
     tuple val(meta), path("*.log.txt"), emit: log
-    tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
-    tuple val("${task.process}"), val('pandas'), eval('python3 -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
-    tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
+    tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
     def args = task.ext.args ?: ''

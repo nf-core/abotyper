@@ -3,23 +3,16 @@
         "content": [
             "abo_variant_panel.bed:md5,cad15f825d9e6c3112165c275b063ff7",
             {
-                "versions_python": [
+                "versions_abotyper_core": [
                     [
                         "ABO_PANEL2BED",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_PANEL2BED",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T20:03:38.201344373",
+        "timestamp": "2026-11-12T18:17:43.394606816",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -34,40 +27,26 @@
                 "1": [
                     [
                         "ABO_PANEL2BED",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "2": [
-                    [
-                        "ABO_PANEL2BED",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ],
                 "bed": [
                     "abo_variant_panel.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
-                "versions_python": [
+                "versions_abotyper_core": [
                     [
                         "ABO_PANEL2BED",
-                        "python",
-                        "3.13.15"
-                    ]
-                ],
-                "versions_pyyaml": [
-                    [
-                        "ABO_PANEL2BED",
-                        "pyyaml",
-                        "6.0.3"
+                        "abotyper-core",
+                        "0.1.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:33:14.201568163",
+        "timestamp": "2026-11-12T18:18:06.692605042",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nextflow": "26.10.2"
         }
     }
 }
