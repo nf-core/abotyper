@@ -396,7 +396,7 @@ def parse_coverage_file(sample_dir: str) -> Dict[str, Optional[float]]:
         if not f:
             return out
         with open(f, "r", encoding="utf-8", errors="replace") as fh:
-            rows = [l.rstrip("\n").split("\t") for l in fh if l.strip() and not l.startswith("#")]
+            rows = [ln.rstrip("\n").split("\t") for ln in fh if ln.strip() and not ln.startswith("#")]
         reads = depth_x_len = cov = 0.0
         for r in rows:
             if len(r) < 7:
@@ -430,7 +430,7 @@ def parse_evidence_status(sample_dir: str) -> Dict[str, object]:
         if not f:
             return out
         with open(f, "r", encoding="utf-8", errors="replace") as fh:
-            lines = [l.rstrip("\n").split("\t") for l in fh if l.strip()]
+            lines = [ln.rstrip("\n").split("\t") for ln in fh if ln.strip()]
         if len(lines) >= 2:
             row = dict(zip(lines[0], lines[1]))
             out["evidence_source"] = row.get("evidence_source", "")
@@ -2346,12 +2346,12 @@ class ABOReportParser:
             finally:
                 print(f"Finished processing file: {filename}")
 
-        print(f"\n--- Processing Statistics ---")
+        print("\n--- Processing Statistics ---")
         print(f"Files with explicit barcode: {self.processing_stats['with_barcode']}")
         print(f"Files using default barcode: {self.processing_stats['without_barcode']}")
         print(f"Total pattern matches: {self.processing_stats['pattern_matched']}")
         print(f"Pattern match failures: {self.processing_stats['pattern_failed']}")
-        print(f"----------------------------")
+        print("----------------------------")
 
     def _process_files_parallel(self, valid_directories):
         """Parse samples in a process pool (--threads N). Output order does not matter: the
@@ -2937,7 +2937,7 @@ class ABOReportParser:
         else:
             print("\nAll samples processed successfully.")
 
-        print(f"\n=== PROCESSING SUMMARY ===")
+        print("\n=== PROCESSING SUMMARY ===")
         print(f"Total directories scanned: "
               f"{self.processing_stats['pattern_matched'] + self.processing_stats['pattern_failed']}")
         print(f"Successfully processed: {len(self.results)}")
@@ -2949,13 +2949,13 @@ class ABOReportParser:
         if len(self.results) > 0:
             try:
                 phenotype_counts = final_df["Phenotype"].value_counts()
-                print(f"\nPhenotype Distribution:")
+                print("\nPhenotype Distribution:")
                 for phenotype, count in phenotype_counts.items():
                     print(f"  {phenotype}: {count}")
 
                 try:
                     extended_genotype_counts = final_df["ExtendedGenotype"].value_counts()
-                    print(f"\nExtended Genotype Distribution (with A subtypes):")
+                    print("\nExtended Genotype Distribution (with A subtypes):")
                     a_subtypes, ab_subtypes, other_genotypes = {}, {}, {}
                     for genotype, count in extended_genotype_counts.items():
                         # tokens are ISBT names (ABO*A1.01, ABO*B.01, ...); "ABO*" itself contains a "B"
@@ -2969,15 +2969,15 @@ class ABOReportParser:
                         else:
                             other_genotypes[genotype] = count
                     if a_subtypes:
-                        print(f"  A Subtypes:")
+                        print("  A Subtypes:")
                         for genotype, count in sorted(a_subtypes.items()):
                             print(f"    {genotype}: {count}")
                     if ab_subtypes:
-                        print(f"  AB Subtypes:")
+                        print("  AB Subtypes:")
                         for genotype, count in sorted(ab_subtypes.items()):
                             print(f"    {genotype}: {count}")
                     if other_genotypes:
-                        print(f"  Other Genotypes:")
+                        print("  Other Genotypes:")
                         for genotype, count in sorted(other_genotypes.items()):
                             print(f"    {genotype}: {count}")
                 except Exception as e:
@@ -2997,7 +2997,7 @@ class ABOReportParser:
                 try:
                     pc_col = final_df.get("PhaseConfidence")
                     if pc_col is not None:
-                        print(f"\nPhase Confidence Distribution:")
+                        print("\nPhase Confidence Distribution:")
                         for val, count in pc_col.value_counts().head(10).items():
                             print(f"    {val}: {count}")
                 except Exception as e:
@@ -3006,7 +3006,7 @@ class ABOReportParser:
             except Exception as e:
                 print(f"Could not analyze phenotype distribution: {e}")
 
-        print(f"============================")
+        print("============================")
         self.report_qc(final_df)
         return self._print_failures()
 
@@ -3119,7 +3119,7 @@ if __name__ == "__main__":
     validate_arguments(args)
 
     if args.verbose:
-        print(f"Verbose mode enabled")
+        print("Verbose mode enabled")
         print(f"Input directory: {args.input_directory}")
         print(f"Default barcode: {args.default_barcode}")
         print(f"Panel: {args.panel}")

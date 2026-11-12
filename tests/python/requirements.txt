@@ -1,0 +1,9 @@
+# Test environment for the bin/ scripts. The library versions match modules/local/abo/*/environment.yml.
+numpy==2.5.3
+pandas==3.0.5
+pyyaml==6.0.3
+xlsxwriter==3.2.9
+# test-only
+openpyxl==3.1.5
+pytest==8.4.2
+ruff==0.14.4

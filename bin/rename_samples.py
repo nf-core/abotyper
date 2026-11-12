@@ -261,7 +261,7 @@ class SampleRenamer:
                 lineterminator="\n"
             )
 
-            self.logger.info(f"✓ Files written successfully:")
+            self.logger.info("✓ Files written successfully:")
             self.logger.info(f"  - With accession: {path_with_acc} ({len(df_with_acc)} rows)")
             self.logger.info(f"  - Without accession: {path_without_acc} ({len(df_without_acc)} rows)")
 
@@ -390,8 +390,8 @@ Examples:
             output_dir=output_path
         )
 
-        print(f"\n✓ Successfully renamed samples!")
-        print(f"Output files:")
+        print("\n✓ Successfully renamed samples!")
+        print("Output files:")
         print(f"  - {output_files[0]}")
         print(f"  - {output_files[1]}")
 

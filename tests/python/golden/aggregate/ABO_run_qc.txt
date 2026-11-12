@@ -1,0 +1,22 @@
+=== QC SUMMARY ===
+RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or transfusion decisions; confirm results with an accredited method before any clinical use.
+aggregate_abo_reports.py: <VERSION>
+Panel version: 2.3.0
+Panel source: nf-core/abotyper legacy panel (v1.2.0) + ISBT ABO allele table v9
+ISBT ABO allele table: v9 (blooddatabase.isbtweb.org/system/ABO)
+ISBT table checked: 2026-10-16
+ISBT table release date: not stated in the table file; set from the ISBT database release notes
+Samples: 10   flagged REVIEW: 2 (20.0%)
+Flags (a sample can carry more than one):
+       1  A1.02 pattern: c.467C>T seen in 44% of reads, c.1061delC in only 0% (85 reads)
+       1  ISBT defines A1.02 as c.467C>T alone. Rare allele: confirm that the deletion is truly absent. c.467C>T plus c.804dupG is ABO*AEL.08 (insertion signal here: 0%)
+       1  ONT can under-read an insertion in the 7-G run
+       1  low depth at primary positions (min 23 reads < 30)
+Evidence (Clair3 + BAM pileup):
+      10  CLAIR3+BAM
+Evidence basis: variant evidence=10
+A2 trace:
+       2  1 A2 confirmed (c.467 + c.1061delC)
+       1  2 A1.02 pattern: c.467C>T without c.1061delC (ABO*A1.02)
+       1  4 No A2 evidence (both primary markers reference)
+       6  n/a (no A allele)
