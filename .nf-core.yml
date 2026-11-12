@@ -9,9 +9,6 @@ lint:
     - config_defaults:
         - params.fasta
         - params.fai
-        - params.multiqc_logo
-        - params.logo
-        - params.abo_bed
         - params.abo_clair3_region_bed
         - params.abo_panel
         - params.abo_reference_fasta
