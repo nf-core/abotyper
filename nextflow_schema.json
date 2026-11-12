@@ -116,11 +116,32 @@
                     "help_text": "Passed to Clair3 as `--bed_fn`. Defaults to `assets/refs/abo_clair3_region.bed`. It should stay wider than the panel positions so phasing has flanking variants.",
                     "fa_icon": "fas fa-align-left"
                 },
+                "clair3_model": {
+                    "type": "string",
+                    "default": "r1041_e82_400bps_sup_v500",
+                    "description": "Name of the Clair3 model packaged in the Clair3 container, used when neither --clair3_model_url nor --clair3_model_path is given.",
+                    "help_text": "Pick the model that matches your flow cell and basecaller. With the conda profile the packaged models are not available, so this model is downloaded by name from --clair3_models_base_url.",
+                    "fa_icon": "fas fa-brain"
+                },
+                "clair3_model_path": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
+                    "description": "Folder with your own Clair3 model (`pileup.pt` and `full_alignment.pt`), used instead of the packaged model.",
+                    "fa_icon": "fas fa-folder-open"
+                },
                 "clair3_model_url": {
                     "type": "string",
-                    "description": "URL of the Clair3 PyTorch model files (`pileup.pt` and `full_alignment.pt`) for the sequencing chemistry used.",
-                    "help_text": "Downloaded once per run. Pick the model that matches your flow cell and basecaller.",
+                    "description": "URL of a Clair3 model folder (`pileup.pt` and `full_alignment.pt`) to download and use; takes priority over --clair3_model_path and the packaged model.",
+                    "help_text": "Downloaded once per run.",
                     "fa_icon": "fas fa-cloud-download-alt"
+                },
+                "clair3_models_base_url": {
+                    "type": "string",
+                    "default": "https://www.bio8.cs.hku.hk/clair3/clair3_models_pytorch/",
+                    "description": "Where the packaged model named by --clair3_model is downloaded from when the profile has no packaged models (conda).",
+                    "fa_icon": "fas fa-link",
+                    "hidden": true
                 },
                 "minimap2_preset": {
                     "type": "string",

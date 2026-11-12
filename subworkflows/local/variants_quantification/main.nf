@@ -23,7 +23,7 @@ workflow VARIANTS_QUANTIFICATION {
     ch_bai     // channel: [ val(meta),  path(bai)   ]
     ch_fasta   // channel: [ val(meta1), path(fasta) ]
     ch_fai     // channel: [ val(meta1), path(fai)   ]
-    model_url  // val: URL to the Clair3 model archive
+    clair3_model // map: url (download), else path (channel of a model folder), else packaged (model name)
     panel_file // path: abo_variant_panel.yaml
     region_bed // path: BED of the region Clair3 calls in (abo_clair3_region.bed), or [] for none
 
@@ -40,19 +40,26 @@ workflow VARIANTS_QUANTIFICATION {
         .first()
 
     //
-    // MODULE: CLAIR3_DOWNLOADMODEL
+    // Clair3 model: [packaged model name, user model folder] -- exactly one is set
     //
-    CLAIR3_DOWNLOADMODEL(model_url)
-    ch_clair3_model_dir = CLAIR3_DOWNLOADMODEL.out.model_dir
+    if (clair3_model.url) {
+        // MODULE: CLAIR3_DOWNLOADMODEL
+        CLAIR3_DOWNLOADMODEL(clair3_model.url)
+        ch_model = CLAIR3_DOWNLOADMODEL.out.model_dir.map { model_dir -> ["", model_dir] }
+    } else if (clair3_model.path) {
+        ch_model = clair3_model.path.map { model_dir -> ["", model_dir] }
+    } else {
+        ch_model = channel.value([clair3_model.packaged, []])
+    }
 
     //
     // MODULE: CLAIR3
     //
     ch_clair3_input = ch_bam_bai
-        .combine(ch_clair3_model_dir)
-        // Keep model_dir as a Path: turning it into a string drops the s3:// / gs:// / az:// scheme,
-        // so the model cannot be staged when the work directory is in cloud storage.
-        .map { meta, bam, bai, model_dir -> [meta, bam, bai, "", model_dir, "ont"] }
+        .combine(ch_model)
+        // The model folder stays a Path: turning it into a string drops the s3:// / gs:// / az:// scheme,
+        // so the model could not be staged when the work directory is in cloud storage.
+        .map { meta, bam, bai, packaged_model, model_dir -> [meta, bam, bai, packaged_model, model_dir, "ont"] }
 
     CLAIR3(
         ch_clair3_input,

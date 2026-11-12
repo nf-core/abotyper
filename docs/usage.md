@@ -95,6 +95,23 @@ outdir: './results/'
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
 
+### Clair3 model
+
+Clair3 needs a model that matches the flow cell and basecaller. The pipeline picks one in this order:
+
+1. `--clair3_model_url <url>`: download the model folder (`pileup.pt`, `full_alignment.pt`) from this URL.
+2. `--clair3_model_path <folder>`: use your own model folder.
+3. Otherwise the model packaged in the Clair3 container, named by `--clair3_model` (default `r1041_e82_400bps_sup_v500`, for R10.4.1 flow cells basecalled with a super-accuracy model).
+
+Give a URL or a folder, not both. The packaged models are only in the Docker, Singularity and Podman containers; with other profiles (conda, apptainer) the `--clair3_model` model is downloaded by name instead, and the log says so.
+
+```bash
+# packaged model (default)
+nextflow run nf-core/abotyper -profile docker --input samplesheet.csv --outdir results
+# your own model folder
+nextflow run nf-core/abotyper -profile docker --input samplesheet.csv --outdir results --clair3_model_path /path/to/r1041_e82_400bps_sup_v500
+```
+
 ### Updating the pipeline
 
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
