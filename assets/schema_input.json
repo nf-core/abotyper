@@ -9,23 +9,22 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "pattern": "^(?:[A-Za-z0-9]+(?:-[A-Za-z0-9]+){0,2}_barcode\d+|[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*_barcode\d+|(?!.*_barcode)[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*)$",
+                "errorMessage": "Sample name must be letters/digits joined by '_' (or up to two '-'), optionally ending in _barcode<NN>, e.g. ABO_AA_barcode01 or Sample-45-44874_barcode25. See the README naming rules.",
                 "meta": ["id"]
             },
             "fastq_1": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz', or '.fastq.gz'"
+                "pattern": "^([\S\s]*\/)?[^\s\/]+\.f(ast)?q(\.gz)?$",
+                "errorMessage": "FastQ file must be provided, cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz', or '.fastq.gz'"
             },
-            "fastq_2": {
+            "control": {
                 "type": "string",
-                "format": "file-path",
-                "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz', or '.fastq.gz'"
+                "enum": ["negative", "positive"],
+                "errorMessage": "control must be empty, 'negative' (no-template control) or 'positive' (positive control)",
+                "meta": ["control"]
             }
         },
         "required": ["sample", "fastq_1"]
