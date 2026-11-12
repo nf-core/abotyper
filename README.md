@@ -208,10 +208,16 @@ Maintenance and future developements will be led by Fredrick Mobegi.
 
 ## Acknowledgements
 
+We thank [Stem Cell Donors Australia](https://www.stemcelldonors.org.au/) for the registry samples used to pilot and validate this pipeline, [Eurobio-GenDx](https://www.gendx.com/) for the licence to pilot their ABO module, and [PathWest Laboratory Medicine WA](https://pathwest.health.wa.gov.au/) and [The University of Western Australia](https://www.uwa.edu.au/) for the resources to run the project. Further acknowledgements are given in the [publication](https://pubmed.ncbi.nlm.nih.gov/40564908/).
+
 <p float="center">
   <img src = "docs/images/pathwest_logo.png", width="400", height="90"/>
   <img src = "docs/images/uwa_logo.png", width="400", height="90">
 </p>
+
+## Use of AI
+
+Claude Code running Opus 5.5 was used to run batch tests and pre-release checks.
 
 ## Contributions and Support
 
