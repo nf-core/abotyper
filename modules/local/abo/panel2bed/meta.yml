@@ -55,3 +55,27 @@ authors:
   - "@fmobegi"
 maintainers:
   - "@fmobegi"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2
+      build_id: bd-81dee64f9dbf35a2_1
+      scan_id: sc-e8fc87b2d855b58f_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:5f56906f1b4dd058
+      build_id: bd-5f56906f1b4dd058_1
+      scan_id: sc-d6f4000ba6bd9621_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:2e0bf81419c88f48
+      build_id: bd-2e0bf81419c88f48_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/55/557a9c76935cf3747eb51032eba0e3f84934306b8301c8e0d5f498dddd8655d9/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:501f4af930d696d0
+      build_id: bd-501f4af930d696d0_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/abo/panel2bed/.conda-lock/linux_amd64-bd-81dee64f9dbf35a2_1.txt
+    linux/arm64:
+      lock_file: modules/local/abo/panel2bed/.conda-lock/linux_arm64-bd-5f56906f1b4dd058_1.txt

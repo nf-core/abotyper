@@ -53,7 +53,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Changed`
 
-- The Python typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) package (0.1.0), released on its own to PyPI and Bioconda with its own tests (including golden-output tests on the pipeline's test samples), CLI and CI. The `abo/*` local modules use its Bioconda environment and BioContainers image and report the `abotyper-core` version; the scripts in `bin/` are removed. Typing results are unchanged: the package reproduces the former `bin/` outputs byte for byte on the test samples. Standalone tools (`abotyper-rename-samples`, `abotyper-calibrate-panel`) come with the package.
+- The Python typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) package (0.1.0), released on its own to PyPI and Bioconda with its own tests (including golden-output tests on the pipeline's test samples), CLI and CI. The `abo/*` local modules install it from PyPI in their conda environment, use Seqera Containers (Wave) images built with `nf-core modules containers create`, and report the `abotyper-core` version; the scripts in `bin/` are removed. Typing results are unchanged: the package reproduces the former `bin/` outputs byte for byte on the test samples. Standalone tools (`abotyper-rename-samples`, `abotyper-calibrate-panel`) come with the package.
 - README acknowledgements (Stem Cell Donors Australia, Eurobio-GenDx, PathWest and UWA) and a use-of-AI statement.
 - minimap2 is given an explicit platform preset, `-x map-ont`, set in `conf/modules.config` from the new `--minimap2_preset` parameter (`map-ont`, `lr:hq`, `map-pb`, `map-hifi` or `sr`). minimap2 previously ran with no `-x` and used its built-in defaults. Only `map-ont` has been validated.
 - nf-core template updated to tools 4.2.2 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
@@ -75,7 +75,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 | Clair3            | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
 | samtools / htslib | 1.25 (alignment statistics, coverage and `ABO_PILEUP`)                   |
 | minimap2          | via the nf-core `minimap2/align` module                                  |
-| abotyper-core     | 0.1.0 (Bioconda / BioContainers); the `abo/*` typing modules             |
+| abotyper-core     | 0.1.0 (PyPI, Seqera Containers); the `abo/*` typing modules              |
 
 ### `Known gaps / not yet done`
 
