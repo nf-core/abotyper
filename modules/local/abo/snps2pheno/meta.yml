@@ -105,24 +105,24 @@ maintainers:
 containers:
   docker:
     linux/arm64:
-      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:5f56906f1b4dd058
-      build_id: bd-5f56906f1b4dd058_1
-      scan_id: sc-d6f4000ba6bd9621_1
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:012e4f05fb30e0a7
+      build_id: bd-012e4f05fb30e0a7_1
+      scan_id: sc-76f6f42a0fb9e1ca_1
     linux/amd64:
-      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2
-      build_id: bd-81dee64f9dbf35a2_1
-      scan_id: sc-e8fc87b2d855b58f_1
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950
+      build_id: bd-3d286526d138a950_2
+      scan_id: sc-40583d99a38bfd33_1
   singularity:
-    linux/amd64:
-      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:501f4af930d696d0
-      build_id: bd-501f4af930d696d0_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data
     linux/arm64:
-      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:2e0bf81419c88f48
-      build_id: bd-2e0bf81419c88f48_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/55/557a9c76935cf3747eb51032eba0e3f84934306b8301c8e0d5f498dddd8655d9/data
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:891d66210b149d1f
+      build_id: bd-891d66210b149d1f_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2e/2e7e10d854e609427ca88c1c997bbf8cdaaef5ac302c619e34ba06dba11bd3db/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:58e3117f1d42013a
+      build_id: bd-58e3117f1d42013a_2
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data
   conda:
     linux/amd64:
-      lock_file: modules/local/abo/snps2pheno/.conda-lock/linux_amd64-bd-81dee64f9dbf35a2_1.txt
+      lock_file: modules/local/abo/snps2pheno/.conda-lock/linux_amd64-bd-3d286526d138a950_2.txt
     linux/arm64:
-      lock_file: modules/local/abo/snps2pheno/.conda-lock/linux_arm64-bd-5f56906f1b4dd058_1.txt
+      lock_file: modules/local/abo/snps2pheno/.conda-lock/linux_arm64-bd-012e4f05fb30e0a7_1.txt

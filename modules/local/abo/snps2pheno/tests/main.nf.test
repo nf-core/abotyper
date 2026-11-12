@@ -102,7 +102,7 @@ nextflow_process {
                 { assert csv.any { it.startsWith("DonorA,") } },
                 { assert csv.any { it.startsWith("ABO_BO1,") } },
                 // the Barcode column of ABO_result.txt (tab-separated, after Sequencing_ID)
-                { assert path(process.out.txt[0]).readLines().any { it.split("	").take(3).containsAll(["DonorA", "11"]) } }
+                { assert path(process.out.txt[0]).readLines().any { it.split("\t").toList().take(3).containsAll(["DonorA", "11"]) } }
             )
         }
     }

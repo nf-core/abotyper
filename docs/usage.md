@@ -24,12 +24,12 @@ NTC_barcode95,/path/to/NTC_barcode95.fastq.gz,,negative
 POSCTRL_barcode96,/path/to/POSCTRL_barcode96.fastq.gz,,positive
 ```
 
-| Column    | Description                                                                                                                                                                       |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Sample name, used in every result table. Any name without spaces; a trailing `_barcode<NN>` is reported as the barcode. See below.                                                |
-| `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                              |
-| `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                         |
-| `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name. |
+| Column    | Description                                                                                                                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`  | Sample name, used in every result table. Any name without spaces; a trailing `_barcode<NN>` is reported as the barcode. See below.                                                                                              |
+| `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                                                                            |
+| `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                                                                       |
+| `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name.                                               |
 | `barcode` | Optional. The barcode to report for the sample (`07` or `barcode07`). When it is given, the sample is reported under its full `sample` name; when it is empty, the barcode is taken from a trailing `_barcode<NN>` in the name. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.

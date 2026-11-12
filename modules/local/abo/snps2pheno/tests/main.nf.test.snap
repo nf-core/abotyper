@@ -9,12 +9,12 @@
                     [
                         "ABO_SNPS2PHENO",
                         "abotyper-core",
-                        "0.1.0"
+                        "0.2.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T18:18:49.632243803",
+        "timestamp": "2026-11-12T20:40:00.896262385",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -45,7 +45,7 @@
                     [
                         "ABO_SNPS2PHENO",
                         "abotyper-core",
-                        "0.1.0"
+                        "0.2.0"
                     ]
                 ],
                 "csv": [
@@ -67,7 +67,7 @@
                     [
                         "ABO_SNPS2PHENO",
                         "abotyper-core",
-                        "0.1.0"
+                        "0.2.0"
                     ]
                 ],
                 "xls": [
@@ -75,7 +75,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-12T18:20:17.930491361",
+        "timestamp": "2026-11-12T20:41:55.981293438",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

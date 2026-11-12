@@ -70,7 +70,7 @@ The pipeline makes use of the following core dependencies:
 | bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
 | multiqc        | 1.35            | aggregate QC report               |
 | **Typing**     |                 |                                   |
-| abotyper-core  | 0.1.0           | panel, evidence and ABO typing    |
+| abotyper-core  | 0.2.0           | panel, evidence and ABO typing    |
 
 The typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) Python package (`pip install abotyper-core` or Bioconda), which has its own tests and command-line tools. It also provides `abotyper-rename-samples`, a standalone lab-export utility that is not part of the pipeline, and `abotyper-calibrate-panel`.
 

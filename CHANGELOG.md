@@ -84,7 +84,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 | Clair3            | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
 | samtools / htslib | 1.25 (alignment statistics, coverage and `samtools/mpileup`)             |
 | minimap2          | via the nf-core `minimap2/align` module                                  |
-| abotyper-core     | 0.1.0 (PyPI, Seqera Containers); the `abo/*` typing modules              |
+| abotyper-core     | 0.2.0 (PyPI, Seqera Containers); the `abo/*` typing modules              |
 
 ### `Known gaps / not yet done`
 

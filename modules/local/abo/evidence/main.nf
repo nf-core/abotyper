@@ -23,8 +23,8 @@ process ABO_EVIDENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/3b/3b7f81ff95f37792e4c40a969be296b6e2e1e99000c0f288c82316eaa11e5eda/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:81dee64f9dbf35a2'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950'}"
 
     input:
     // staged in clair3/ so its name (<id>.AlignmentStatistics.tsv) does not collide with the

@@ -219,18 +219,20 @@ def validateInputParameters() {
 // (reported as barcode00). The typing step takes both from here, not from folder names.
 //
 def sampleNameAndBarcode(String id, barcode) {
-    def normalise = { String value ->
-        def num = value.replaceFirst(/(?i)^barcode/, '')
-        return (num as Integer) <= 99 ? "barcode${num.padLeft(2, '0')}" : "barcode${num}"
-    }
     if (barcode) {
-        return [ sample_name: id, barcode: normalise(barcode.toString()) ]
+        return [ sample_name: id, barcode: normaliseBarcode(barcode.toString()) ]
     }
     def m = id =~ /(?i)^(.+)_barcode(\d+)$/
     if (m.matches()) {
-        return [ sample_name: m.group(1), barcode: normalise(m.group(2)) ]
+        return [ sample_name: m.group(1), barcode: normaliseBarcode(m.group(2)) ]
     }
     return [ sample_name: id, barcode: '' ]
+}
+
+// 7, 07 or barcode7 -> barcode07 (two digits at least, as the barcode suffix of a sample name)
+def normaliseBarcode(String value) {
+    def num = value.replaceFirst(/(?i)^barcode/, '')
+    return (num as Integer) <= 99 ? "barcode${num.padLeft(2, '0')}" : "barcode${num}"
 }
 
 //
