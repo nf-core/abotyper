@@ -1,5 +1,5 @@
-sample,fastq_1,control
-SAMPLE1_barcode01,/path/to/fastq/files/SAMPLE1_barcode01.fastq.gz,
-SAMPLE2_barcode02,/path/to/fastq/files/SAMPLE2_barcode02.fastq.gz,
-NTC_barcode95,/path/to/fastq/files/NTC_barcode95.fastq.gz,negative
-POSCTRL_barcode96,/path/to/fastq/files/POSCTRL_barcode96.fastq.gz,positive
+sample,fastq_1,fastq_2,control
+SAMPLE1_barcode01,/path/to/fastq/files/SAMPLE1_barcode01.fastq.gz,,
+SAMPLE2_barcode02,/path/to/fastq/files/SAMPLE2_barcode02.fastq.gz,,
+NTC_barcode95,/path/to/fastq/files/NTC_barcode95.fastq.gz,,negative
+POSCTRL_barcode96,/path/to/fastq/files/POSCTRL_barcode96.fastq.gz,,positive

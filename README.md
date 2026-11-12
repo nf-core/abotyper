@@ -79,7 +79,7 @@ The pipeline makes use of the following core dependencies:
 
 ## Required input files structure
 
-The samplesheet has one row per sample, with the columns `sample`, `fastq_1` and an optional `control` (see [usage](docs/usage.md)).
+The samplesheet has one row per sample, with the columns `sample`, `fastq_1`, an optional `fastq_2` for paired-end reads and an optional `control` (see [usage](docs/usage.md)).
 The `sample` name is used in every result table and must follow these rules, which the samplesheet validation enforces:
 
 - letters and digits, in segments joined by `_`, or by up to two `-` when the name ends in a barcode;

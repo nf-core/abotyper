@@ -115,9 +115,14 @@ workflow PIPELINE_INITIALISATION {
     channel
         .fromList(samplesheetToList(input, "${projectDir}/assets/schema_input.json"))
         .map {
-            meta, fastq_1 ->
-                // nanopore reads are single-end; `control` is empty unless the samplesheet declares one
-                return [ meta.id, meta + [ single_end:true, control:(meta.control ?: '') ], [ fastq_1 ] ]
+            meta, fastq_1, fastq_2 ->
+                // `control` is empty unless the samplesheet declares one
+                def control = meta.control ?: ''
+                if (!fastq_2) {
+                    return [ meta.id, meta + [ single_end:true, control:control ], [ fastq_1 ] ]
+                } else {
+                    return [ meta.id, meta + [ single_end:false, control:control ], [ fastq_1, fastq_2 ] ]
+                }
         }
         .groupTuple()
         .map { samplesheet ->
@@ -204,6 +209,12 @@ def validateInputParameters() {
 //
 def validateInputSamplesheet(input) {
     def (metas, fastqs) = input[1..2]
+
+    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
+    def endedness_ok = metas.collect{ meta -> meta.single_end }.unique().size == 1
+    if (!endedness_ok) {
+        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
+    }
 
     // Rows of the same sample are concatenated, so they must agree on whether it is a control
     def control_ok = metas.collect{ meta -> meta.control }.unique().size == 1
