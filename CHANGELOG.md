@@ -54,6 +54,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Changed`
 
+- minimap2 is given an explicit platform preset, `-x map-ont`, set in `conf/modules.config` from the new `--minimap2_preset` parameter (`map-ont`, `lr:hq`, `map-pb`, `map-hifi` or `sr`). minimap2 previously ran with no `-x` and used its built-in defaults. Only `map-ont` has been validated.
 - nf-core template updated to tools 4.2.2 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
 - nf-core modules updated to the latest versions (bcftools 1.25, samtools/htslib 1.25, MultiQC 1.35, NanoPlot 1.48.0). The NanoPlot patch now only adds plain `.fastq`/`.fq` input. bcftools/query is no longer patched: the module's `.txt` table is published as `<sample>.panel.tsv`.
 - Unused parameters removed: `--abo_bed` (the BED is generated from the panel), `--renaming_file`/`--skip_renaming` (no process used them; `bin/rename_samples.py` stays as a standalone utility) and `--logo`. MultiQC no longer uses the PathWest logo by default (`--multiqc_logo` is unset).

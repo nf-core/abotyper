@@ -121,6 +121,14 @@
                     "description": "URL of the Clair3 PyTorch model files (`pileup.pt` and `full_alignment.pt`) for the sequencing chemistry used.",
                     "help_text": "Downloaded once per run. Pick the model that matches your flow cell and basecaller.",
                     "fa_icon": "fas fa-cloud-download-alt"
+                },
+                "minimap2_preset": {
+                    "type": "string",
+                    "default": "map-ont",
+                    "enum": ["map-ont", "lr:hq", "map-pb", "map-hifi", "sr"],
+                    "description": "minimap2 alignment preset (`-x`) for the sequencing platform.",
+                    "help_text": "`map-ont` (default) for Oxford Nanopore reads, the platform the pipeline was validated on; `lr:hq` for high-accuracy Nanopore reads (Q20+); `map-pb` or `map-hifi` for PacBio CLR or HiFi; `sr` for short reads. Results from presets other than `map-ont` have not been validated.",
+                    "fa_icon": "fas fa-sliders-h"
                 }
             }
         },
