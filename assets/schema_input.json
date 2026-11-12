@@ -9,8 +9,8 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^(?:[A-Za-z0-9]+(?:-[A-Za-z0-9]+){0,2}_barcode\\d+|[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*_barcode\\d+|(?!.*_barcode)[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*)$",
-                "errorMessage": "Sample name must be letters/digits joined by '_' (or up to two '-'), optionally ending in _barcode<NN>, e.g. ABO_AA_barcode01 or Sample-45-44874_barcode25. See the README naming rules.",
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
             "fastq_1": {

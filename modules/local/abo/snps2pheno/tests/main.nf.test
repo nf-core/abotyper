@@ -77,6 +77,42 @@ nextflow_process {
         }
     }
 
+    test("abotyper - any sample name is reported") {
+
+        // The two fixtures under names the aggregation used to drop or crash on.
+        when {
+            process {
+                """
+                def renamed = [ 'ABO_AA_barcode01': 'patient-01', 'ABO_BO1_barcode06': 'X_barcode06_rep2' ]
+                def staged = []
+                renamed.each { old_id, new_id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${old_id}/combined", checkIfExists: true).listFiles().each { f ->
+                        def dest = file("$outputDir/renamed/\${f.name.replace(old_id, new_id)}")
+                        dest.parent.mkdirs()
+                        f.copyTo(dest)
+                        staged << dest
+                    }
+                }
+                input[0] = renamed.values() as List
+                input[1] = staged
+                input[2] = []
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            def csv = path(process.out.csv[0]).readLines()
+            assertAll(
+                { assert process.success },
+                // header + one row per sample, under the names given
+                { assert csv.size() == 3 },
+                { assert csv.any { it.startsWith("patient-01,") } },
+                { assert csv.any { it.startsWith("X_barcode06_rep2,") } }
+            )
+        }
+    }
+
     test("abotyper - two samples compiled - stub") {
 
         options "-stub"

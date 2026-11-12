@@ -80,13 +80,9 @@ The pipeline makes use of the following core dependencies:
 ## Required input files structure
 
 The samplesheet has one row per sample, with the columns `sample`, `fastq_1`, an optional `fastq_2` for paired-end reads and an optional `control` (see [usage](docs/usage.md)).
-The `sample` name is used in every result table and must follow these rules, which the samplesheet validation enforces:
+The `sample` name is used in every result table. Any name without spaces is accepted. A name ending in `_barcode<digits>` is reported with that barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with `barcode00`.
 
-- letters and digits, in segments joined by `_`, or by up to two `-` when the name ends in a barcode;
-- optionally ending in `_barcode<NN>`, which is reported as the barcode (samples without one get `barcode00`);
-- no spaces, dots or other characters.
-
-Here are a few examples of acceptable sample names:
+Here are a few examples of sample names:
 
 ```txt
 POSCTRL_barcode13
@@ -95,6 +91,8 @@ NTC_barcode12
 Sample-45-44874_barcode25
 Sample1-2024-12345_barcode22
 ABO_AA_barcode01
+patient-01
+S1.r1
 ```
 
 Controls are declared in the `control` column (`negative` or `positive`), not recognised from the sample name.

@@ -729,13 +729,9 @@ class ABOReportParser:
 
         self.initialize_columns()
 
-        self.pattern_with_barcode = re.compile(
-            r"^[A-Z0-9]+(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$",
-            re.IGNORECASE,
-        )
-        self.pattern_without_barcode = re.compile(
-            r"^[A-Z0-9]+(_[A-Z0-9]+)*$", re.IGNORECASE
-        )
+        # A sample folder is named by the samplesheet ID. Any name is accepted; a trailing
+        # "_barcode<digits>" is reported as the barcode, anything else is part of the sample name.
+        self.barcode_suffix = re.compile(r"^(?P<name>.+)_barcode(?P<num>\d+)$", re.IGNORECASE)
 
         self.processing_stats = {
             "with_barcode": 0,
@@ -787,27 +783,18 @@ class ABOReportParser:
     # Sample/filename handling
     # -----------------------------------------------------------------
     def extract_sample_info(self, filename):
-        """Extract sample name and barcode from filename."""
-        if "_barcode" in filename:
-            parts = filename.rsplit("_barcode", 1)
-            sample_name = parts[0]
-            try:
-                barcode_num = parts[1]
-                barcode_int = int(barcode_num)
-                if 0 <= barcode_int <= 99:
-                    barcode = f"barcode{barcode_num.zfill(2)}"
-                else:
-                    print(f"Warning: Unusual barcode number {barcode_int} for {filename}")
-                    barcode = f"barcode{barcode_num}"
-            except ValueError:
-                print(f"Warning: Invalid barcode format in {filename}, using as-is")
-                barcode = f"barcode{parts[1]}"
-            return sample_name, barcode, "explicit"
-        else:
-            sample_name = filename
-            barcode = self.default_barcode
-            print(f"No barcode found in '{filename}', using default barcode: {barcode}")
-            return sample_name, barcode, "default"
+        """Sample name and barcode from a sample folder name.
+
+        "S1_barcode07" gives ("S1", "barcode07"). A name without a trailing _barcode<digits> keeps the whole
+        name and gets the default barcode, so "patient-01", "S1.r1" and "X_barcode06_rep2" are all valid.
+        """
+        m = self.barcode_suffix.match(filename)
+        if m:
+            num = m.group("num")
+            barcode = f"barcode{num.zfill(2)}" if int(num) <= 99 else f"barcode{num}"
+            return m.group("name"), barcode, "explicit"
+        print(f"No barcode found in '{filename}', using default barcode: {self.default_barcode}")
+        return filename, self.default_barcode, "default"
 
     # -----------------------------------------------------------------
     # Per-exon report parser
@@ -2322,15 +2309,7 @@ class ABOReportParser:
         valid_directories = []
         for filename in os.listdir(self.input_dir):
             if os.path.isdir(os.path.join(self.input_dir, filename)):
-                match_with_barcode = self.pattern_with_barcode.match(filename)
-                match_without_barcode = self.pattern_without_barcode.match(filename)
-                if match_with_barcode or match_without_barcode:
-                    valid_directories.append(filename)
-                else:
-                    self.processing_stats["pattern_failed"] += 1
-                    self.failed_samples.append(
-                        {"sample": filename, "reason": "Filename pattern not recognized"}
-                    )
+                valid_directories.append(filename)
 
         if not valid_directories:
             print("No valid sample directories found matching expected patterns.")

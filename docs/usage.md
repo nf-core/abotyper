@@ -26,7 +26,7 @@ POSCTRL_barcode96,/path/to/POSCTRL_barcode96.fastq.gz,,positive
 
 | Column    | Description                                                                                                                                                                                  |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Sample name, used in every result table. Letters and digits joined by `_` (or by up to two `-`), optionally ending in `_barcode<NN>`, which is reported as the barcode. See the rules below. |
+| `sample`  | Sample name, used in every result table. Any name without spaces; a trailing `_barcode<NN>` is reported as the barcode. See below. |
 | `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                                         |
 | `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                                    |
 | `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name.            |
@@ -35,11 +35,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 
 ### Sample names
 
-The samplesheet validation accepts only names the result tables can report, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `2025705_barcode14` or `NTC`:
-
-- letters and digits, in segments joined by `_`, or by up to two `-` when the name ends in a barcode;
-- optionally ending in `_barcode<NN>`; samples without a barcode are reported with `barcode00`;
-- no spaces, dots or other characters.
+Any sample name without spaces is accepted, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. A name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
 
 ### Controls
 
