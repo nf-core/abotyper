@@ -663,6 +663,58 @@ def _process_one(filename):
     return filename, buf.getvalue(), p.results, p.qc_records, p.sample_metrics, p.failed_samples
 
 
+# ===========================================================================
+# Primary genotype rules
+# ===========================================================================
+
+# State ("ref", "het" or "alt") of the five primary markers, in this order:
+#   c.261delG (role o1), c.796C>A (b_796), c.802G>A (o2_802), c.803G>C (b_803), c.804 homopolymer (o34_804)
+# -> (Phenotype, Genotype, ExtendedGenotype, kind).
+# kind "fixed": as written. "a_allele": "{a}" is the A allele named by the A-subtype step ("A" when it names none).
+# "aa": both alleles are A, and the A-subtype step's zygosity decides the names (see resolve_primary_genotype).
+# Any other combination, or a marker without evidence ("none"), is Unknown.
+GENOTYPE_TABLE = {
+    ("het", "ref", "ref", "ref", "ref"): ("A", "AO", "{a}/O1", "a_allele"),
+    ("ref", "ref", "het", "ref", "ref"): ("A", "AO", "{a}/O2", "a_allele"),
+    ("ref", "ref", "ref", "ref", "het"): ("A", "AO", "{a}/O3", "a_allele"),
+    ("het", "het", "ref", "het", "ref"): ("B", "BO", "B/O1", "fixed"),
+    ("ref", "het", "het", "het", "ref"): ("B", "BO", "B/O2", "fixed"),
+    ("ref", "het", "ref", "het", "het"): ("B", "BO", "B/O3", "fixed"),
+    ("het", "ref", "het", "ref", "ref"): ("O", "OO", "O1/O2", "fixed"),
+    ("het", "ref", "ref", "ref", "het"): ("O", "OO", "O1/O3", "fixed"),
+    ("ref", "ref", "het", "ref", "het"): ("O", "OO", "O2/O3", "fixed"),
+    ("alt", "ref", "ref", "ref", "ref"): ("O", "OO", "O1/O1", "fixed"),
+    ("ref", "ref", "alt", "ref", "ref"): ("O", "OO", "O2/O2", "fixed"),
+    ("ref", "ref", "ref", "ref", "alt"): ("O", "OO", "O3/O3", "fixed"),
+    ("ref", "ref", "ref", "ref", "ref"): ("A", "AA", None, "aa"),
+    ("ref", "alt", "ref", "alt", "ref"): ("B", "BB", "B/B", "fixed"),
+    ("ref", "het", "ref", "het", "ref"): ("AB", "AB", "{a}/B", "a_allele"),
+}
+PRIMARY_GENOTYPE_ROLES = ("o1", "b_796", "o2_802", "b_803", "o34_804")
+
+
+def resolve_primary_genotype(states, determine_a_subtype):
+    """(Phenotype, Genotype, ExtendedGenotype, A-subtype warning) from the five primary-marker states.
+
+    determine_a_subtype() -> (subtype, warning, zygosity) is called only for genotypes with an A allele, because the
+    A2 scan it runs records the markers that later name the ISBT alleles.
+    """
+    rule = GENOTYPE_TABLE.get(tuple(states))
+    if rule is None:
+        return "Unknown", "Unknown", "Unknown", None
+    phenotype, genotype, extended, kind = rule
+    if kind == "fixed":
+        return phenotype, genotype, extended, None
+    a_subtype, warning, zygosity = determine_a_subtype()
+    if kind == "a_allele":
+        return phenotype, genotype, extended.format(a=a_subtype or "A"), warning
+    if a_subtype and zygosity == "het":      # one A1 allele and one subtype allele, not two copies of the subtype
+        return "A", "AA", f"A1/{a_subtype}", warning
+    if a_subtype:
+        return a_subtype, "AA", f"{a_subtype}/{a_subtype}", warning
+    return "A", "AA", "A/A", warning
+
+
 class ABOReportParser:
     """
     Collates all ABO phenotype results from each sample into a general table
@@ -1011,8 +1063,7 @@ class ABOReportParser:
         row_lookup: Dict[int, pd.Series],
         require_b_allele: bool = False,
         require_a_allele: bool = False,
-        type_exon7_422: str = "",
-        type_exon7_429: str = "",
+        b_marker_states: Tuple[str, ...] = (),
     ) -> Tuple[List[str], List[str]]:
         """
         Works for ANY panel category (bw, ba, cisab, a2, a3, am, aweak, ael,
@@ -1021,11 +1072,11 @@ class ABOReportParser:
         fired, warnings = [], []
 
         if require_b_allele:
-            has_b = ("B" in type_exon7_422) or ("B" in type_exon7_429)
+            has_b = any(st in ("alt", "het") for st in b_marker_states)      # c.796 / c.803 carry a B allele
             if not has_b:
                 return fired, warnings
         if require_a_allele:
-            has_a = ("A" in type_exon7_422) or ("A" in type_exon7_429)
+            has_a = any(st in ("ref", "het") for st in b_marker_states)      # an allele without B (A or O)
             if not has_a:
                 return fired, warnings
 
@@ -1119,40 +1170,19 @@ class ABOReportParser:
             col_467 = col_for(self.panel.role_id("a1a2_467"))
             col_1061 = col_for(self.panel.role_id("a2_1061del"))
 
-            # Normalize the primary markers into the exact legacy vocabulary
-            # the decision tree below matches on. The panel's display labels
-            # (ref_call_label/alt_call_label) are worded differently from the
-            # tree's hardcoded literals (e.g. panel "A or B or O" vs tree
-            # "O and (A or B)"; het "A or B or O and O1" vs tree
-            # "O1 and (A or B or O)"), so matching the raw Type cell makes
-            # every branch fail and every sample fall through to "Unknown".
-            # We classify each marker's biallelic STATE and emit the legacy
-            # string, so display wording and decision logic stay decoupled.
-
-            def primary_type(col, marker_id, ref_s, alt_s, het_s):
-                m = self.panel.get(marker_id)
-                if m is None or not col:
-                    return ""
-                state = self._primary_state(m, dict(safe_get_row(df, col)))
-                return {"ref": ref_s, "alt": alt_s, "het": het_s, "none": ""}[state]
-
-            type_exon6 = primary_type(
-                col_o1, self.panel.role_id("o1"), "A or B or O", "O1", "O1 and (A or B or O)")
-            type_exon7_422 = primary_type(
-                col_796, self.panel.role_id("b_796"), "A or O", "B", "(A or O) and B")
-            type_exon7_428 = primary_type(
-                col_802, self.panel.role_id("o2_802"), "O and (A or B)", "O2", "O2 and (O or A or B)")
-            type_exon7_429 = primary_type(
-                col_803, self.panel.role_id("b_803"), "A or O", "B", "(A or O) and B")
-            type_exon7_431 = primary_type(
-                col_804, self.panel.role_id("o34_804"), "O and (A or B)", "O3", "O3 and (O or A or B)")
-            type_exon7_93 = safe_get_type(df, col_467) if col_467 else ""
-
             def primary_state(col, marker_id):
                 m = self.panel.get(marker_id)
                 if m is None or not col:
                     return "none"
                 return self._primary_state(m, dict(safe_get_row(df, col)))
+
+            # the five primary markers' states key the genotype table (GENOTYPE_TABLE)
+            state_o1 = primary_state(col_o1, self.panel.role_id("o1"))
+            state_796 = primary_state(col_796, self.panel.role_id("b_796"))
+            state_802 = primary_state(col_802, self.panel.role_id("o2_802"))
+            state_803 = primary_state(col_803, self.panel.role_id("b_803"))
+            state_804 = primary_state(col_804, self.panel.role_id("o34_804"))
+            type_exon7_93 = safe_get_type(df, col_467) if col_467 else ""
 
             state_exon7_685 = primary_state(col_1061, self.panel.role_id("a2_1061del"))
             state_exon7_93 = primary_state(col_467, self.panel.role_id("a1a2_467"))
@@ -1389,106 +1419,14 @@ class ABOReportParser:
                 if (state_exon7_93 in ("alt", "het") and state_exon7_685 == "ref"
                         and nreads_exon7_p685 >= self.panel.threshold("a2_min_reads") and nreads_exon7_p422 >= self.panel.threshold("a2_min_reads")):
                     return "A1.02", warning_text, ("het" if state_exon7_93 == "het" else "hom")
-                if type_exon7_93 in ("A1.02 or A2", "A1"):
+                m467 = self.panel.role("a1a2_467")
+                if m467 is not None and type_exon7_93 in (m467.alt_call_label, m467.ref_call_label):
                     return "A1", warning_text, "hom"
                 return "", None, "hom"
 
-            # ----- PART 1: PRIMARY PHENOTYPING LOGIC -----
-            a_subtype_warning = None
-
-            if (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning, _ = determine_a_subtype()
-                Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O1" if a_subtype else "A/O1"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning, _ = determine_a_subtype()
-                Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O2" if a_subtype else "A/O2"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O3 and (O or A or B)"):
-                a_subtype, a_subtype_warning, _ = determine_a_subtype()
-                Phenotype, Genotype = "A", "AO"
-                ExtendedGenotype = f"{a_subtype}/O3" if a_subtype else "A/O3"
-
-            elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "(A or O) and B"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O1"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
-                    and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "(A or O) and B"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O2"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
-                    and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BO", "B/O3"
-
-            elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O2"
-
-            elif (type_exon6 == "O1 and (A or B or O)" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O3"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O2 and (O or A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O3 and (O or A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O3"
-
-            elif (type_exon6 == "O1" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O1/O1"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O2" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O2/O2"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O3"):
-                Phenotype, Genotype, ExtendedGenotype = "O", "OO", "O3/O3"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "A or O"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "A or O"
-                    and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning, a_subtype_zygosity = determine_a_subtype()
-                if a_subtype and a_subtype_zygosity == "het":
-                    # One A1 allele (reference/silent at every A2 marker) +
-                    # one subtype allele -- NOT two copies of the subtype.
-                    Phenotype, Genotype, ExtendedGenotype = "A", "AA", f"A1/{a_subtype}"
-                elif a_subtype:
-                    Phenotype, Genotype, ExtendedGenotype = a_subtype, "AA", f"{a_subtype}/{a_subtype}"
-                else:
-                    Phenotype, Genotype, ExtendedGenotype = "A", "AA", "A/A"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "B"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "B"
-                    and type_exon7_431 == "O and (A or B)"):
-                Phenotype, Genotype, ExtendedGenotype = "B", "BB", "B/B"
-
-            elif (type_exon6 == "A or B or O" and type_exon7_422 == "(A or O) and B"
-                    and type_exon7_428 == "O and (A or B)" and type_exon7_429 == "(A or O) and B"
-                    and type_exon7_431 == "O and (A or B)"):
-                a_subtype, a_subtype_warning, _ = determine_a_subtype()
-                Phenotype, Genotype = "AB", "AB"
-                ExtendedGenotype = f"{a_subtype}/B" if a_subtype else "A/B"
-
-            else:
-                Phenotype, Genotype, ExtendedGenotype = "Unknown", "Unknown", "Unknown"
+            # ----- PART 1: PRIMARY PHENOTYPING LOGIC (GENOTYPE_TABLE) -----
+            Phenotype, Genotype, ExtendedGenotype, a_subtype_warning = resolve_primary_genotype(
+                (state_o1, state_796, state_802, state_803, state_804), determine_a_subtype)
 
             # ----- PART 1b: A2-panel markers for genotypes without an A allele (O and B samples) -----
             # They do not change the call, but a marker carried on the O or B allele (c.297, the c.646/681/771/829
@@ -1515,15 +1453,15 @@ class ABOReportParser:
             # ----- PART 2: subtype-marker scan across ALL panel categories -----
             bw_markers, bw_warnings = self.scan_category_markers(
                 "bw", row_lookup, require_b_allele=True,
-                type_exon7_422=type_exon7_422, type_exon7_429=type_exon7_429,
+                b_marker_states=(state_796, state_803),
             )
             ba_markers, ba_warnings = self.scan_category_markers(
                 "ba", row_lookup,
-                type_exon7_422=type_exon7_422, type_exon7_429=type_exon7_429,
+                b_marker_states=(state_796, state_803),
             )
             cisab_markers, cisab_warnings = self.scan_category_markers(
                 "cisab", row_lookup,
-                type_exon7_422=type_exon7_422, type_exon7_429=type_exon7_429,
+                b_marker_states=(state_796, state_803),
             )
 
             other_subtype_categories = [
