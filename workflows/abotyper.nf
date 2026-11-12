@@ -32,7 +32,6 @@ workflow ABOTYPER {
     abo_reference_fai    // channel: fai from params.abo_reference_fai
     abo_reference_fasta  // channel: fasta from params.abo_reference_fasta
     ch_clair3_model_url  // channel: clair3_url from params.clair3_model_url
-    logo                 // channel: png from params.logo (custom pathwest logo)
     abo_panel            // channel: path from params.abo_panel (variant panel YAML)
     clair3_region_bed    // channel: path from params.abo_clair3_region_bed, or [] for none
 
@@ -56,6 +55,10 @@ workflow ABOTYPER {
         ch_samplesheet,
         abo_reference_fasta,
         abo_reference_fai,
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(
+        MINIMAP2_ALIGN_READS.out.stats.collect{ it[1] },
+        MINIMAP2_ALIGN_READS.out.flagstat.collect{ it[1] },
     )
 
     //
@@ -99,6 +102,8 @@ workflow ABOTYPER {
         VARIANTS_QUANTIFICATION.out.haplotypes,
         VARIANTS_QUANTIFICATION.out.evidence_status,
         VARIANTS_QUANTIFICATION.out.concordance,
+        MINIMAP2_ALIGN_READS.out.stats,
+        MINIMAP2_ALIGN_READS.out.flagstat,
         abo_panel,
     )
 

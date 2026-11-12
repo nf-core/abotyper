@@ -9,22 +9,21 @@ nextflow_process {
     tag "abo/snps2pheno"
     tag "abotyper"
 
-    // Two samples in the per_sample_processing/<id>/combined/ layout the subworkflow publishes:
-    // ABO_AA_barcode01 (AA) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is the list of
-    // sample folders and input 1 the per_sample_processing folder the script scans; their staged
-    // names differ, so there is no input name collision.
+    // Two samples, ABO_AA_barcode01 (AA) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is
+    // the list of sample IDs and input 1 every per-sample file (<id>.<suffix>); the module builds the
+    // per_sample_processing/<id>/combined/ layout inside the task. No controls file (input 2).
 
     test("abotyper - two samples compiled into the final tables") {
 
         when {
             process {
                 """
-                input[0] = [
-                    file("$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01", checkIfExists: true),
-                    file("$projectDir/tests/fixtures/per_sample_processing/ABO_BO1_barcode06", checkIfExists: true)
-                ]
-                input[1] = file("$projectDir/tests/fixtures/per_sample_processing", checkIfExists: true)
-                input[2] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ]
+                input[1] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[2] = []
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }
@@ -60,12 +59,12 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = [
-                    file("$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01", checkIfExists: true),
-                    file("$projectDir/tests/fixtures/per_sample_processing/ABO_BO1_barcode06", checkIfExists: true)
-                ]
-                input[1] = file("$projectDir/tests/fixtures/per_sample_processing", checkIfExists: true)
-                input[2] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ]
+                input[1] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[2] = []
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 """
             }
         }

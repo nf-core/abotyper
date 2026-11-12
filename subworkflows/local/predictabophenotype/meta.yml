@@ -37,10 +37,22 @@ input:
       type: channel
       description: |
         Channel containing haplotype tables (Haplotypes.tsv) with exon metadata,
-        produced by ABO_CLAIR2HAPLOTYPES. Staged into the per-sample combined
-        subdirectory so that aggregate_abo_reports.py can compute PhaseConfidence scores.
+        produced by ABO_CLAIR2HAPLOTYPES. Staged into ABO_SNPS2PHENO with the other per-sample
+        files so that aggregate_abo_reports.py can compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"
+  - ch_evidence_status:
+      type: channel
+      description: "[ val(meta), path(*.evidence_status.tsv) ] from ABO_EVIDENCE"
+  - ch_concordance:
+      type: channel
+      description: "[ val(meta), path(*.concordance.tsv) ] from ABO_EVIDENCE"
+  - ch_bam_stats:
+      type: channel
+      description: "[ val(meta), path(*.stats) ] from SAMTOOLS_STATS"
+  - ch_bam_flagstat:
+      type: channel
+      description: "[ val(meta), path(*.flagstat) ] from SAMTOOLS_FLAGSTAT"
   - ch_panel:
       type: file
       description: |
@@ -56,6 +68,12 @@ output:
         and reliability scores for all samples.
         Structure: [ path(ABO_result.txt) ]
       pattern: "ABO_result.txt"
+  - evidence_summary:
+      type: file
+      description: |
+        Per-sample evidence summary (Clair3 and BAM pileup) as a MultiQC custom-content table.
+        Structure: [ path(ABO_evidence_summary_mqc.tsv) ]
+      pattern: "ABO_evidence_summary_mqc.tsv"
 authors:
   - "@fmobegi"
 maintainers:
