@@ -94,7 +94,7 @@ output:
       description: |
         Haplotype table from ABO_CLAIR2HAPLOTYPES, synthesized from Clair3's
         phased-VCF phase-set allele depths (not literal per-read
-        observations -- see bin/clair2haplotypes.py docstring). Consumed by
+        observations -- see the abotyper-core clair2haplotypes docstring). Consumed by
         PREDICTABOPHENOTYPE to compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"

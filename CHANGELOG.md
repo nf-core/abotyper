@@ -15,7 +15,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Added`
 
-- Two lines of evidence for every panel position: Clair3 and an independent BAM pileup (`ABO_PILEUP`, `bin/pileup2metrics.py`), combined and compared by `ABO_EVIDENCE`. Clair3 is the primary line, the pileup fills positions Clair3 had no evidence for, and a per-position concordance table and an evidence status file are written for every sample. The pipeline warns at run time when Clair3 produces no gVCF for a sample.
+- Two lines of evidence for every panel position: Clair3 and an independent BAM pileup (`ABO_PILEUP`, abotyper-core `pileup2metrics`), combined and compared by `ABO_EVIDENCE`. Clair3 is the primary line, the pileup fills positions Clair3 had no evidence for, and a per-position concordance table and an evidence status file are written for every sample. The pipeline warns at run time when Clair3 produces no gVCF for a sample.
 - Clair3 is restricted to the ABO exon 2–7 region (`abo_clair3_region_bed`, `assets/refs/abo_clair3_region.bed`).
 - `ABO_result.xlsx` with three sheets: `Typing` (one row per sample: reads, read length, ABO-mapped reads, on-target %, depths, evidence source, typing result, phenotype, genotype, variants detected, QC), `Variants` (one column per panel position with the call and depth, such as `A 50% (215x)`; alleles that reach the marker's threshold are highlighted and low depth is coloured; the full per-base table stays in `ABO_result.txt`) and `About` (script, panel and ISBT-table versions and the research-use statement).
 - ISBT-style allele names (for example `ABO*A1.01/ABO*O.01.01`) that start from the reference allele of each family and are narrowed to the specific allele when non-primary panel markers fire. The panel records its own version and the ISBT allele-table version it was checked against (v9).
@@ -38,7 +38,6 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 - Clair3 is retried once after a resource failure (for example running out of memory) before the sample falls back to the BAM pileup alone; `errorStrategy 'ignore'` had overridden the retry in `conf/base.config`.
 - The BAM pileup row of c.1061delC left the reference (C) column at 0, so a position filled from the BAM instead of Clair3 read as heterozygous whatever the deletion fraction.
 - The reference FASTA is stored as a regular file. It had been committed as a Git LFS pointer, which broke the pipeline for any checkout without LFS.
-- All `bin/` scripts are executable in git and read and write files as UTF-8, so results are identical on Windows and Linux.
 - `ABO_SNPS2PHENO` stub runs create all declared outputs.
 - A1 and A2 subtypes follow the ISBT definitions: c.1061delC with a reference c.467 is named ABO*A2.06 and c.467C>T with a clearly absent c.1061delC (30 reads or more) is named ABO*A1.02, both flagged for review as rare alleles. c.907G>A and c.1032G>A are not part of any ISBT definition, so they are reported in the QC flags but no longer name or support an allele.
 - Ael alleles: c.804dupG and c.804delG are named ABO*AEL.01, ABO*AEL.08 (with c.467C>T) and ABO*AEL.03, with a review flag because Ael is a very weak or silent A. The BAM pileup now searches the whole 7-G homopolymer run (NG 24283-24289) for that indel, because the aligner anchors it on the base before the run or on its first G, outside the old +-2 bp window; the marker threshold is 25% because the run gives up to 13% deletion signal in reference runs. A1.02 and A2.06 review flags now give the read percentages that caused them.
@@ -54,14 +53,13 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Changed`
 
+- The Python typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) package (0.1.0), released on its own to PyPI and Bioconda with its own tests (including golden-output tests on the pipeline's test samples), CLI and CI. The `abo/*` local modules use its Bioconda environment and BioContainers image and report the `abotyper-core` version; the scripts in `bin/` are removed. Typing results are unchanged: the package reproduces the former `bin/` outputs byte for byte on the test samples. Standalone tools (`abotyper-rename-samples`, `abotyper-calibrate-panel`) come with the package.
 - README acknowledgements (Stem Cell Donors Australia, Eurobio-GenDx, PathWest and UWA) and a use-of-AI statement.
 - minimap2 is given an explicit platform preset, `-x map-ont`, set in `conf/modules.config` from the new `--minimap2_preset` parameter (`map-ont`, `lr:hq`, `map-pb`, `map-hifi` or `sr`). minimap2 previously ran with no `-x` and used its built-in defaults. Only `map-ont` has been validated.
 - nf-core template updated to tools 4.2.2 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
 - nf-core modules updated to the latest versions (bcftools 1.25, samtools/htslib 1.25, MultiQC 1.35, NanoPlot 1.48.0). The NanoPlot patch now only adds plain `.fastq`/`.fq` input. bcftools/query is no longer patched: the module's `.txt` table is published as `<sample>.panel.tsv`.
-- Unused parameters removed: `--abo_bed` (the BED is generated from the panel), `--renaming_file`/`--skip_renaming` (no process used them; `bin/rename_samples.py` stays as a standalone utility) and `--logo`. MultiQC no longer uses the PathWest logo by default (`--multiqc_logo` is unset).
+- Unused parameters removed: `--abo_bed` (the BED is generated from the panel), `--renaming_file`/`--skip_renaming` (no process used them; renaming stays a standalone utility, now `abotyper-rename-samples` in abotyper-core) and `--logo`. MultiQC no longer uses the PathWest logo by default (`--multiqc_logo` is unset).
 - samtools stats and flagstat results are added to the MultiQC report.
-- `ABO_SNPS2PHENO` and `ABO_GETABOSNPS` report their PyYAML version; `ABO_SNPS2PHENO` no longer reports NumPy, which it does not import.
-- The `bin/` scripts are released under the MIT licence, like the rest of the pipeline (they declared GPL).
 - `docs/usage.md` describes this pipeline's samplesheet (it was the template text for paired-end Illumina reads).
 - All text files are stored with LF line endings (`.gitattributes`).
 - The pipeline-specific nf-core/configs include (`pipeline/abotyper.config`) is enabled.
@@ -77,8 +75,7 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 | Clair3                    | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
 | samtools / htslib         | 1.25 (alignment statistics, coverage and `ABO_PILEUP`)                   |
 | minimap2                  | via the nf-core `minimap2/align` module                                  |
-| pyyaml                    | required by `bin/abo_panel.py` and all panel-driven scripts              |
-| pandas, numpy, xlsxwriter | `ABO_SNPS2PHENO` and `ABO_GETABOSNPS`                                    |
+| abotyper-core             | 0.1.0 (Bioconda / BioContainers); the `abo/*` typing modules             |
 
 ### `Known gaps / not yet done`
 

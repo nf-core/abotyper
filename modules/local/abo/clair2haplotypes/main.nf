@@ -7,7 +7,7 @@
 
     Clair3's phasing is block-level (GT + PS tag), not per-read -- rows
     are synthesized in proportion to each phase set's own allele depths,
-    not literal individual reads. See bin/clair2haplotypes.py docstring.
+    not literal individual reads. See abotyper-core (clair2haplotypes).
 */
 process ABO_CLAIR2HAPLOTYPES {
     tag "${meta.id}"
@@ -15,8 +15,8 @@ process ABO_CLAIR2HAPLOTYPES {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/python_pyyaml:10a1a757f29eaf02'
-        : 'community.wave.seqera.io/library/python_pyyaml:a1e09ed0f4856f89'}"
+        ? 'https://depot.galaxyproject.org/singularity/abotyper-core:0.1.0--pyhdfd78af_0'
+        : 'biocontainers/abotyper-core:0.1.0--pyhdfd78af_0'}"
 
     input:
     tuple val(meta), path(phased_vcf)
@@ -24,8 +24,7 @@ process ABO_CLAIR2HAPLOTYPES {
 
     output:
     tuple val(meta), path("*.Haplotypes.tsv"), emit: tsv
-    tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
-    tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
+    tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
     def args   = task.ext.args ?: ''

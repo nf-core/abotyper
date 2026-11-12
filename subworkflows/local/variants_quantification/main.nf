@@ -89,7 +89,7 @@ workflow VARIANTS_QUANTIFICATION {
     // Converts Clair3's phased VCF into HAPLOSCAN-format Haplotypes.tsv,
     // driving PREDICTABOPHENOTYPE's PhaseConfidence scoring. Synthesized
     // from phase-set allele depths, not literal per-read observations --
-    // see bin/clair2haplotypes.py docstring.
+    // see the abotyper-core clair2haplotypes docstring.
     ABO_CLAIR2HAPLOTYPES(
         CLAIR3.out.phased_vcf,
         panel_file,

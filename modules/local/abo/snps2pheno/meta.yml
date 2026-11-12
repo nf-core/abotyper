@@ -12,35 +12,11 @@ keywords:
   - excel
   - csv
 tools:
-  - python:
-      description: Python programming language
-      homepage: https://www.python.org/
-      documentation: https://docs.python.org/
-      tool_dev_url: https://github.com/python/cpython
-      licence: ["Python Software Foundation License"]
-  - pandas:
-      description: Powerful data structures for data analysis, time series, and statistics
-      homepage: https://pandas.pydata.org/
-      documentation: https://pandas.pydata.org/docs/
-      tool_dev_url: https://github.com/pandas-dev/pandas
-      licence: ["BSD-3-Clause"]
-  - pyyaml:
-      description: YAML parser and emitter for Python
-      homepage: https://pyyaml.org/
-      documentation: https://pyyaml.org/wiki/PyYAMLDocumentation
-      tool_dev_url: https://github.com/yaml/pyyaml
-      licence: ["MIT"]
-  - xlsxwriter:
-      description: Python module for creating Excel XLSX files
-      homepage: https://xlsxwriter.readthedocs.io/
-      documentation: https://xlsxwriter.readthedocs.io/
-      tool_dev_url: https://github.com/jmcnamara/XlsxWriter
-      licence: ["BSD-2-Clause"]
-  - openpyxl:
-      description: Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files
-      homepage: https://openpyxl.readthedocs.io/
-      documentation: https://openpyxl.readthedocs.io/
-      tool_dev_url: https://foss.heptapod.net/openpyxl/openpyxl
+  - abotyper-core:
+      description: ABO blood group typing logic of nf-core/abotyper, as a Python package and command-line tools
+      homepage: https://github.com/fmobegi/abotyper-core
+      documentation: https://github.com/fmobegi/abotyper-core#readme
+      tool_dev_url: https://github.com/fmobegi/abotyper-core
       licence: ["MIT"]
 
 input:
@@ -98,85 +74,28 @@ output:
           type: file
           description: Per-sample evidence summary (Clair3 and BAM pileup) as a MultiQC custom-content table
           pattern: "ABO_evidence_summary_mqc.tsv"
-  versions_python:
+  versions_abotyper_core:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - python:
+      - abotyper-core:
           type: string
           description: Name of the tool
-      - python --version | sed "s/Python //":
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
           type: eval
-          description: The expression to obtain the version of Python
-  versions_pandas:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pandas:
-          type: string
-          description: Name of the library
-      - python -c "import pandas; print(pandas.__version__)":
-          type: eval
-          description: The expression to obtain the version of pandas
-  versions_pyyaml:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pyyaml:
-          type: string
-          description: Name of the library
-      - python -c "import yaml; print(yaml.__version__)":
-          type: eval
-          description: The expression to obtain the version of PyYAML
-  versions_xlsxwriter:
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - xlsxwriter:
-          type: string
-          description: Name of the library
-      - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
-          type: eval
-          description: The expression to obtain the version of xlsxwriter
+          description: The expression to obtain the version of abotyper-core
 
 topics:
   versions:
     - - ${task.process}:
           type: string
           description: Name of the process
-      - python:
+      - abotyper-core:
           type: string
           description: Name of the tool
-      - python --version | sed "s/Python //":
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
           type: eval
-          description: The expression to obtain the version of Python
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pandas:
-          type: string
-          description: Name of the library
-      - python -c "import pandas; print(pandas.__version__)":
-          type: eval
-          description: The expression to obtain the version of pandas
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - pyyaml:
-          type: string
-          description: Name of the library
-      - python -c "import yaml; print(yaml.__version__)":
-          type: eval
-          description: The expression to obtain the version of PyYAML
-    - - ${task.process}:
-          type: string
-          description: Name of the process
-      - xlsxwriter:
-          type: string
-          description: Name of the library
-      - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
-          type: eval
-          description: The expression to obtain the version of xlsxwriter
+          description: The expression to obtain the version of abotyper-core
 
 authors:
   - "@fmobegi"

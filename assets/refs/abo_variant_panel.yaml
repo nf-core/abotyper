@@ -29,7 +29,7 @@
 #       1-based position within the NEW single ~6.7 kb long-read amplicon
 #       (Goebel-IN1-forward / Wu-3'UTR-reverse; Mobegi et al. 2025, IJMS
 #       26(12):5443) that spans exons 2-7. Left blank ("") until you run
-#       calibrate_panel_positions.py against your finalised reference
+#       abotyper-calibrate-panel against your finalised reference
 #       FASTA — see that script's docstring. Every script in this bundle
 #       falls back gracefully to legacy_exonN_pos when amplicon_pos is
 #       blank, so nothing breaks before calibration; new (exon2-6) entries
@@ -93,7 +93,7 @@ meta:
   notes: >
     amplicon_pos fields are intentionally blank pending calibration against
     the finalised combined exon2-7 reference FASTA. See
-    calibrate_panel_positions.py.
+    abotyper-calibrate-panel.
 
   ng006669_2_reference: "Fully calibrated against user-supplied NG_006669.2 GenBank annotation (mRNA/CDS join() feature): all 51 panel positions now have a verified ng006669_2_pos, cross-checked against the actual NG_006669.2 sequence with zero mismatches. Intron positions (aweak_intron6_374, aweak_intron2_98, b3_intron3_155, abantu_intron4_203) anchor to the first of their listed HGVS intronic offsets; see each row's notes."
   assay_reference_note: Combined reference is the UNTRIMMED NG_006669.2 record (42,144 bp) -- amplicon_pos is therefore identical to ng006669_2_pos for every row (zero offset). Positions upstream of exon 2 (~NG 1-18000) will show zero coverage in aligned samples since the actual PCR amplicon only spans exon2-7; this is expected and harmless.
@@ -978,7 +978,7 @@ variants:
     # ALREADY PHYSICALLY PRESENT on every read once the combined exon2-7
     # amplicon (Mobegi et al. 2025) is in use — these were previously
     # thought to need new primers, but the assay already spans this DNA.
-    # amplicon_pos is blank until calibrate_panel_positions.py is run
+    # amplicon_pos is blank until abotyper-calibrate-panel is run
     # against the finalised reference FASTA; these rows will not be scored
     # against v1.x exon6/7-only BAMs (no legacy position exists for them).
     # ======================================================================

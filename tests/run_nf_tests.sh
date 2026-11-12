@@ -20,13 +20,6 @@ command -v nf-test  >/dev/null || { echo "nf-test not found";  exit 2; }
 nextflow -version | head -3
 nf-test version
 
-echo "== sanity: every script in bin/ must be executable (exit status 126 otherwise) =="
-bad=0
-for f in bin/*.py; do
-    if [ ! -x "$f" ]; then echo "NOT EXECUTABLE: $f"; bad=1; fi
-done
-[ "$bad" -eq 0 ] || { echo "fix with: git update-index --chmod=+x <file> && chmod +x <file>"; exit 3; }
-
 echo "== local modules and subworkflows, stub then real (profile: test,${PROFILE}) =="
 # nf-test combines -profile test (from nf-test.config) with the profile given here
 nf-test test --tag abotyper --profile "+${PROFILE}" --verbose "${EXTRA[@]}"

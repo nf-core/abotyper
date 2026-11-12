@@ -16,8 +16,8 @@ process ABO_SNPS2PHENO {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:e206f33f53f3639b'
-        : 'community.wave.seqera.io/library/pandas_python_pyyaml_xlsxwriter:4325a71f45ad8e44'}"
+        ? 'https://depot.galaxyproject.org/singularity/abotyper-core:0.1.0--pyhdfd78af_0'
+        : 'biocontainers/abotyper-core:0.1.0--pyhdfd78af_0'}"
 
     input:
     val sample_ids
@@ -32,10 +32,7 @@ process ABO_SNPS2PHENO {
     path "final_export.csv", emit: csv
     path "ABO_run_qc.txt", emit: qc, optional: true
     path "ABO_evidence_summary_mqc.tsv", emit: mqc, optional: true
-    tuple val("${task.process}"), val('python'), eval('python --version | sed "s/Python //"'), emit: versions_python, topic: versions
-    tuple val("${task.process}"), val('pandas'), eval('python -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
-    tuple val("${task.process}"), val('pyyaml'), eval('python -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
-    tuple val("${task.process}"), val('xlsxwriter'), eval('python -c "import xlsxwriter; print(xlsxwriter.__version__)"'), emit: versions_xlsxwriter, topic: versions
+    tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
     def args = task.ext.args ?: ''
