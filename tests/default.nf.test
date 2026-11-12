@@ -25,11 +25,15 @@ nextflow_pipeline {
             def keep_cols = (0..<export_rows[0].size()).findAll { i -> export_rows[0][i] != '#Reads' }
             // One joined line per row: nf-test reads a bare empty string as a path and would md5 the working directory
             def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
+            // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple
+            // Nextflow versions. CLAIR3_DOWNLOADMODEL is left out: it runs only where the Clair3 container's packaged model is
+            // not available (conda), so whether it is listed depends on the profile, not on the pipeline.
+            def versions = removeNextflowVersion("$outputDir/pipeline_info/abotyper_software_mqc_versions.yml")
+                .findAll { process, tools -> process != 'CLAIR3_DOWNLOADMODEL' }
             assert workflow.success
             assertAll(
                 { assert snapshot(
-                    // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
-                    removeNextflowVersion("$outputDir/pipeline_info/abotyper_software_mqc_versions.yml"),
+                    versions,
                     // All stable path name, with a relative path
                     stable_path,
                     // All files with stable contents
