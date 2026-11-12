@@ -115,14 +115,14 @@ meta:
     ael_804: ael_804_indel
   # Read-depth and read-percentage thresholds of the typing logic (these are the defaults).
   thresholds:
-    a2_min_reads: 30                 # reads at c.796 (and c.1061) for an A2 / A1.02 / A2.06 call
-    a2_panel_scan_min_reads: 500     # reads at c.796 for the comprehensive A2-panel scan
-    named_marker_min_reads: 30       # floor for a non-primary marker to name or rule out an allele
-    c297_min_alt_pct: 25             # c.297A>G read percentage that counts as present
-    reliability_very_low_reads: 20   # read reliability bands at the weakest primary position
+    a2_min_reads: 30 # reads at c.796 (and c.1061) for an A2 / A1.02 / A2.06 call
+    a2_panel_scan_min_reads: 500 # reads at c.796 for the comprehensive A2-panel scan
+    named_marker_min_reads: 30 # floor for a non-primary marker to name or rule out an allele
+    c297_min_alt_pct: 25 # c.297A>G read percentage that counts as present
+    reliability_very_low_reads: 20 # read reliability bands at the weakest primary position
     reliability_low_reads: 40
     reliability_robust_reads: 500
-    homozygous_min_pct: 80           # alternate-read percentage classes for zygosity
+    homozygous_min_pct: 80 # alternate-read percentage classes for zygosity
     heterozygous_min_pct: 20
 variants:
   # ======================================================================

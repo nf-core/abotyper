@@ -5,6 +5,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > Versions below `v1.0.0` are retrospective labels for unreleased development milestones. They group the work of the merged pull requests in the git history (December 2024 – October 2026) and were never released; `v1.0.0` is the first release.
 
+## v1.1.0dev - [unreleased]
+
+### `Changed`
+
+- The typing scripts in `bin/` have Python unit tests and golden-output tests (`tests/python`), which run every Python step on the 10 samples of the pipeline test and compare all outputs, and a GitHub Actions job runs them with ruff.
+- `aggregate_abo_reports.py` is split into modules (`abo_calling.py`, `abo_naming.py`, `abo_phase.py`, `abo_inputs.py`, `abo_report.py`), and its genotype rules are a table keyed on the primary-marker states (`GENOTYPE_TABLE`) instead of an `if/elif` chain matching label text. The results are unchanged.
+- The markers the typing logic reads by role and its read-depth and read-percentage thresholds are set in the panel (`meta.roles`, `meta.thresholds`), so a marker can be renamed in the panel without changing the scripts.
+- The indel search-window rule is defined once (`VariantMarker.needs_window()`), and the exception handlers of the aggregation only catch the errors they expect; an error in typing a sample fails that sample instead of writing an "Error" row.
+- `versions.yml` reports the version of each `bin/` script the `ABO_*` modules run and the variant panel version.
+
 ## v1.0.0 - [2026-11-07]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.
