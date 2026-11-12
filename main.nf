@@ -29,6 +29,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_abot
 params.abo_reference_fai   = getGenomeAttribute('abo_reference_fai')   ?: params.abo_reference_fai
 params.abo_reference_fasta = getGenomeAttribute('abo_reference_fasta') ?: params.abo_reference_fasta
 params.clair3_model_url    = getGenomeAttribute('clair3_model_url')    ?: params.clair3_model_url
+params.clair3_model        = getGenomeAttribute('clair3_model')        ?: params.clair3_model
 params.abo_panel           = getGenomeAttribute('abo_panel')           ?: params.abo_panel
 
 /*
@@ -46,8 +47,19 @@ workflow NFCORE_ABOTYPER {
         .map { it -> [[id: it.baseName], it] } : Channel.empty()
     abo_reference_fasta = params.abo_reference_fasta ? Channel.fromPath(params.abo_reference_fasta)
         .map { it -> [[id: it.baseName], it] } : Channel.empty()
-    clair3_model_url    = params.clair3_model_url ? Channel.value(params.clair3_model_url) :
-        Channel.empty()
+    // Clair3 model: a URL is downloaded, else a local model folder is staged, else the packaged model is used.
+    // The nf-core clair3 module has no packaged models under conda, so there the packaged model is downloaded by name.
+    def no_packaged_models = !(workflow.containerEngine in ['docker', 'singularity', 'podman'])
+    def clair3_url = params.clair3_model_url ?:
+        (!params.clair3_model_path && no_packaged_models ? "${params.clair3_models_base_url.replaceAll('/+$', '')}/${params.clair3_model}/" : null)
+    if (!params.clair3_model_url && clair3_url) {
+        log.info "Clair3: packaged models are not available with this profile; downloading '${params.clair3_model}' from ${clair3_url}"
+    }
+    clair3_model = [
+        url:      clair3_url,
+        path:     (!clair3_url && params.clair3_model_path) ? Channel.fromPath(params.clair3_model_path, type: 'dir', checkIfExists: true).first() : null,
+        packaged: params.clair3_model,
+    ]
     abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel).collect() : Channel.empty()
     // staged as a task input so Clair3 can read it on any executor (cloud, HPC), not just locally
     abo_clair3_region_bed = params.abo_clair3_region_bed
@@ -58,7 +70,7 @@ workflow NFCORE_ABOTYPER {
         samplesheet,
         abo_reference_fai,
         abo_reference_fasta,
-        clair3_model_url,
+        clair3_model,
         abo_panel,
         abo_clair3_region_bed,
     )

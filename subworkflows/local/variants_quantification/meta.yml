@@ -50,9 +50,12 @@ input:
         Channel containing the FASTA index for ch_fasta.
         Structure: [ val(meta1), path(*.fasta.fai) ]
       pattern: "*.fasta.fai"
-  - model_url:
-      type: val
-      description: URL to the Clair3 model archive (params.clair3_model_url), downloaded once per run.
+  - clair3_model:
+      type: map
+      description: |
+        Which Clair3 model to use: url (a model folder to download with CLAIR3_DOWNLOADMODEL), else path
+        (a channel holding a local model folder, staged into CLAIR3), else packaged (the name of a model
+        packaged in the Clair3 container).
   - panel_file:
       type: file
       description: |

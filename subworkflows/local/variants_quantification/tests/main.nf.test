@@ -32,7 +32,7 @@ nextflow_workflow {
                 input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam.bai", checkIfExists: true) ])
                 input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
                 input[3] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta.fai", checkIfExists: true) ])
-                input[4] = 'https://example.org/clair3_model'     // not downloaded in stub mode
+                input[4] = [ url: 'https://example.org/clair3_model', path: null, packaged: 'r1041_e82_400bps_sup_v500' ]   // not downloaded in stub mode
                 input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
                 input[6] = file("$projectDir/assets/refs/abo_clair3_region.bed", checkIfExists: true)
                 """
@@ -53,6 +53,65 @@ nextflow_workflow {
                     workflow.out.concordance,
                     workflow.out.panel_bed
                 ).match() }
+            )
+        }
+    }
+
+    // The packaged model (no URL, no folder): nothing is downloaded and Clair3 gets the model name.
+    test("variants_quantification - packaged model - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                def d = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam", checkIfExists: true) ])
+                input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam.bai", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[3] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta.fai", checkIfExists: true) ])
+                input[4] = [ url: null, path: null, packaged: 'r1041_e82_400bps_sup_v500' ]
+                input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[6] = file("$projectDir/assets/refs/abo_clair3_region.bed", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert !workflow.trace.tasks().any { it.name.contains('CLAIR3_DOWNLOADMODEL') } },
+                { assert workflow.trace.tasks().any { it.name.contains('CLAIR3') } },
+                { assert workflow.out.metrics.size() == 1 }
+            )
+        }
+    }
+
+    // A local model folder: staged into Clair3, nothing is downloaded.
+    test("variants_quantification - local model folder - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                def d = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam", checkIfExists: true) ])
+                input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01.bam.bai", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[3] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta.fai", checkIfExists: true) ])
+                input[4] = [ url: null, path: channel.value(file("$projectDir/tests/fixtures/ABO_AA_barcode01", checkIfExists: true)), packaged: 'r1041_e82_400bps_sup_v500' ]
+                input[5] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[6] = file("$projectDir/assets/refs/abo_clair3_region.bed", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert !workflow.trace.tasks().any { it.name.contains('CLAIR3_DOWNLOADMODEL') } },
+                { assert workflow.out.metrics.size() == 1 }
             )
         }
     }
