@@ -52,7 +52,7 @@ __credits__ = [
     "Mathijs Groeneweg",
     "Claude Sonnet 5",
 ]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "1.0.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
@@ -130,14 +130,46 @@ def parse_phased_vcf(path: Path) -> Dict[int, PhasedRecord]:
     return records
 
 
+def record_fits_marker(rec: PhasedRecord, marker: VariantMarker, center_pos: int) -> bool:
+    """Whether a phased record found in a marker's search window can be that marker's event.
+
+    Only windowed (indel-like) markers search beyond their own position, so a record away from the
+    centre must be an indel of the marker's kind: a nearby SNP belongs to its own marker.
+    """
+    shorter = any(len(a) < len(rec.ref) for a in rec.alts)
+    longer = any(len(a) > len(rec.ref) for a in rec.alts)
+    vt = marker.variant_type
+    if vt == "deletion":
+        return shorter
+    if vt == "insertion":
+        return longer
+    if vt == "indel":
+        return shorter or longer
+    if rec.pos == center_pos:
+        return True
+    return shorter or longer
+
+
 def find_phased_record(records: Dict[int, PhasedRecord], center_pos: int,
-                        lo: int, hi: int) -> Optional[PhasedRecord]:
-    """Closest phased record to center_pos inside [lo, hi] (0 offset first)."""
-    if center_pos in records:
+                        lo: int, hi: int, marker: Optional[VariantMarker] = None,
+                        owned: frozenset = frozenset()) -> Optional[PhasedRecord]:
+    """Closest phased record to center_pos inside [lo, hi] (0 offset first) that fits the marker.
+
+    `owned` holds the exact positions of other (non-windowed) markers; a record there is never
+    credited to a windowed marker.
+    """
+    def usable(p):
+        if p not in records or not lo <= p <= hi:
+            return False
+        if p != center_pos and p in owned:
+            return False
+        return marker is None or record_fits_marker(records[p], marker, center_pos)
+
+    if usable(center_pos):
         return records[center_pos]
     for offset in range(1, max(center_pos - lo, hi - center_pos) + 1):
         for p in (center_pos - offset, center_pos + offset):
-            if lo <= p <= hi and p in records:
+            if usable(p):
                 return records[p]
     return None
 
@@ -169,11 +201,15 @@ def build_rows(panel: Panel, records: Dict[int, PhasedRecord], window: int = 15)
     haplotype strings per phase set, repeated in proportion to that phase
     set's own median allele depth."""
     by_ps: Dict[str, List[Tuple[int, PhasedRecord, str]]] = {}
+    owned = frozenset(m.resolved_position() for m in panel.calibrated() if not needs_padding(m))
 
     for marker in panel.calibrated():
         pos = marker.resolved_position()
-        lo, hi = marker.search_bounds(window) if needs_padding(marker) else (pos, pos)
-        rec = find_phased_record(records, pos, lo, hi)
+        if needs_padding(marker):
+            lo, hi = marker.search_bounds(window)
+            rec = find_phased_record(records, pos, lo, hi, marker, owned)
+        else:
+            rec = find_phased_record(records, pos, pos, pos)
         if rec is None:
             continue
         ps_key = rec.ps if rec.ps else f"unnamed_ps_at_{rec.pos}"
@@ -191,7 +227,9 @@ def build_rows(panel: Panel, records: Dict[int, PhasedRecord], window: int = 15)
         exons = sorted({exon for _, _, exon in entries})
         exon_label = "+".join(exons) if len(exons) > 1 else (exons[0] if exons else "")
 
-        ad0_vals = [rec.ad[0] for _, rec, _ in entries if rec.ad]
+        # each side is sized by the depth of the allele it carries (AD index = GT allele index)
+        ad0_vals = [rec.ad[rec.gt[0]] for _, rec, _ in entries
+                    if rec.ad and rec.gt[0] < len(rec.ad)]
         ad1_vals = [rec.ad[rec.gt[1]] for _, rec, _ in entries
                     if rec.ad and rec.gt[1] < len(rec.ad)]
         n0 = int(median(ad0_vals)) if ad0_vals else 1
