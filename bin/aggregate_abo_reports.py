@@ -356,7 +356,7 @@ def parse_alignment_metrics(sample_dir: str) -> Dict[str, Optional[float]]:
                             except ValueError:
                                 pass
             m["median_depth"] = _weighted_median(cov)
-    except Exception:
+    except OSError:
         pass
 
     try:
@@ -371,7 +371,7 @@ def parse_alignment_metrics(sample_dir: str) -> Dict[str, Optional[float]]:
                         g = re.match(r"^(\d+) \+ \d+ mapped \(", line)
                         if g and mapped is None:
                             mapped = float(g.group(1))
-    except Exception:
+    except OSError:
         pass
 
     m["mapped"] = mapped
@@ -922,8 +922,8 @@ class ABOReportParser:
             )
             return df
 
-        except Exception as e:
-            print(f"Error parsing {exon_label} file {filename}: {str(e)}")
+        except OSError as e:
+            print(f"Error reading {exon_label} file {filename}: {str(e)}")
             empty_df = pd.DataFrame(columns=empty_cols)
             exon_num = "".join(ch for ch in exon_label if ch.isdigit()) or "?"
             for pos in all_positions:
@@ -1744,22 +1744,10 @@ class ABOReportParser:
             return df
 
         except Exception as e:
+            # a bug or unexpected input in the typing logic: the sample is reported as failed (process_file records
+            # it and the run exits non-zero) instead of carrying an "Error" call into the tables
             print(f"Error in assign_phenotype_genotype: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            df[("Result", "Phenotype")] = "Error"
-            df[("Result", "Genotype")] = "Error"
-            df[("Result", "ExtendedGenotype")] = "Error"
-            df[("Notes", "ASubtype")] = ""
-            df[("Notes", "ReadReliability")] = "Error processing"
-            df[("Notes", "DepthCheck")] = ""
-            df[("Notes", "PhaseConfidence")] = "Error"
-            df[("Notes", "BwSubtype")] = "Error"
-            df[("Notes", "A2Trace")] = ""
-            df[("Notes", "EvidenceBasis")] = "error"
-            df[("Notes", "QCStatus")] = "REVIEW"
-            df[("Notes", "QCFlags")] = "processing error"
-            return df
+            raise
 
     # -----------------------------------------------------------------
     # File discovery
@@ -1874,14 +1862,14 @@ class ABOReportParser:
         """Collect the Typing-sheet metrics for one sample (never raises)."""
         try:
             metrics = parse_alignment_metrics(sample_dir)
-        except Exception:
+        except (OSError, ValueError):
             metrics = {}
         # Duplex (ABO-HLA) runs: HLA reads never map to the ABO reference, so whole-library
         # mappability is misleading. Report reads in the library (NanoPlot, else samtools),
         # reads on the ABO reference (samtools coverage) and on-target % between them.
         try:
             metrics.update(parse_coverage_file(sample_dir))
-        except Exception:
+        except (OSError, ValueError):
             pass
         try:
             status = parse_evidence_status(sample_dir)
@@ -1919,7 +1907,7 @@ class ABOReportParser:
                 old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
                 result_df.at[0, ("Notes", "QCFlags")] = (old + "; " if old else "") + "; ".join(msgs)
                 result_df.at[0, ("Notes", "QCStatus")] = "REVIEW"
-        except Exception as status_err:
+        except (OSError, ValueError, KeyError, IndexError, TypeError) as status_err:
             # without the evidence summary the Clair3/BAM checks cannot be made: never report PASS
             print(f"Warning: could not read the evidence status for {sample_name}: {status_err}")
             old = str(result_df.at[0, ("Notes", "QCFlags")] or "")
@@ -1934,7 +1922,7 @@ class ABOReportParser:
                 for k in ("reads", "read_length"):
                     if ns.get(k) is not None:
                         metrics[k] = ns[k]
-        except Exception:
+        except (OSError, ValueError):
             pass
         try:
             # the coverage table counts secondary/supplementary alignments; samtools stats'
@@ -1943,7 +1931,7 @@ class ABOReportParser:
                 metrics["abo_reads"] = min(metrics["abo_reads"], metrics["mapped"])
             if metrics.get("abo_reads") is not None and metrics.get("reads"):
                 metrics["mappability"] = min(100.0, 100.0 * metrics["abo_reads"] / metrics["reads"])
-        except Exception:
+        except (TypeError, ValueError, ZeroDivisionError):
             pass
         try:
             depths = []
@@ -1959,7 +1947,7 @@ class ABOReportParser:
                 if pd.isna(t) or not str(t).strip():
                     qmarks += 1
             metrics["question_marks"] = qmarks
-        except Exception:
+        except (KeyError, IndexError, TypeError, ValueError):
             metrics.setdefault("median_analyzed_depth", None)
             metrics.setdefault("question_marks", None)
         try:
@@ -2181,7 +2169,7 @@ class ABOReportParser:
         """(ISBT-style name, True when the haplotypes decided it)."""
         try:
             named = self._name_alleles_by_haplotype(ext, evidence, self._fired_markers, self._absent_markers)
-        except Exception:
+        except (KeyError, IndexError, ValueError, TypeError):
             named = None
         if named:
             return named, True
@@ -2296,11 +2284,8 @@ class ABOReportParser:
 
         for filename in valid_directories:        # cheap bookkeeping stays serial
             self.processing_stats["pattern_matched"] += 1
-            try:
-                _, _, pattern_type = self.extract_sample_info(filename)
-                self.processing_stats["with_barcode" if pattern_type == "explicit" else "without_barcode"] += 1
-            except Exception:
-                pass
+            _, _, pattern_type = self.extract_sample_info(filename)
+            self.processing_stats["with_barcode" if pattern_type == "explicit" else "without_barcode"] += 1
 
         workers = min(self.threads, len(valid_directories))
         print(f"Parsing {len(valid_directories)} samples with {workers} worker processes")
@@ -2331,7 +2316,8 @@ class ABOReportParser:
         try:
             calls = self._position_calls(final_df)
         except Exception as calls_err:
-            print(f"Warning: could not summarise the positions: {calls_err}")
+            print(f"ERROR: could not summarise the positions: {calls_err}")
+            self.output_errors.append(f"position summary: {calls_err}")
             calls = None
         hidden = self._undetected_rare(calls)      # rare positions nobody carries stay out of both tables
         if hidden:
@@ -2340,8 +2326,9 @@ class ABOReportParser:
             (final_df.drop(columns=sorted(hidden), level=0) if hidden else final_df).to_csv(
                 "./ABO_result.txt", sep="\t", index=False, encoding="utf-8")
             print("Results saved successfully to text file.")
-        except Exception as txt_err:
-            print(f"Error saving to text file: {txt_err}")
+        except OSError as txt_err:
+            print(f"ERROR: could not write ABO_result.txt: {txt_err}")
+            self.output_errors.append(f"ABO_result.txt: {txt_err}")
             return
 
         try:
@@ -2530,7 +2517,8 @@ class ABOReportParser:
             writer.close()
             print("Results saved successfully to Excel file.")
         except Exception as excel_err:
-            print(f"Error saving to Excel file: {excel_err}")
+            print(f"ERROR: could not write ABO_result.xlsx: {excel_err}")
+            self.output_errors.append(f"ABO_result.xlsx: {excel_err}")
             import traceback
             traceback.print_exc()
 
