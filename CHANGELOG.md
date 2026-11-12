@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > Versions below `v1.0.0` are retrospective labels for unreleased development milestones. They group the work of the merged pull requests in the git history (December 2024 – October 2026) and were never released; `v1.0.0` is the first release.
 
+## v1.1.0dev - [unreleased]
+
+### `Changed`
+
+- Clair3 model choice: `--clair3_model_url` downloads a model, else `--clair3_model_path` uses a local model folder, else the model packaged in the Clair3 container is used (`--clair3_model`, default `r1041_e82_400bps_sup_v500`). Under conda and apptainer, which have no packaged models, that model is downloaded by name. Before, the model was always downloaded.
+
 ## v1.0.0 - [2026-11-07]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.

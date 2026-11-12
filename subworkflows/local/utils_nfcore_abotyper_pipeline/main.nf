@@ -202,6 +202,9 @@ def condaLockNote() {
 
 def validateInputParameters() {
     genomeExistsError()
+    if (params.clair3_model_url && params.clair3_model_path) {
+        error("Please give either --clair3_model_url (download a Clair3 model) or --clair3_model_path (a local model folder), not both.")
+    }
 }
 
 //

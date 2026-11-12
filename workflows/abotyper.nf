@@ -31,7 +31,7 @@ workflow ABOTYPER {
     ch_samplesheet       // channel: samplesheet read in from --input
     abo_reference_fai    // channel: fai from params.abo_reference_fai
     abo_reference_fasta  // channel: fasta from params.abo_reference_fasta
-    ch_clair3_model_url  // channel: clair3_url from params.clair3_model_url
+    clair3_model         // map: url (download), path (channel of a local model folder) or packaged (model name)
     abo_panel            // channel: path from params.abo_panel (variant panel YAML)
     clair3_region_bed    // channel: path from params.abo_clair3_region_bed, or [] for none
 
@@ -69,7 +69,7 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.bai,
         MINIMAP2_ALIGN_READS.out.fasta,
         MINIMAP2_ALIGN_READS.out.fai,
-        ch_clair3_model_url,
+        clair3_model,
         abo_panel,
         clair3_region_bed,
     )
