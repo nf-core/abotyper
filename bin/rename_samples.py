@@ -6,18 +6,7 @@ Sample Renaming Utility
 
 This file is part of the nf-core/abotyper pipeline "https://github.com/fmobegi/nf-core-abotyper".
 
-nf-core/abotyper is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This pipeline is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with nf-core/abotyper. If not, see <http://www.gnu.org/licenses/>.
+This file is part of nf-core/abotyper and is released under the MIT License (see LICENSE).
 
 This script processes ABO pipeline export files and laboratory deobfuscation files
 to rename samples for MatchPoint export compatibility.
@@ -37,7 +26,7 @@ import pandas as pd
 __author__ = "Fredrick Mobegi"
 __copyright__ = "Copyright 2024, ABO blood group typing using third-generation sequencing (TGS) technology"
 __credits__ = ["Fredrick Mobegi", "Benedict Matern", "Mathijs Groeneweg"]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "1.2.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"

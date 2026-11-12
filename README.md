@@ -79,34 +79,27 @@ The pipeline makes use of the following core dependencies:
 
 ## Required input files structure
 
-Ensure that all input fastq files have a naming convention that matches this regular expression (`regex`)
+The samplesheet has one row per sample, with the columns `sample`, `fastq_1` and an optional `control` (see [usage](docs/usage.md)).
+The `sample` name is used in every result table and must follow these rules, which the samplesheet validation enforces:
 
-```python
-## python regex for matching samples
-pattern = r"^[A-Z0-9]+(-[A-Z0-9]+){0,2}_barcode\d+$"
-```
+- letters and digits, in segments joined by `_`, or by up to two `-` when the name ends in a barcode;
+- optionally ending in `_barcode<NN>`, which is reported as the barcode (samples without one get `barcode00`);
+- no spaces, dots or other characters.
 
-The regex does the following:
-
-- `^[A-Z0-9]+` allows a sample name that starts with any combination of letters `A-to-Z` and digits `0-to-9` (matching is case-insensitive).
-- `(-[A-Z0-9]+){0,2}` handles up to two optional segments of letters or digits separated by a dash(-).
-- `_barcode\d+$` ensures the filename ends with_barcode followed by digits to denote barcode numbers.
-
-There is a file handling logic in the code `filename.split("_")` that assumes the barcode is always the last part of the filename.
-The names are split into `basename` and `barcode` which are then used in later reporting.Please Adjust this if necessary based on actual filename structure in your assays.
-
-Here are a few examples of acceptable input file names:
+Here are a few examples of acceptable sample names:
 
 ```txt
-POSCTRL_barcode13.fastq
-NEGCTRL_barcode12.fastq
-CONTROLPOS_barcode19.fastq
-2025705_barcode14.fastq
-Sample-45-44874_barcode25.fastq
-Sample1-2024-12345_barcode22.fastq
+POSCTRL_barcode13
+NTC_barcode12
+2025705_barcode14
+Sample-45-44874_barcode25
+Sample1-2024-12345_barcode22
+ABO_AA_barcode01
 ```
 
-> *.gz files are also accepted. I just modified the schema to allow both compressed and uncompressed files. A feature that is becoming less common in nf-core pipelines but provides more flexibility.
+Controls are declared in the `control` column (`negative` or `positive`), not recognised from the sample name.
+
+> `.gz` files are also accepted.
 
 ## Sequencing platform compatibility
 
@@ -128,10 +121,10 @@ To run this pipeline, use:
 
 ```bash
 # Quick test
-nextflow run nf-core-abotyper/main.nf --outdir test_working -profile test,conda -resume
+nextflow run nf-core/abotyper --outdir test_working -profile test,conda -resume
 
 # Complete run
-nextflow nf-core/abotyper \
+nextflow run nf-core/abotyper \
   -resume \
   -profile <docker/singularity/.../institute> \
   --input samplesheet.csv \
@@ -140,9 +133,6 @@ nextflow nf-core/abotyper \
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/running/run-pipelines#using-parameter-files).
-
-The code by permits renaming of samples using a tab-delimited file with `sequencingID` and `sampleName` (see `nextflow.config` file under `$params.renaming_file`).
-This option is controlled by the parameter `$params.skip_renaming` and can be overridden via the commandline using option `--skip_renaming true` to skip the process.
 
 ## Output
 
@@ -246,18 +236,6 @@ If you use nf-core/abotyper for your analysis, please cite it using the followin
 > **Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing.**
 >
 > Fredrick M. Mobegi, Samuel Bruce, Naser El-Lagta, Felipe Ayora, Benedict M. Matern, Mathijs Groeneweg, Lloyd J. D'Orsogna & Dianne De Santis.
->
-> _Int. J. Mol. Sci._ 2025 Jun 06. doi: [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443).
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 >
 > _Int. J. Mol. Sci._ 2025 Jun 06. doi: [10.3390/ijms26125443](https://doi.org/10.3390/ijms26125443).
 
