@@ -33,6 +33,8 @@ process ABO_SNPS2PHENO {
     path "ABO_run_qc.txt", emit: qc, optional: true
     path "ABO_evidence_summary_mqc.tsv", emit: mqc, optional: true
     tuple val("${task.process}"), val('python'), eval('python --version | sed "s/Python //"'), emit: versions_python, topic: versions
+    tuple val("${task.process}"), val('aggregate_abo_reports.py'), eval('aggregate_abo_reports.py --version | sed "s/.* //"'), emit: versions_script, topic: versions
+    tuple val("${task.process}"), val('abo_variant_panel'), eval("abo_panel.py --panel ${panel_file} --panel-version"), emit: versions_panel, topic: versions
     tuple val("${task.process}"), val('pandas'), eval('python -c "import pandas; print(pandas.__version__)"'), emit: versions_pandas, topic: versions
     tuple val("${task.process}"), val('pyyaml'), eval('python -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
     tuple val("${task.process}"), val('xlsxwriter'), eval('python -c "import xlsxwriter; print(xlsxwriter.__version__)"'), emit: versions_xlsxwriter, topic: versions

@@ -71,6 +71,16 @@ output:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of pyyaml
+  versions_script:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - clair2metrics.py:
+          type: string
+          description: Name of the pipeline script
+      - clair2metrics.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of clair2metrics.py
 
 topics:
   versions:
@@ -92,6 +102,15 @@ topics:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of pyyaml
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - clair2metrics.py:
+          type: string
+          description: Name of the pipeline script
+      - clair2metrics.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of clair2metrics.py
 
 authors:
   - "@fmobegi"

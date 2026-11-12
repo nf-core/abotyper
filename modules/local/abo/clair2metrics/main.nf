@@ -28,6 +28,7 @@ process ABO_CLAIR2METRICS {
     output:
     tuple val(meta), path("*.AlignmentStatistics.tsv"), emit: tsv
     tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
+    tuple val("${task.process}"), val('clair2metrics.py'), eval('clair2metrics.py --version | sed "s/.* //"'), emit: versions_script, topic: versions
     tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
 
     script:

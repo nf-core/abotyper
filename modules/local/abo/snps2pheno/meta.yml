@@ -138,6 +138,26 @@ output:
       - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
           type: eval
           description: The expression to obtain the version of xlsxwriter
+  versions_script:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - aggregate_abo_reports.py:
+          type: string
+          description: Name of the pipeline script
+      - aggregate_abo_reports.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of aggregate_abo_reports.py
+  versions_panel:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abo_variant_panel:
+          type: string
+          description: The variant panel
+      - abo_panel.py --panel ${panel_file} --panel-version:
+          type: eval
+          description: The expression to obtain the version of abo_variant_panel
 
 topics:
   versions:
@@ -177,6 +197,24 @@ topics:
       - python -c "import xlsxwriter; print(xlsxwriter.__version__)":
           type: eval
           description: The expression to obtain the version of xlsxwriter
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - aggregate_abo_reports.py:
+          type: string
+          description: Name of the pipeline script
+      - aggregate_abo_reports.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of aggregate_abo_reports.py
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abo_variant_panel:
+          type: string
+          description: The variant panel
+      - abo_panel.py --panel ${panel_file} --panel-version:
+          type: eval
+          description: The expression to obtain the version of abo_variant_panel
 
 authors:
   - "@fmobegi"

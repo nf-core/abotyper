@@ -38,6 +38,7 @@ process ABO_EVIDENCE {
     tuple val(meta), path("*.concordance.tsv"),         emit: concordance
     tuple val(meta), path("*.pileup_metrics.tsv"),      emit: pileup_tsv
     tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
+    tuple val("${task.process}"), val('pileup2metrics.py'), eval('pileup2metrics.py --version | sed "s/.* //"'), emit: versions_script, topic: versions
     tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
 
     when:

@@ -49,7 +49,7 @@ __credits__ = [
     "Claude Sonnet 5",
 ]
 __license__ = "MIT"
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"
@@ -571,9 +571,15 @@ def main():
     ap.add_argument("--export-csv", help="Write a flat CSV copy of the panel here")
     ap.add_argument("--export-yaml", help="Write a YAML copy of the panel here")
     ap.add_argument("--summary", action="store_true", help="Print a coverage summary")
+    ap.add_argument("--panel-version", action="store_true",
+                    help="Print only the panel's meta.panel_version (used for versions.yml) and exit")
+    ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = ap.parse_args()
 
     panel = load_panel(args.panel)
+    if args.panel_version:
+        print(panel.meta.get("panel_version", "unknown"))
+        return
     print(f"Loaded {len(panel.variants)} variants and "
           f"{len(panel.structural_variants)} structural variants from {args.panel}")
 

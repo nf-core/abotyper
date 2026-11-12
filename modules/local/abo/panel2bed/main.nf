@@ -27,6 +27,7 @@ process ABO_PANEL2BED {
     output:
     path "*.bed", emit: bed
     tuple val("${task.process}"), val('python'), eval('python3 --version | sed "s/Python //"'), emit: versions_python, topic: versions
+    tuple val("${task.process}"), val('panel_to_bed.py'), eval('panel_to_bed.py --version | sed "s/.* //"'), emit: versions_script, topic: versions
     tuple val("${task.process}"), val('pyyaml'), eval('python3 -c "import yaml; print(yaml.__version__)"'), emit: versions_pyyaml, topic: versions
 
     script:

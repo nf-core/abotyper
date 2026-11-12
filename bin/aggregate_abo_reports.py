@@ -29,7 +29,7 @@ __credits__ = [
     "Claude Sonnet 5",
 ]
 __license__ = "MIT"
-__version__ = "2.4.0"
+__version__ = "2.5.0"
 __maintainer__ = "Fredrick Mobegi"
 __email__ = "fredrick.mobegi@health.wa.gov.au"
 __status__ = "Production"

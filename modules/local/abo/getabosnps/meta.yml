@@ -99,6 +99,16 @@ output:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of PyYAML
+  versions_script:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - predict_abo_phenotype.py:
+          type: string
+          description: Name of the pipeline script
+      - predict_abo_phenotype.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of predict_abo_phenotype.py
 
 topics:
   versions:
@@ -129,6 +139,15 @@ topics:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of PyYAML
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - predict_abo_phenotype.py:
+          type: string
+          description: Name of the pipeline script
+      - predict_abo_phenotype.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of predict_abo_phenotype.py
 
 authors:
   - "@fmobegi"

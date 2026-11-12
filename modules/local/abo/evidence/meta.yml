@@ -86,6 +86,17 @@ output:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of pyyaml
+  versions_script:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pileup2metrics.py:
+          type: string
+          description: Name of the pipeline script
+      - pileup2metrics.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of pileup2metrics.py
+
 topics:
   versions:
     - - ${task.process}:
@@ -106,6 +117,16 @@ topics:
       - python3 -c "import yaml; print(yaml.__version__)":
           type: eval
           description: The expression to obtain the version of pyyaml
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - pileup2metrics.py:
+          type: string
+          description: Name of the pipeline script
+      - pileup2metrics.py --version | sed "s/.* //":
+          type: eval
+          description: The expression to obtain the version of pileup2metrics.py
+
 authors:
   - "@fmobegi"
 maintainers:
