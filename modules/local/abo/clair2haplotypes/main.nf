@@ -27,13 +27,14 @@ process ABO_CLAIR2HAPLOTYPES {
     tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
+    def panel  = panel_file ? "--panel ${panel_file}" : ''
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     clair2haplotypes.py \\
         -i ${phased_vcf} \\
         -o ${prefix}.Haplotypes.tsv \\
-        --panel ${panel_file} \\
+        ${panel} \\
         ${args}
     """
 

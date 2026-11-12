@@ -18,7 +18,7 @@ nextflow_process {
                     [ id:'ABO_AA_barcode01' ],
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01_clair3.merge_output.gvcf.gz", checkIfExists: true)
                 ]
-                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[1] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -52,7 +52,7 @@ nextflow_process {
                     [ id:'ABO_AA_barcode01' ],
                     file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01_clair3.merge_output.gvcf.gz", checkIfExists: true)
                 ]
-                input[1] = file("$projectDir/assets/refs/abo_variant_panel.yaml", checkIfExists: true)
+                input[1] = []  // panel bundled with abotyper-core
                 """
             }
         }

@@ -13,7 +13,7 @@
     variants_quantification.
 */
 process ABO_PANEL2BED {
-    tag "${panel_file.baseName}"
+    tag "${panel_file ? panel_file.baseName : 'abotyper-core panel'}"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
@@ -29,11 +29,12 @@ process ABO_PANEL2BED {
     tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
+    def panel  = panel_file ? "--panel ${panel_file}" : ''
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: 'abo_variant_panel'
     """
     panel_to_bed.py \\
-        --panel ${panel_file} \\
+        ${panel} \\
         --output ${prefix}.bed \\
         ${args}
     """

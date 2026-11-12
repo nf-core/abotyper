@@ -76,7 +76,7 @@ output:
         Per-position allele frequency / alignment statistics table scored by
         PREDICTABOPHENOTYPE, from ABO_EVIDENCE: Clair3's table (ABO_CLAIR2METRICS,
         reading the gVCF directly) is the primary line and the BAM pileup
-        (ABO_PILEUP) fills positions Clair3 had no evidence for.
+        (SAMTOOLS_MPILEUP) fills positions Clair3 had no evidence for.
         Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
       pattern: "*.AlignmentStatistics.tsv"
   - evidence_status:

@@ -22,7 +22,7 @@ process ABO_SNPS2PHENO {
     input:
     val sample_ids
     path sample_files, stageAs: 'sample_files/*'
-    path controls
+    path samples
     path panel_file
 
     output:
@@ -35,8 +35,9 @@ process ABO_SNPS2PHENO {
     tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     script:
+    def panel  = panel_file ? "--panel ${panel_file}" : ''
     def args = task.ext.args ?: ''
-    def controls_arg = controls ? "--controls ${controls}" : ''
+    def samples_arg = samples ? "--samples ${samples}" : ''
     // Build the per_sample_processing/<id>/combined/ layout the script reads, inside the task
     """
     for id in ${sample_ids.join(' ')}; do
@@ -51,8 +52,8 @@ process ABO_SNPS2PHENO {
     set -o pipefail
     aggregate_abo_reports.py \\
         per_sample_processing \\
-        --panel ${panel_file} \\
-        ${controls_arg} \\
+        ${panel} \\
+        ${samples_arg} \\
         --threads ${task.cpus} \\
         ${args} 2>&1 | tee ABO_results.log
     """

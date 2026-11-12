@@ -21,8 +21,8 @@ input:
         description: Groovy Map containing sample information, e.g. [ id:'sample1' ]
     - pileup:
         type: file
-        description: samtools mpileup over the panel positions (ABO_PILEUP)
-        pattern: "*.pileup.txt"
+        description: samtools mpileup over the panel positions (SAMTOOLS_MPILEUP), bgzipped or plain
+        pattern: "*.{mpileup.gz,pileup.txt}"
     - clair_metrics:
         type: file
         description: ABO_CLAIR2METRICS AlignmentStatistics.tsv; pass [] when Clair3 produced no gVCF

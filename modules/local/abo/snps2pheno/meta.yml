@@ -30,16 +30,17 @@ input:
         *.evidence_status.tsv, *.concordance.tsv, *.coverage.txt, *.stats, *.flagstat)
       pattern: "*"
       ontologies: []
-  - controls:
+  - samples:
       type: file
       description: |
-        Optional two-column TSV (sample ID, control type) from the samplesheet `control` column;
-        `negative` and `positive` mark controls, empty marks a sample. Pass [] for none.
+        Optional sample table (TSV) from the samplesheet: sample ID, control type (`negative`,
+        `positive` or empty) and the sample name and barcode to report (empty: taken from the ID).
+        Pass [] for none.
       pattern: "*.tsv"
       ontologies: []
   - panel_file:
       type: file
-      description: ABO variant panel file (abo_variant_panel.yaml / .json / .csv / .tsv)
+      description: ABO variant panel file (.yaml / .json / .csv / .tsv); pass [] for the panel bundled with abotyper-core
       pattern: "*.{yaml,yml,json,csv,tsv}"
       ontologies: []
 

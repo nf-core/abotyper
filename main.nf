@@ -59,7 +59,8 @@ workflow NFCORE_ABOTYPER {
         path:     (!clair3_url && params.clair3_model_path) ? Channel.fromPath(params.clair3_model_path, type: 'dir', checkIfExists: true).first() : null,
         packaged: params.clair3_model,
     ]
-    abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel).collect() : Channel.empty()
+    // no --abo_panel: [] and the abo/* modules use the panel bundled with abotyper-core
+    abo_panel = params.abo_panel ? Channel.fromPath(params.abo_panel, checkIfExists: true).collect() : Channel.value([])
     // staged as a task input so Clair3 can read it on any executor (cloud, HPC), not just locally
     abo_clair3_region_bed = params.abo_clair3_region_bed
         ? Channel.fromPath(params.abo_clair3_region_bed, checkIfExists: true).collect()

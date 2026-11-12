@@ -2,7 +2,7 @@
   MODULE: ABO_EVIDENCE
   Description:
     Combines the two independent lines of evidence for the ABO panel positions:
-    Clair3 (ABO_CLAIR2METRICS, from the gVCF) and the BAM pileup (ABO_PILEUP).
+    Clair3 (ABO_CLAIR2METRICS, from the gVCF) and the BAM pileup (SAMTOOLS_MPILEUP, bgzipped).
     Runs for every sample.
 
       * writes the table PREDICTABOPHENOTYPE scores: Clair3 is the primary line, and
@@ -43,6 +43,7 @@ process ABO_EVIDENCE {
     task.ext.when == null || task.ext.when
 
     script:
+    def panel  = panel_file ? "--panel ${panel_file}" : ''
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def clair  = clair_metrics ? "--clair-metrics ${clair_metrics}" : ''
@@ -50,7 +51,7 @@ process ABO_EVIDENCE {
     pileup2metrics.py \\
         --pileup ${pileup} \\
         ${clair} \\
-        --panel ${panel_file} \\
+        ${panel} \\
         --sample ${meta.id} \\
         --merged-out ${prefix}.AlignmentStatistics.tsv \\
         --pileup-out ${prefix}.pileup_metrics.tsv \\

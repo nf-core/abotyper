@@ -30,12 +30,13 @@ POSCTRL_barcode96,/path/to/POSCTRL_barcode96.fastq.gz,,positive
 | `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                              |
 | `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                         |
 | `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name. |
+| `barcode` | Optional. The barcode to report for the sample (`07` or `barcode07`). When it is given, the sample is reported under its full `sample` name; when it is empty, the barcode is taken from a trailing `_barcode<NN>` in the name. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 ### Sample names
 
-Any sample name without spaces is accepted, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. A name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
+Any sample name without spaces is accepted, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. The sample name and barcode in the result tables are set when the samplesheet is read: with a `barcode` value, the sample is reported under its full name with that barcode; otherwise a name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07), and any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
 
 ### Controls
 
@@ -43,7 +44,7 @@ A sample marked `negative` is expected to have few or no ABO reads: low depth is
 
 ### Multiple runs of the same sample
 
-Rows with the same `sample` name are treated as one sample: their reads are concatenated before alignment. The rows must have the same `control` value and must all be single-end or all paired-end.
+Rows with the same `sample` name are treated as one sample: their reads are concatenated before alignment. The rows must have the same `control` and `barcode` values and must all be single-end or all paired-end.
 
 ```csv title="samplesheet.csv"
 sample,fastq_1,fastq_2,control

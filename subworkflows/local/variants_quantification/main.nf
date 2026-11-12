@@ -14,7 +14,7 @@ include { CLAIR3_DOWNLOADMODEL  } from '../../../modules/local/clair3/downloadmo
 include { ABO_PANEL2BED         } from '../../../modules/local/abo/panel2bed/main'
 include { ABO_CLAIR2METRICS     } from '../../../modules/local/abo/clair2metrics/main'
 include { ABO_CLAIR2HAPLOTYPES  } from '../../../modules/local/abo/clair2haplotypes/main'
-include { ABO_PILEUP            } from '../../../modules/local/abo/pileup/main'
+include { SAMTOOLS_MPILEUP      } from '../../../modules/nf-core/samtools/mpileup/main'
 include { ABO_EVIDENCE          } from '../../../modules/local/abo/evidence/main'
 
 workflow VARIANTS_QUANTIFICATION {
@@ -24,7 +24,7 @@ workflow VARIANTS_QUANTIFICATION {
     ch_fasta   // channel: [ val(meta1), path(fasta) ]
     ch_fai     // channel: [ val(meta1), path(fai)   ]
     clair3_model // map: url (download), else path (channel of a model folder), else packaged (model name)
-    panel_file // path: abo_variant_panel.yaml
+    panel_file // path: variant panel (--abo_panel), or [] for the panel bundled with abotyper-core
     region_bed // path: BED of the region Clair3 calls in (abo_clair3_region.bed), or [] for none
 
     main:
@@ -103,15 +103,14 @@ workflow VARIANTS_QUANTIFICATION {
     )
 
     //
-    // MODULE: ABO_PILEUP
+    // MODULE: SAMTOOLS_MPILEUP
     //
     // Second, independent line of evidence: a BAM pileup over the panel positions, for
     // every sample. (CLAIR3 also runs with errorStrategy 'ignore', so a failed Clair3 job
     // emits nothing; the pileup keeps such a sample from silently disappearing.)
-    ABO_PILEUP(
-        ch_bam_bai,
+    SAMTOOLS_MPILEUP(
+        ch_bam_bai.combine(ABO_PANEL2BED.out.bed),
         ch_fasta_fai,
-        ABO_PANEL2BED.out.bed,
     )
 
     //
@@ -121,7 +120,7 @@ workflow VARIANTS_QUANTIFICATION {
     // status file) and writes the table that is scored: Clair3 is the primary line, the
     // BAM pileup fills positions Clair3 had no evidence for. remainder:true keeps samples
     // with no Clair3 metrics (clair_metrics -> null -> []), which are then BAM-only.
-    ch_evidence_input = ABO_PILEUP.out.pileup
+    ch_evidence_input = SAMTOOLS_MPILEUP.out.mpileup
         .join(ABO_CLAIR2METRICS.out.tsv, by: 0, remainder: true)
         .map { meta, pileup, clair_tsv -> [meta, pileup, clair_tsv ?: []] }
 

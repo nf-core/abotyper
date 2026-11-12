@@ -19,7 +19,7 @@ workflow PREDICTABOPHENOTYPE {
     ch_concordance     // channel: [ val(meta), path(*.concordance.tsv) ]         - from ABO_EVIDENCE
     ch_bam_stats       // channel: [ val(meta), path(*.stats) ]                   - from SAMTOOLS_STATS
     ch_bam_flagstat    // channel: [ val(meta), path(*.flagstat) ]                - from SAMTOOLS_FLAGSTAT
-    ch_panel           // channel: path(variant panel) - params.abo_panel, staged into each task
+    ch_panel           // channel: path(variant panel) - params.abo_panel, staged into each task; [] for the bundled panel
 
     main:
 
@@ -45,10 +45,11 @@ workflow PREDICTABOPHENOTYPE {
         .map { _meta, sample_file -> sample_file }
         .collect()
 
-    // Controls declared in the samplesheet (`control` column): one row per sample, so the file is never empty
-    ch_controls = ABO_GETABOSNPS.out.phenotype
-        .map { meta, _phenotype -> "${meta.id}\t${meta.control ?: ''}\n" }
-        .collectFile(name: 'controls.tsv', sort: true)
+    // Sample table from the samplesheet: id, control type, and the sample name and barcode to report
+    // (meta.sample_name / meta.barcode, set when the samplesheet is read). One row per sample, so it is never empty.
+    ch_samples = ABO_GETABOSNPS.out.phenotype
+        .map { meta, _phenotype -> "${meta.id}\t${meta.control ?: ''}\t${meta.sample_name ?: ''}\t${meta.barcode ?: ''}\n" }
+        .collectFile(name: 'samples.tsv', sort: true)
 
     /*
     MODULE: ABO_SNPS2PHENO
@@ -56,7 +57,7 @@ workflow PREDICTABOPHENOTYPE {
     ABO_SNPS2PHENO(
         ch_sample_ids,
         ch_sample_files,
-        ch_controls,
+        ch_samples,
         ch_panel
     )
 
