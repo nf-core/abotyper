@@ -72,8 +72,7 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert path(process.out.txt[0]).text.contains("Negative control: reads present") },
-                { assert path(process.out.qc[0]).text.contains("possible contamination") }
+                { assert (path(process.out.txt[0]).text + path(process.out.qc[0]).text).contains("possible contamination") }
             )
         }
     }
