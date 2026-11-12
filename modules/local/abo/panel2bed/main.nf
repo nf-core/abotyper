@@ -33,7 +33,7 @@ process ABO_PANEL2BED {
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: 'abo_variant_panel'
     """
-    panel_to_bed.py \\
+    abotyper-panel-to-bed \\
         ${panel} \\
         --output ${prefix}.bed \\
         ${args}

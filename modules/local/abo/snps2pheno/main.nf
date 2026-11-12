@@ -1,7 +1,7 @@
 /*
   MODULE: ABO_SNPS2PHENO
   Description:
-    Runs aggregate_abo_reports.py over every sample's files (*.ABOPhenotype.txt
+    Runs abotyper-aggregate over every sample's files (*.ABOPhenotype.txt
     from ABO_GETABOSNPS, *.Haplotypes.tsv from ABO_CLAIR2HAPLOTYPES, the
     ABO_EVIDENCE tables and the samtools coverage/stats/flagstat files), which
     are staged into the task and laid out as per_sample_processing/<id>/combined/.
@@ -50,7 +50,7 @@ process ABO_SNPS2PHENO {
     done
 
     set -o pipefail
-    aggregate_abo_reports.py \\
+    abotyper-aggregate \\
         per_sample_processing \\
         ${panel} \\
         ${samples_arg} \\

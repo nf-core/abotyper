@@ -25,6 +25,8 @@ nextflow_pipeline {
             def keep_cols = (0..<export_rows[0].size()).findAll { i -> export_rows[0][i] != '#Reads' }
             // One joined line per row: nf-test reads a bare empty string as a path and would md5 the working directory
             def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
+            // ABO_run_qc.txt without the abotyper-core version line, so a package release does not change the snapshot
+            def run_qc = path("$outputDir/ABO_run_qc.txt").readLines().findAll { line -> !line.startsWith('abotyper-core:') }
             // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple
             // Nextflow versions. CLAIR3_DOWNLOADMODEL is left out: it runs only where the Clair3 container's packaged model is
             // not available (conda), so whether it is listed depends on the profile, not on the pipeline.
@@ -39,7 +41,9 @@ nextflow_pipeline {
                     // All files with stable contents
                     stable_content,
                     // Genotype, phenotype and QC calls for every sample
-                    typing_calls
+                    typing_calls,
+                    // Run QC report, version line removed
+                    run_qc
                 ).match() }
             )
         }

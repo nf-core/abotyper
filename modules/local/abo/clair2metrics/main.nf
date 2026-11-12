@@ -3,7 +3,7 @@
   Description:
     Converts a Clair3 --gvcf output into the same AlignmentStatistics.tsv
     format pysam_haploscan.py (HAPLOSCAN) produces, so ABO_GETABOSNPS /
-    predict_abo_phenotype.py need no changes to consume Clair3 calls.
+    abotyper-predict-phenotype need no changes to consume Clair3 calls.
 
     Only the panel's calibrated diagnostic positions are emitted. Works
     directly off Clair3's raw gVCF (no bcftools norm step required --
@@ -34,7 +34,7 @@ process ABO_CLAIR2METRICS {
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    clair2metrics.py \\
+    abotyper-clair2metrics \\
         -i ${gvcf} \\
         -o ${prefix}.AlignmentStatistics.tsv \\
         ${panel} \\

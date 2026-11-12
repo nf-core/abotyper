@@ -26,7 +26,7 @@ input:
   - sample_files:
       type: file
       description: |
-        Per-sample files read by aggregate_abo_reports.py (*.ABOPhenotype.txt, *.Haplotypes.tsv,
+        Per-sample files read by abotyper-aggregate (*.ABOPhenotype.txt, *.Haplotypes.tsv,
         *.evidence_status.tsv, *.concordance.tsv, *.coverage.txt, *.stats, *.flagstat)
       pattern: "*"
       ontologies: []

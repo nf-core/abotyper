@@ -12,7 +12,7 @@
         concordance table
       * writes a one-line status file (evidence source, covered-by-both counts,
         discordant positions overall and at the primary typing markers, primary
-        positions filled from the BAM) that aggregate_abo_reports.py turns into
+        positions filled from the BAM) that abotyper-aggregate turns into
         Typing-sheet columns and REVIEW flags
 
     See abotyper-core (pileup2metrics).
@@ -48,7 +48,7 @@ process ABO_EVIDENCE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def clair  = clair_metrics ? "--clair-metrics ${clair_metrics}" : ''
     """
-    pileup2metrics.py \\
+    abotyper-pileup2metrics \\
         --pileup ${pileup} \\
         ${clair} \\
         ${panel} \\

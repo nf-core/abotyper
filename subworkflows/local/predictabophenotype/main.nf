@@ -35,7 +35,7 @@ workflow PREDICTABOPHENOTYPE {
         ch_panel
     )
 
-    // Every per-sample file aggregate_abo_reports.py reads, staged into the task
+    // Every per-sample file abotyper-aggregate reads, staged into the task
     ch_sample_ids = ABO_GETABOSNPS.out.phenotype
         .map { meta, _phenotype -> meta.id }
         .collect()

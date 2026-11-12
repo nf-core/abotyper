@@ -1,7 +1,7 @@
 /*
   MODULE: ABO_GETABOSNPS
   Description:
-    Runs predict_abo_phenotype.py: reads the per-position metrics
+    Runs abotyper-predict-phenotype: reads the per-position metrics
     (AlignmentStatistics.tsv, from ABO_CLAIR2METRICS) and BAM coverage for
     one sample, and writes a human-readable *.ABOPhenotype.txt report --
     one marker per diagnostic panel position, with its interpretation text.
@@ -33,7 +33,7 @@ process ABO_GETABOSNPS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    predict_abo_phenotype.py \\
+    abotyper-predict-phenotype \\
         -i ${variants_freq} \\
         -o ${prefix}.ABOPhenotype.txt \\
         -c ${coverage} \\

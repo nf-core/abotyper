@@ -31,7 +31,7 @@ process ABO_CLAIR2HAPLOTYPES {
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    clair2haplotypes.py \\
+    abotyper-clair2haplotypes \\
         -i ${phased_vcf} \\
         -o ${prefix}.Haplotypes.tsv \\
         ${panel} \\
