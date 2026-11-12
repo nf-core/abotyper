@@ -44,9 +44,6 @@
                 "CLAIR3": {
                     "clair3": "2.0.0"
                 },
-                "CLAIR3_DOWNLOADMODEL": {
-                    "wget": "1.25.0"
-                },
                 "MINIMAP2_ALIGN": {
                     "minimap2": "2.30-r1287"
                 },
@@ -532,7 +529,7 @@
                 "ABO_O2O2,,O,O,O,,O,,,Confirmed O.02 backbone(c.53G>T:T=97%); Possible O.02.02 (c.649C>T)(c.649C>T:T=43%); Possible O.02.02 +1 (c.689G>A)(c.689G>A:A=43%),High: Homozygous; phasing trivial; alleles named per haplotype,Low (<=40 reads),PASS,,n/a (no A allele),variant evidence,"
             ]
         ],
-        "timestamp": "2026-11-12T09:41:27.731608091",
+        "timestamp": "2026-11-12T12:28:54.587582047",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.5"
