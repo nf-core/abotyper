@@ -1,0 +1,80 @@
+SN	raw total sequences:	99	# excluding supplementary and secondary reads
+SN	filtered sequences:	0
+SN	sequences:	99
+SN	is sorted:	1	# sorted by coordinate
+SN	1st fragments:	99
+SN	last fragments:	0
+SN	reads mapped:	99
+SN	reads mapped and paired:	0	# paired-end technology bit set + both mates mapped
+SN	reads unmapped:	0
+SN	reads properly paired:	0	# proper-pair bit set
+SN	reads paired:	0	# paired-end technology bit set
+SN	reads duplicated:	0	# PCR or optical duplicate bit set
+SN	reads MQ0:	0	# mapped and MQ=0
+SN	reads QC failed:	0
+SN	non-primary alignments:	15
+SN	supplementary alignments:	29
+SN	total length:	679896	# ignores clipping
+SN	total first fragment length:	679896	# ignores clipping
+SN	total last fragment length:	0	# ignores clipping
+SN	bases mapped:	679896	# ignores clipping
+SN	bases mapped (cigar):	613943	# more accurate
+SN	bases trimmed:	0
+SN	bases duplicated:	0
+SN	mismatches:	15106	# from NM fields
+SN	error rate:	2.460489e-02	# mismatches / bases mapped (cigar)
+SN	average length:	6868
+SN	average first fragment length:	6868
+SN	average last fragment length:	0
+SN	maximum length:	28784
+SN	maximum first fragment length:	28784
+SN	maximum last fragment length:	0
+SN	average quality:	30.9
+SN	insert size average:	0.0
+SN	insert size standard deviation:	0.0
+SN	inward oriented pairs:	0
+SN	outward oriented pairs:	0
+SN	pairs with other orientation:	0
+SN	pairs on different chromosomes:	0
+SN	percentage of properly paired reads (%):	0.0
+COV	[3-3]	3	685
+COV	[6-6]	6	434
+COV	[7-7]	7	1
+COV	[10-10]	10	1
+COV	[59-59]	59	1
+COV	[62-62]	62	1
+COV	[65-65]	65	2
+COV	[68-68]	68	3
+COV	[69-69]	69	1
+COV	[70-70]	70	1
+COV	[71-71]	71	4
+COV	[72-72]	72	1
+COV	[73-73]	73	1
+COV	[75-75]	75	3
+COV	[76-76]	76	7
+COV	[77-77]	77	5
+COV	[78-78]	78	8
+COV	[79-79]	79	27
+COV	[80-80]	80	22
+COV	[81-81]	81	18
+COV	[82-82]	82	166
+COV	[83-83]	83	157
+COV	[84-84]	84	78
+COV	[85-85]	85	32
+COV	[86-86]	86	2352
+COV	[87-87]	87	55
+COV	[88-88]	88	74
+COV	[89-89]	89	583
+COV	[90-90]	90	61
+COV	[91-91]	91	458
+COV	[92-92]	92	1176
+COV	[93-93]	93	460
+COV	[94-94]	94	49
+COV	[95-95]	95	33
+COV	[96-96]	96	81
+COV	[97-97]	97	170
+COV	[98-98]	98	66
+COV	[99-99]	99	188
+COV	[100-100]	100	18
+COV	[101-101]	101	1
+COV	[102-102]	102	389

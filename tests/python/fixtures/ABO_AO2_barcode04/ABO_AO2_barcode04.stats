@@ -1,0 +1,65 @@
+SN	raw total sequences:	92	# excluding supplementary and secondary reads
+SN	filtered sequences:	0
+SN	sequences:	92
+SN	is sorted:	1	# sorted by coordinate
+SN	1st fragments:	92
+SN	last fragments:	0
+SN	reads mapped:	92
+SN	reads mapped and paired:	0	# paired-end technology bit set + both mates mapped
+SN	reads unmapped:	0
+SN	reads properly paired:	0	# proper-pair bit set
+SN	reads paired:	0	# paired-end technology bit set
+SN	reads duplicated:	0	# PCR or optical duplicate bit set
+SN	reads MQ0:	0	# mapped and MQ=0
+SN	reads QC failed:	0
+SN	non-primary alignments:	0
+SN	supplementary alignments:	0
+SN	total length:	603843	# ignores clipping
+SN	total first fragment length:	603843	# ignores clipping
+SN	total last fragment length:	0	# ignores clipping
+SN	bases mapped:	603843	# ignores clipping
+SN	bases mapped (cigar):	592055	# more accurate
+SN	bases trimmed:	0
+SN	bases duplicated:	0
+SN	mismatches:	11429	# from NM fields
+SN	error rate:	1.930395e-02	# mismatches / bases mapped (cigar)
+SN	average length:	6564
+SN	average first fragment length:	6564
+SN	average last fragment length:	0
+SN	maximum length:	17574
+SN	maximum first fragment length:	17574
+SN	maximum last fragment length:	0
+SN	average quality:	29.5
+SN	insert size average:	0.0
+SN	insert size standard deviation:	0.0
+SN	inward oriented pairs:	0
+SN	outward oriented pairs:	0
+SN	pairs with other orientation:	0
+SN	pairs on different chromosomes:	0
+SN	percentage of properly paired reads (%):	0.0
+COV	[43-43]	43	1
+COV	[44-44]	44	1
+COV	[63-63]	63	1
+COV	[70-70]	70	1
+COV	[71-71]	71	1
+COV	[72-72]	72	4
+COV	[73-73]	73	2
+COV	[74-74]	74	6
+COV	[75-75]	75	3
+COV	[76-76]	76	2
+COV	[77-77]	77	2
+COV	[78-78]	78	10
+COV	[79-79]	79	11
+COV	[80-80]	80	21
+COV	[81-81]	81	47
+COV	[82-82]	82	78
+COV	[83-83]	83	178
+COV	[84-84]	84	375
+COV	[85-85]	85	2249
+COV	[86-86]	86	70
+COV	[87-87]	87	161
+COV	[88-88]	88	266
+COV	[89-89]	89	1447
+COV	[90-90]	90	1230
+COV	[91-91]	91	120
+COV	[92-92]	92	467

@@ -1,0 +1,75 @@
+SN	raw total sequences:	198	# excluding supplementary and secondary reads
+SN	filtered sequences:	0
+SN	sequences:	198
+SN	is sorted:	1	# sorted by coordinate
+SN	1st fragments:	198
+SN	last fragments:	0
+SN	reads mapped:	198
+SN	reads mapped and paired:	0	# paired-end technology bit set + both mates mapped
+SN	reads unmapped:	0
+SN	reads properly paired:	0	# proper-pair bit set
+SN	reads paired:	0	# paired-end technology bit set
+SN	reads duplicated:	0	# PCR or optical duplicate bit set
+SN	reads MQ0:	0	# mapped and MQ=0
+SN	reads QC failed:	0
+SN	non-primary alignments:	0
+SN	supplementary alignments:	2
+SN	total length:	1317030	# ignores clipping
+SN	total first fragment length:	1317030	# ignores clipping
+SN	total last fragment length:	0	# ignores clipping
+SN	bases mapped:	1317030	# ignores clipping
+SN	bases mapped (cigar):	1315421	# more accurate
+SN	bases trimmed:	0
+SN	bases duplicated:	0
+SN	mismatches:	18877	# from NM fields
+SN	error rate:	1.435054e-02	# mismatches / bases mapped (cigar)
+SN	average length:	6652
+SN	average first fragment length:	6652
+SN	average last fragment length:	0
+SN	maximum length:	6856
+SN	maximum first fragment length:	6856
+SN	maximum last fragment length:	0
+SN	average quality:	31.1
+SN	insert size average:	0.0
+SN	insert size standard deviation:	0.0
+SN	inward oriented pairs:	0
+SN	outward oriented pairs:	0
+SN	pairs with other orientation:	0
+SN	pairs on different chromosomes:	0
+SN	percentage of properly paired reads (%):	0.0
+COV	[2-2]	2	1
+COV	[116-116]	116	1
+COV	[156-156]	156	1
+COV	[158-158]	158	1
+COV	[165-165]	165	3
+COV	[168-168]	168	2
+COV	[171-171]	171	1
+COV	[172-172]	172	1
+COV	[173-173]	173	2
+COV	[174-174]	174	1
+COV	[175-175]	175	3
+COV	[176-176]	176	4
+COV	[177-177]	177	3
+COV	[178-178]	178	1
+COV	[179-179]	179	2
+COV	[180-180]	180	8
+COV	[181-181]	181	4
+COV	[182-182]	182	8
+COV	[183-183]	183	12
+COV	[184-184]	184	24
+COV	[185-185]	185	24
+COV	[186-186]	186	62
+COV	[187-187]	187	119
+COV	[188-188]	188	301
+COV	[189-189]	189	905
+COV	[190-190]	190	690
+COV	[191-191]	191	184
+COV	[192-192]	192	464
+COV	[193-193]	193	82
+COV	[194-194]	194	250
+COV	[195-195]	195	686
+COV	[196-196]	196	161
+COV	[197-197]	197	298
+COV	[198-198]	198	426
+COV	[199-199]	199	900
+COV	[200-200]	200	1120

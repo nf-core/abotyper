@@ -15,7 +15,7 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              tests/python/(golden|data)/.*|
+              tests/python/(golden|fixtures)/.*|
               .*\.snap$
           )$
       - id: end-of-file-fixer
@@ -24,7 +24,7 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              tests/python/(golden|data)/.*|
+              tests/python/(golden|fixtures)/.*|
               .*\.snap$
           )$
       - id: check-added-large-files

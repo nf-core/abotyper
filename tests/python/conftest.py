@@ -1,7 +1,7 @@
 """Shared fixtures for the bin/ script tests.
 
 The golden tests run the pipeline's Python steps, with the same command lines as the modules, on the 10 samples
-of the pipeline test (tests/python/data/<sample>/) and compare every output with tests/python/golden/.
+of the pipeline test (tests/python/fixtures/<sample>/) and compare every output with tests/python/golden/.
 Set UPDATE_GOLDEN=1 to rewrite the golden files after an intended change.
 """
 import os
@@ -15,7 +15,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 BIN = ROOT / "bin"
-DATA = Path(__file__).resolve().parent / "data"
+DATA = Path(__file__).resolve().parent / "fixtures"
 GOLDEN = Path(__file__).resolve().parent / "golden"
 PANEL = ROOT / "assets" / "refs" / "abo_variant_panel.yaml"
 SAMPLES = sorted(p.name for p in DATA.iterdir() if p.is_dir())
