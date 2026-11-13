@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABOTYPERCORE_AGGREGATE
+description: Aggregate ABO SNP results from multiple samples and generate comprehensive phenotype reports
+keywords:
+  - abo
+  - blood typing
+  - phenotype
+  - aggregation
+  - reporting
+  - snp analysis
+  - genotyping
+  - excel
+  - csv
+tools:
+  - abotyper-core:
+      description: ABO blood group typing logic of nf-core/abotyper, as a Python package and command-line tools
+      homepage: https://github.com/fmobegi/abotyper-core
+      documentation: https://github.com/fmobegi/abotyper-core#readme
+      tool_dev_url: https://github.com/fmobegi/abotyper-core
+      licence:
+        - "MIT"
+      identifier: ""
+input:
+  - sample_files:
+      type: file
+      description: |
+        Per-sample files read by abotyper-aggregate (*.ABOPhenotype.txt, *.Haplotypes.tsv,
+        *.evidence_status.tsv, *.concordance.tsv, *.coverage.txt, *.stats, *.flagstat), staged
+        under sample_files/
+      pattern: "*"
+      ontologies: []
+  - samples:
+      type: file
+      description: |
+        Sample table (TSV with a header row): id, control type (`negative`, `positive` or empty),
+        the sample name and barcode to report (empty: taken from the ID), and each sample's files
+        as staged paths (columns phenotype, haplotypes, evidence_status, concordance, coverage,
+        stats, flagstat; empty for a file the sample does not have)
+      pattern: "*.tsv"
+      ontologies:
+        - edam: http://edamontology.org/format_3475 # TSV
+  - panel_file:
+      type: file
+      description: ABO variant panel file (.yaml / .json / .csv / .tsv); pass [] for the panel bundled with abotyper-core
+      pattern: "*.{yaml,yml,json,csv,tsv}"
+      ontologies:
+        - edam: http://edamontology.org/format_3750 # YAML
+        - edam: http://edamontology.org/format_3464 # JSON
+        - edam: http://edamontology.org/format_3752 # CSV
+        - edam: http://edamontology.org/format_3475 # TSV
+output:
+  txt:
+    - - "ABO_result.txt":
+          type: file
+          description: Text file containing aggregated ABO phenotype results in human-readable format
+          pattern: "ABO_result.txt"
+          ontologies: []
+  xls:
+    - - "ABO_result.xlsx":
+          type: file
+          description: Excel file containing comprehensive ABO phenotype results with formatting
+          pattern: "ABO_result.xlsx"
+          ontologies:
+            - edam: http://edamontology.org/format_3977 # ObjTables
+  log:
+    - - "ABO_results.log":
+          type: file
+          description: Log file containing processing information, warnings, and errors from aggregation
+          pattern: "ABO_results.log"
+          ontologies: []
+  csv:
+    - - "final_export.csv":
+          type: file
+          description: CSV file containing final exported ABO results suitable for downstream analysis
+          pattern: "final_export.csv"
+          ontologies:
+            - edam: http://edamontology.org/format_3752 # CSV
+  qc:
+    - - "ABO_run_qc.txt":
+          type: file
+          description: Run-level QC summary (research-use statement, depth and evidence checks per sample)
+          pattern: "ABO_run_qc.txt"
+          ontologies: []
+  mqc:
+    - - "ABO_evidence_summary_mqc.tsv":
+          type: file
+          description: Per-sample evidence summary (Clair3 and BAM pileup) as a MultiQC custom-content table
+          pattern: "ABO_evidence_summary_mqc.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_abotyper_core:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abotyper-core:
+          type: string
+          description: Name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of abotyper-core
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abotyper-core:
+          type: string
+          description: Name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of abotyper-core
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:95a88de3ab755e54
+      build_id: bd-95a88de3ab755e54_1
+      scan_id: sc-bd2534407c2a65f1_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518
+      build_id: bd-317ee119edadb518_1
+      scan_id: sc-861c3aa5590af1cb_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:0560cb8442294607
+      build_id: bd-0560cb8442294607_3
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/41/41bbb8904da89fa1fa8011922f974093a21cea750a2725d46c3d1c75a5a171ef/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:f121e323203c9909
+      build_id: bd-f121e323203c9909_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/abotypercore/aggregate/.conda-lock/linux_amd64-bd-317ee119edadb518_1.txt
+    linux/arm64:
+      lock_file: modules/local/abotypercore/aggregate/.conda-lock/linux_arm64-bd-95a88de3ab755e54_1.txt

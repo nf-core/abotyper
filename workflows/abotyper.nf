@@ -46,7 +46,7 @@ workflow ABOTYPER {
     NANOPLOT (
         ch_samplesheet
     )
-    ch_multiqc_files = ch_multiqc_files.mix(NANOPLOT.out.txt.collect{it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(NANOPLOT.out.txt.map { _meta, txt -> txt })
 
     //
     // SUBWORKFLOW: MINIMAP2_ALIGN_READS
@@ -57,8 +57,8 @@ workflow ABOTYPER {
         abo_reference_fai,
     )
     ch_multiqc_files = ch_multiqc_files.mix(
-        MINIMAP2_ALIGN_READS.out.stats.collect{ it[1] },
-        MINIMAP2_ALIGN_READS.out.flagstat.collect{ it[1] },
+        MINIMAP2_ALIGN_READS.out.stats.map { _meta, stats -> stats },
+        MINIMAP2_ALIGN_READS.out.flagstat.map { _meta, flagstat -> flagstat },
     )
 
     //
@@ -113,7 +113,7 @@ workflow ABOTYPER {
     //
     // Collate and save software versions
     //
-    def topic_versions = Channel.topic("versions")
+    def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path

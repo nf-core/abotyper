@@ -8,13 +8,13 @@ nextflow_workflow {
     tag "subworkflows"
     tag "subworkflows_local"
     tag "subworkflows/predictabophenotype"
-    tag "abo/getabosnps"
-    tag "abo/snps2pheno"
+    tag "abotypercore/predictphenotype"
+    tag "abotypercore/aggregate"
     tag "abotyper"
 
     // Inputs for ONE sample (ABO_AA_barcode01) in the single combined-reference layout:
-    // metrics (ABO_EVIDENCE), coverage, haplotypes (ABO_CLAIR2HAPLOTYPES), the two evidence
-    // files written by ABO_EVIDENCE and the flagstat file (the fixture has no samtools stats file).
+    // metrics (ABOTYPERCORE_PILEUP2METRICS), coverage, haplotypes (ABOTYPERCORE_CLAIR2HAPLOTYPES), the two evidence
+    // files written by ABOTYPERCORE_PILEUP2METRICS and the flagstat file (the fixture has no samtools stats file).
 
     test("abo_phenotype_prediction - one sample - combined reference") {
 

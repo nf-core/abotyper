@@ -115,17 +115,14 @@ workflow PIPELINE_INITIALISATION {
     channel
         .fromList(samplesheetToList(input, "${projectDir}/assets/schema_input.json"))
         .map {
-            meta, fastq_1, fastq_2 ->
+            meta, fastq_1 ->
                 // `control` is empty unless the samplesheet declares one
                 def control = meta.control ?: ''
                 // sample name and barcode reported in the result tables (see sampleNameAndBarcode)
                 def names   = sampleNameAndBarcode(meta.id, meta.barcode)
                 def extra   = [ control:control, sample_name:names.sample_name, barcode:names.barcode ]
-                if (!fastq_2) {
-                    return [ meta.id, meta + extra + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + extra + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
+                // Nanopore reads: one FASTQ per row, single-end
+                return [ meta.id, meta + extra + [ single_end:true ], [ fastq_1 ] ]
         }
         .groupTuple()
         .map { samplesheet ->
@@ -204,7 +201,6 @@ def condaLockNote() {
 }
 
 def validateInputParameters() {
-    genomeExistsError()
     if (params.clair3_model_url && params.clair3_model_path) {
         error("Please give either --clair3_model_url (download a Clair3 model) or --clair3_model_path (a local model folder), not both.")
     }
@@ -241,12 +237,6 @@ def normaliseBarcode(String value) {
 def validateInputSamplesheet(input) {
     def (metas, fastqs) = input[1..2]
 
-    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
-    def endedness_ok = metas.collect{ meta -> meta.single_end }.unique().size == 1
-    if (!endedness_ok) {
-        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
-    }
-
     // Rows of the same sample are concatenated, so they must agree on whether it is a control
     def control_ok = metas.collect{ meta -> meta.control }.unique().size == 1
     if (!control_ok) {
@@ -260,31 +250,6 @@ def validateInputSamplesheet(input) {
     }
 
     return [ metas[0], fastqs ]
-}
-//
-// Get attribute from genome config file e.g. fasta
-//
-def getGenomeAttribute(attribute) {
-    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-        if (params.genomes[ params.genome ].containsKey(attribute)) {
-            return params.genomes[ params.genome ][ attribute ]
-        }
-    }
-    return null
-}
-
-//
-// Exit pipeline if incorrect --genome key provided
-//
-def genomeExistsError() {
-    if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-        def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "  Genome '${params.genome}' not found in any config files provided to the pipeline.\n" +
-            "  Currently, the available genome keys are:\n" +
-            "  ${params.genomes.keySet().join(", ")}\n" +
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        error(error_string)
-    }
 }
 //
 // Generate methods description for MultiQC

@@ -2,22 +2,22 @@
     "-profile test": {
         "content": [
             {
-                "ABO_CLAIR2HAPLOTYPES": {
+                "ABOTYPERCORE_CLAIR2HAPLOTYPES": {
                     "abotyper-core": "0.3.0"
                 },
-                "ABO_CLAIR2METRICS": {
+                "ABOTYPERCORE_CLAIR2METRICS": {
                     "abotyper-core": "0.3.0"
                 },
-                "ABO_EVIDENCE": {
+                "ABOTYPERCORE_PILEUP2METRICS": {
                     "abotyper-core": "0.3.0"
                 },
-                "ABO_GETABOSNPS": {
+                "ABOTYPERCORE_PREDICTPHENOTYPE": {
                     "abotyper-core": "0.3.0"
                 },
-                "ABO_PANEL2BED": {
+                "ABOTYPERCORE_PANELTOBED": {
                     "abotyper-core": "0.3.0"
                 },
-                "ABO_SNPS2PHENO": {
+                "ABOTYPERCORE_AGGREGATE": {
                     "abotyper-core": "0.3.0"
                 },
                 "BCFTOOLS_NORM": {

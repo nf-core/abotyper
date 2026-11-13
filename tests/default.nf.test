@@ -48,4 +48,46 @@ nextflow_pipeline {
             )
         }
     }
+
+    test("-profile test - zero-read negative control and numeric barcode") {
+
+        // A clean negative control (an empty FASTQ) must not stop the run (NanoPlot exits 1 on it) and must
+        // pass QC; a numeric barcode (7) must pass samplesheet validation and be reported as barcode07.
+        when {
+            params {
+                def base = 'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/abotyper/abotyper'
+                def sheet = new File("$outputDir/samplesheet_controls.csv")
+                sheet.parentFile.mkdirs()
+                sheet.text = [
+                    'sample,fastq_1,control,barcode',
+                    "ABO_BB,${base}/ABO_BB_barcode05.fastq.gz,,7",
+                    "ABO_AO1_barcode03,${base}/ABO_AO1_barcode03.fastq.gz,,",
+                    "NTC,${projectDir}/tests/fixtures/empty.fastq.gz,negative,95",
+                ].join('\n') + '\n'
+                input  = sheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def export_rows = path("$outputDir/final_export.csv").text.readLines().collect { line ->
+                line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/, -1) as List
+            }
+            def header = export_rows[0]
+            def row    = { name -> export_rows.find { r -> r[0] == name } }
+            def qc     = header.indexOf('QC Status')
+            def result = path("$outputDir/ABO_result.txt").readLines().collect { line -> line.split('\t', -1) as List }
+            assertAll(
+                { assert workflow.success },
+                // the negative control is reported and passes QC
+                { assert row('NTC') != null },
+                { assert row('NTC')[qc] == 'PASS' },
+                // the numeric barcode is accepted and reported as barcode 07 (Barcode column of ABO_result.txt)
+                { assert result.find { r -> r[1] == 'ABO_BB' }[0] == '7' },
+                { assert row('ABO_BB')[header.indexOf('ABO Pheno Type')] == 'B' },
+                // the sample without a barcode column value takes it from its name
+                { assert result.find { r -> r[1] == 'ABO_AO1' }[0] == '3' }
+            )
+        }
+    }
 }

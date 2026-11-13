@@ -5,17 +5,17 @@
 //   Description: Calls small variants (with phasing) from each sample's aligned BAM using
 //   Clair3 (--gvcf --enable_phasing), then converts its gVCF and phased VCF
 //   into the per-position metrics / haplotype table PREDICTABOPHENOTYPE
-//   expects (ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES). Also regenerates the
-//   ABO panel BED from the panel YAML once per run (ABO_PANEL2BED), broadcast
+//   expects (ABOTYPERCORE_CLAIR2METRICS, ABOTYPERCORE_CLAIR2HAPLOTYPES). Also regenerates the
+//   ABO panel BED from the panel YAML once per run (ABOTYPERCORE_PANELTOBED), broadcast
 //   to every sample here and to the sibling VARIANTS_QC subworkflow.
 
-include { CLAIR3                } from '../../../modules/nf-core/clair3/main'
-include { CLAIR3_DOWNLOADMODEL  } from '../../../modules/local/clair3/downloadmodel/main'
-include { ABO_PANEL2BED         } from '../../../modules/local/abo/panel2bed/main'
-include { ABO_CLAIR2METRICS     } from '../../../modules/local/abo/clair2metrics/main'
-include { ABO_CLAIR2HAPLOTYPES  } from '../../../modules/local/abo/clair2haplotypes/main'
-include { SAMTOOLS_MPILEUP      } from '../../../modules/nf-core/samtools/mpileup/main'
-include { ABO_EVIDENCE          } from '../../../modules/local/abo/evidence/main'
+include { CLAIR3                        } from '../../../modules/nf-core/clair3/main'
+include { CLAIR3_DOWNLOADMODEL          } from '../../../modules/local/clair3/downloadmodel/main'
+include { ABOTYPERCORE_PANELTOBED       } from '../../../modules/local/abotypercore/paneltobed/main'
+include { ABOTYPERCORE_CLAIR2METRICS    } from '../../../modules/local/abotypercore/clair2metrics/main'
+include { ABOTYPERCORE_CLAIR2HAPLOTYPES } from '../../../modules/local/abotypercore/clair2haplotypes/main'
+include { SAMTOOLS_MPILEUP              } from '../../../modules/nf-core/samtools/mpileup/main'
+include { ABOTYPERCORE_PILEUP2METRICS   } from '../../../modules/local/abotypercore/pileup2metrics/main'
 
 workflow VARIANTS_QUANTIFICATION {
     take:
@@ -36,7 +36,7 @@ workflow VARIANTS_QUANTIFICATION {
     // value channel so it can be broadcast to every sample.
     ch_fasta_fai = ch_fasta
         .combine(ch_fai)
-        .map { fasta_meta, fasta, fai_meta, fai -> [fasta_meta, fasta, fai] }
+        .map { fasta_meta, fasta, _fai_meta, fai -> [fasta_meta, fasta, fai] }
         .first()
 
     //
@@ -69,35 +69,35 @@ workflow VARIANTS_QUANTIFICATION {
     )
 
     // CLAIR3 runs with errorStrategy 'ignore': say so at run time when a sample gets no gVCF.
-    // (Such samples are still typed from the BAM pileup by ABO_EVIDENCE, and flagged REVIEW.)
+    // (Such samples are still typed from the BAM pileup by ABOTYPERCORE_PILEUP2METRICS, and flagged REVIEW.)
     ch_bam_bai
         .join(CLAIR3.out.gvcf, by: 0, remainder: true)
-        .filter { it[3] == null }
-        .subscribe { log.warn "Clair3 produced no gVCF for sample '${it[0].id}': relying on the BAM pileup alone (flagged REVIEW)" }
+        .filter { row -> row[3] == null }
+        .subscribe { row -> log.warn "Clair3 produced no gVCF for sample '${row[0].id}': relying on the BAM pileup alone (flagged REVIEW)" }
 
     //
-    // MODULE: ABO_PANEL2BED
+    // MODULE: ABOTYPERCORE_PANELTOBED
     //
-    ABO_PANEL2BED(panel_file)
+    ABOTYPERCORE_PANELTOBED(panel_file)
 
     //
-    // MODULE: ABO_CLAIR2METRICS
+    // MODULE: ABOTYPERCORE_CLAIR2METRICS
     //
     // Converts Clair3's gVCF into HAPLOSCAN-format metrics, replacing
-    // HAPLOSCAN as the ABO_GETABOSNPS (abotyper-predict-phenotype) input.
-    ABO_CLAIR2METRICS(
+    // HAPLOSCAN as the ABOTYPERCORE_PREDICTPHENOTYPE (abotyper-predict-phenotype) input.
+    ABOTYPERCORE_CLAIR2METRICS(
         CLAIR3.out.gvcf,
         panel_file,
     )
 
     //
-    // MODULE: ABO_CLAIR2HAPLOTYPES
+    // MODULE: ABOTYPERCORE_CLAIR2HAPLOTYPES
     //
     // Converts Clair3's phased VCF into HAPLOSCAN-format Haplotypes.tsv,
     // driving PREDICTABOPHENOTYPE's PhaseConfidence scoring. Synthesized
     // from phase-set allele depths, not literal per-read observations --
     // see the abotyper-core clair2haplotypes docstring.
-    ABO_CLAIR2HAPLOTYPES(
+    ABOTYPERCORE_CLAIR2HAPLOTYPES(
         CLAIR3.out.phased_vcf,
         panel_file,
     )
@@ -109,31 +109,31 @@ workflow VARIANTS_QUANTIFICATION {
     // every sample. (CLAIR3 also runs with errorStrategy 'ignore', so a failed Clair3 job
     // emits nothing; the pileup keeps such a sample from silently disappearing.)
     SAMTOOLS_MPILEUP(
-        ch_bam_bai.combine(ABO_PANEL2BED.out.bed),
+        ch_bam_bai.combine(ABOTYPERCORE_PANELTOBED.out.bed),
         ch_fasta_fai,
     )
 
     //
-    // MODULE: ABO_EVIDENCE
+    // MODULE: ABOTYPERCORE_PILEUP2METRICS
     //
     // Compares the two lines of evidence at every panel position (concordance table and
     // status file) and writes the table that is scored: Clair3 is the primary line, the
     // BAM pileup fills positions Clair3 had no evidence for. remainder:true keeps samples
     // with no Clair3 metrics (clair_metrics -> null -> []), which are then BAM-only.
     ch_evidence_input = SAMTOOLS_MPILEUP.out.mpileup
-        .join(ABO_CLAIR2METRICS.out.tsv, by: 0, remainder: true)
+        .join(ABOTYPERCORE_CLAIR2METRICS.out.tsv, by: 0, remainder: true)
         .map { meta, pileup, clair_tsv -> [meta, pileup, clair_tsv ?: []] }
 
-    ABO_EVIDENCE(
+    ABOTYPERCORE_PILEUP2METRICS(
         ch_evidence_input,
         panel_file,
     )
 
     emit:
-    metrics         = ABO_EVIDENCE.out.tsv
-    evidence_status = ABO_EVIDENCE.out.status
-    concordance     = ABO_EVIDENCE.out.concordance
-    haplotypes = ABO_CLAIR2HAPLOTYPES.out.tsv
+    metrics         = ABOTYPERCORE_PILEUP2METRICS.out.tsv
+    evidence_status = ABOTYPERCORE_PILEUP2METRICS.out.status
+    concordance     = ABOTYPERCORE_PILEUP2METRICS.out.concordance
+    haplotypes = ABOTYPERCORE_CLAIR2HAPLOTYPES.out.tsv
 
     clair3_vcf        = CLAIR3.out.vcf
     clair3_tbi        = CLAIR3.out.tbi
@@ -141,5 +141,5 @@ workflow VARIANTS_QUANTIFICATION {
     clair3_phased_tbi = CLAIR3.out.phased_tbi
     clair3_gvcf       = CLAIR3.out.gvcf
     clair3_gtbi       = CLAIR3.out.gtbi
-    panel_bed         = ABO_PANEL2BED.out.bed
+    panel_bed         = ABOTYPERCORE_PANELTOBED.out.bed
 }

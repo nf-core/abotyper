@@ -6,7 +6,7 @@
 // Normalizes Clair3's PASS-filtered calls, restricts them to the ABO panel
 // positions, and flattens them to a flat TSV -- a panel-scoped VCF a human
 // can open in IGV, and a TSV for spot-checking, alongside (not feeding)
-// ABO_CLAIR2METRICS's own gVCF-derived metrics used by PREDICTABOPHENOTYPE.
+// ABOTYPERCORE_CLAIR2METRICS's own gVCF-derived metrics used by PREDICTABOPHENOTYPE.
 
 include { BCFTOOLS_NORM  } from '../../../modules/nf-core/bcftools/norm/main'
 include { BCFTOOLS_VIEW  } from '../../../modules/nf-core/bcftools/view/main'

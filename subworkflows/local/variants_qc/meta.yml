@@ -9,7 +9,7 @@ description: |
   open in IGV, and a TSV for spot-checking. Runs on CLAIR3.out.vcf, not the
   gVCF: symbolic <NON_REF> ref-blocks in the gVCF aren't what bcftools
   norm/view/query are built for. Outputs are not consumed by
-  PREDICTABOPHENOTYPE -- ABO_CLAIR2METRICS reads the gVCF directly for that.
+  PREDICTABOPHENOTYPE -- ABOTYPERCORE_CLAIR2METRICS reads the gVCF directly for that.
 keywords:
   - abo
   - blood typing
@@ -43,7 +43,7 @@ input:
   - panel_bed:
       type: file
       description: |
-        ABO panel BED (from ABO_PANEL2BED / VARIANTS_QUANTIFICATION.out.panel_bed),
+        ABO panel BED (from ABOTYPERCORE_PANELTOBED / VARIANTS_QUANTIFICATION.out.panel_bed),
         broadcast as a value channel. Passed to bcftools view as the regions file.
       pattern: "*.bed"
 output:
