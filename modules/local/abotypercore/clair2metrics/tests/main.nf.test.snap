@@ -14,15 +14,15 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:56:28.113493166",
+        "timestamp": "2026-11-13T23:41:13.823054806",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     },
     "abotyper - ABO_AA_barcode01 - stub": {
@@ -40,7 +40,7 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "tsv": [
@@ -55,15 +55,15 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:56:51.359452252",
+        "timestamp": "2026-11-13T23:41:39.82057489",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }

@@ -38,7 +38,7 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "concordance": [
@@ -77,15 +77,15 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:58:06.794577293",
+        "timestamp": "2026-11-13T23:43:54.291900437",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     },
     "abotyper - ABO_AA_barcode01 - Clair3 produced nothing (BAM pileup only)": {
@@ -144,15 +144,15 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:57:16.96149656",
+        "timestamp": "2026-11-13T23:43:00.154507545",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }

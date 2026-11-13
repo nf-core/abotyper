@@ -9,15 +9,15 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T08:00:19.771298254",
+        "timestamp": "2026-11-13T23:37:49.247135211",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     },
     "abotyper - two samples compiled - stub": {
@@ -45,7 +45,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "csv": [
@@ -67,7 +67,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "xls": [
@@ -75,10 +75,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T08:02:20.655280437",
+        "timestamp": "2026-11-13T23:39:52.994250766",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }

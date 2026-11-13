@@ -14,7 +14,7 @@
                     [
                         "ABOTYPERCORE_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "tsv": [
@@ -29,15 +29,15 @@
                     [
                         "ABOTYPERCORE_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:56:02.017935288",
+        "timestamp": "2026-11-13T23:40:46.257569434",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     },
     "abotyper - ABO_AA_barcode01 - phased VCF -> haplotypes": {
@@ -55,15 +55,15 @@
                     [
                         "ABOTYPERCORE_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:55:38.3347556",
+        "timestamp": "2026-11-13T23:40:20.023266393",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }

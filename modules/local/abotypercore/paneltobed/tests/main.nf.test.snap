@@ -7,15 +7,15 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:59:23.712152034",
+        "timestamp": "2026-11-13T23:42:06.680884442",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     },
     "abotyper - panel yaml -> BED - stub": {
@@ -28,7 +28,7 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ],
                 "bed": [
@@ -38,15 +38,15 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.0"
+                        "0.3.1"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T07:59:47.20017047",
+        "timestamp": "2026-11-13T23:42:32.689269449",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }
