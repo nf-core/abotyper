@@ -10,33 +10,32 @@ nf-core/abotyper types the ABO blood group from Oxford Nanopore amplicon reads c
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row and the columns shown below. The pipeline was validated on Oxford Nanopore reads; single-end reads from other long-read platforms or Ion Torrent, and paired-end reads, are accepted (set `--minimap2_preset` to match) but have not been validated.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row and the columns shown below. The pipeline types Oxford Nanopore reads (see [Sequencing platform compatibility](../README.md#sequencing-platform-compatibility)).
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2,control
+sample,fastq_1,control,barcode
 SAMPLE1_barcode01,/path/to/SAMPLE1_barcode01.fastq.gz,,
-SAMPLE2_barcode02,/path/to/SAMPLE2_barcode02.fastq.gz,,
-NTC_barcode95,/path/to/NTC_barcode95.fastq.gz,,negative
-POSCTRL_barcode96,/path/to/POSCTRL_barcode96.fastq.gz,,positive
+SAMPLE2,/path/to/SAMPLE2.fastq.gz,,02
+NTC,/path/to/NTC.fastq.gz,negative,95
+POSCTRL,/path/to/POSCTRL.fastq.gz,positive,96
 ```
 
-| Column    | Description                                                                                                                                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Sample name, used in every result table. Any name without spaces; a trailing `_barcode<NN>` is reported as the barcode. See below.                                                                                              |
-| `fastq_1` | Path to the sample's demultiplexed reads (for paired-end data, read 1), with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                                                                            |
-| `fastq_2` | Optional. Read 2 of paired-end data (for example Illumina); leave empty for Oxford Nanopore, PacBio or Ion Torrent reads.                                                                                                       |
-| `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name.                                               |
-| `barcode` | Optional. The barcode to report for the sample (`07` or `barcode07`). When it is given, the sample is reported under its full `sample` name; when it is empty, the barcode is taken from a trailing `_barcode<NN>` in the name. |
+| Column    | Description                                                                                                                                                                                                                          |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sample`  | Sample name, used in every result table: letters, digits, `.`, `_` and `-`. Without a `barcode` value, a trailing `_barcode<NN>` is reported as the barcode. See below.                                                              |
+| `fastq_1` | Path to the sample's demultiplexed Nanopore reads, with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                                                                                                      |
+| `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name.                                                    |
+| `barcode` | Optional. The barcode to report for the sample (`7`, `07` or `barcode07`). When it is given, the sample is reported under its full `sample` name; when it is empty, the barcode is taken from a trailing `_barcode<NN>` in the name. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 ### Sample names
 
-Any sample name without spaces is accepted, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. The sample name and barcode in the result tables are set when the samplesheet is read: with a `barcode` value, the sample is reported under its full name with that barcode; otherwise a name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07), and any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
+Sample names may contain letters, digits, `.`, `_` and `-`, for example `ABO_AA_barcode01`, `Sample-45-44874_barcode25`, `patient-01` or `S1.r1`. The sample name and barcode in the result tables are set when the samplesheet is read: with a `barcode` value, the sample is reported under its full name with that barcode; otherwise a name ending in `_barcode<digits>` is reported as that sample and barcode (`S1_barcode07` is sample `S1`, barcode 07), and any other name is reported whole, with barcode `barcode00`. Libraries that share a sample name but have different barcodes are compared as replicates.
 
 ### Controls
 
@@ -44,10 +43,10 @@ A sample marked `negative` is expected to have few or no ABO reads: low depth is
 
 ### Multiple runs of the same sample
 
-Rows with the same `sample` name are treated as one sample: their reads are concatenated before alignment. The rows must have the same `control` and `barcode` values and must all be single-end or all paired-end.
+Rows with the same `sample` name are treated as one sample: their reads are concatenated before alignment. The rows must have the same `control` and `barcode` values.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2,control
+sample,fastq_1,control,barcode
 SAMPLE1_barcode01,/path/to/run1/SAMPLE1_barcode01.fastq.gz,,
 SAMPLE1_barcode01,/path/to/run2/SAMPLE1_barcode01.fastq.gz,,
 ```

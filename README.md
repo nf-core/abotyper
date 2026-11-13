@@ -47,11 +47,11 @@ ABO sequences were acquired from the NCBI RefSeq and dbRBC databases:
    - Flagstat metrics ([`SAMTOOLS_FLAGSTAT`](modules/nf-core/samtools/flagstat/))
    - Detailed statistics ([`SAMTOOLS_STATS`](modules/nf-core/samtools/stats/))
 4. **Variant calling** - Call small variants (with phasing) directly from the aligned BAM using Clair3 ([`CLAIR3`](modules/nf-core/clair3/))
-5. **Variant quantification** - Convert Clair3's gVCF and phased VCF into per-position allele frequencies and per-read-equivalent haplotypes ([`ABO_CLAIR2METRICS`](modules/local/abo/clair2metrics/), [`ABO_CLAIR2HAPLOTYPES`](modules/local/abo/clair2haplotypes/))
+5. **Variant quantification** - Convert Clair3's gVCF and phased VCF into per-position allele frequencies and per-read-equivalent haplotypes ([`ABOTYPERCORE_CLAIR2METRICS`](modules/local/abotypercore/clair2metrics/), [`ABOTYPERCORE_CLAIR2HAPLOTYPES`](modules/local/abotypercore/clair2haplotypes/))
 6. **Independent BAM pileup** - Count bases at every panel position directly from the aligned BAM, as a second line of evidence (nf-core [`samtools/mpileup`](modules/nf-core/samtools/mpileup/))
-7. **Evidence combination** - Compare Clair3 and the BAM pileup at every panel position, fill positions Clair3 had no evidence for, and flag disagreement ([`ABO_EVIDENCE`](modules/local/abo/evidence/))
-8. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABO_GETABOSNPS`](modules/local/abo/getabosnps/))
-9. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns, with ISBT-style allele names and QC flags ([`ABO_SNPS2PHENO`](modules/local/abo/snps2pheno/))
+7. **Evidence combination** - Compare Clair3 and the BAM pileup at every panel position, fill positions Clair3 had no evidence for, and flag disagreement ([`ABOTYPERCORE_PILEUP2METRICS`](modules/local/abotypercore/pileup2metrics/))
+8. **SNP extraction** - Extract and analyze ABO-relevant single nucleotide variants using the panel-driven coordinate system ([`ABOTYPERCORE_PREDICTPHENOTYPE`](modules/local/abotypercore/predictphenotype/))
+9. **Phenotype prediction** - Predict ABO blood group phenotype from combined SNP and haplotype patterns, with ISBT-style allele names and QC flags ([`ABOTYPERCORE_AGGREGATE`](modules/local/abotypercore/aggregate/))
 10. **Quality control reporting** - Compile a QC report with read, alignment and evidence metrics ([`MULTIQC`](modules/nf-core/multiqc/))
 
 The pipeline uses NG_006669.2 (RefSeqGene, LRG_792) as a single combined ABO reference. Variant marker positions and coordinate calibration are defined in the variant panel bundled with [abotyper-core](https://github.com/fmobegi/abotyper-core) (`abotyper_core/data/abo_variant_panel.yaml`); pass your own with `--abo_panel`.
@@ -70,14 +70,14 @@ The pipeline makes use of the following core dependencies:
 | bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
 | multiqc        | 1.35            | aggregate QC report               |
 | **Typing**     |                 |                                   |
-| abotyper-core  | 0.3.0           | panel, evidence and ABO typing    |
+| abotyper-core  | 0.3.1           | panel, evidence and ABO typing    |
 
 The typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) Python package (`pip install abotyper-core` or Bioconda), which has its own tests and command-line tools. It also provides `abotyper-rename-samples`, a standalone lab-export utility that is not part of the pipeline, and `abotyper-calibrate-panel`.
 
 ## Required input files structure
 
-The samplesheet has one row per sample, with the columns `sample`, `fastq_1`, an optional `fastq_2` for paired-end reads and an optional `control` (see [usage](docs/usage.md)).
-The `sample` name is used in every result table. Any name without spaces is accepted. A name ending in `_barcode<digits>` is reported with that barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with `barcode00`.
+The samplesheet has one row per sample, with the columns `sample` and `fastq_1` (the sample's Nanopore reads), and the optional columns `control` and `barcode` (see [usage](docs/usage.md)).
+Sample names and barcodes come from the samplesheet, not from file names. The `sample` name is used in every result table and may contain letters, digits, `.`, `_` and `-`. The `barcode` column sets the barcode reported for the sample (`7`, `07` or `barcode07`). Without it, a name ending in `_barcode<digits>` is reported with that barcode (`S1_barcode07` is sample `S1`, barcode 07); any other name is reported whole, with `barcode00`.
 
 Here are a few examples of sample names:
 
@@ -98,15 +98,9 @@ Controls are declared in the `control` column (`negative` or `positive`), not re
 
 ## Sequencing platform compatibility
 
-This pipeline was originally developed to process amplicon sequencing data from Oxford Nanopore Technologies platforms where multiple samples are expected to be barcoded. The pipeline has been extensively validated using Oxford Nanopore MinION data targeting ABO exons 6 and 7, which are the primary regions containing clinically relevant polymorphisms for ABO blood group determination.
+The pipeline types Oxford Nanopore amplicon reads of ABO exons 2-7 (about 7 kb), aligned to the NG_006669.2 reference, with multiple barcoded samples per run. It was validated on Oxford Nanopore MinION data. Clair3 runs with platform `ont` and an ONT model, so only Nanopore minimap2 presets are offered (`--minimap2_preset`: `map-ont`, the default, or `lr:hq` for high-accuracy Nanopore reads).
 
-While we recommend using the above naming convention for optimal compatibility, the pipeline can also handle FASTQ files from other sequencing platforms including:
-
-- **PacBio** (currently undergoing testing)
-- **Ion Torrent** (currently undergoing testing)
-- **Illumina** (currently undergoing testing)
-
-The pipeline will attempt to extract the sample name and barcode from the filenames using standard genomic sequence naming conventions, but will fall back to a default barcode00 if filenames lack the expected barcode format. For non-Nanopore platforms, ensure your FASTQ files contain reads spanning the ABO exon 6 and exon 7 regions (within the combined NG_006669.2 reference) for accurate genotyping, and set the minimap2 preset with `--minimap2_preset` (`map-ont` by default; `map-pb`, `map-hifi`, `lr:hq` or `sr` for other read types). Only Oxford Nanopore data with `map-ont` has been validated.
+Ion Torrent and Illumina reads from the pilot study typed correctly with an earlier version of the pipeline. Their Clair3 settings have not yet been validated in this version, so other platforms are not supported in 1.0.0.
 
 ## Running `nf-core/abotyper`
 
@@ -161,7 +155,6 @@ OUTDIR/
 │       │   ├── SAMPLE1_barcode01.concordance.tsv
 │       │   ├── SAMPLE1_barcode01.evidence_status.tsv
 │       │   └── SAMPLE1_barcode01.pileup_metrics.tsv
-│       ├── combined
 │       ├── SAMPLE1_barcode01.ABOPhenotype.txt
 │       └── SAMPLE1_barcode01.log.txt
 ├── pipeline_info

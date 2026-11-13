@@ -12,8 +12,9 @@ tools:
       homepage: https://www.gnu.org/software/wget/
       documentation: https://www.gnu.org/software/wget/manual/
       tool_dev_url: https://git.savannah.gnu.org/cgit/wget.git
-      licence: ["GPL-3.0-or-later"]
-
+      licence:
+        - "GPL-3.0-or-later"
+      identifier: ""
 input:
   - url:
       type: string

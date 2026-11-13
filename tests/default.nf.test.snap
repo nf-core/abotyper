@@ -2,23 +2,23 @@
     "-profile test": {
         "content": [
             {
-                "ABO_CLAIR2HAPLOTYPES": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_AGGREGATE": {
+                    "abotyper-core": "0.3.1"
                 },
-                "ABO_CLAIR2METRICS": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_CLAIR2HAPLOTYPES": {
+                    "abotyper-core": "0.3.1"
                 },
-                "ABO_EVIDENCE": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_CLAIR2METRICS": {
+                    "abotyper-core": "0.3.1"
                 },
-                "ABO_GETABOSNPS": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_PANELTOBED": {
+                    "abotyper-core": "0.3.1"
                 },
-                "ABO_PANEL2BED": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_PILEUP2METRICS": {
+                    "abotyper-core": "0.3.1"
                 },
-                "ABO_SNPS2PHENO": {
-                    "abotyper-core": "0.3.0"
+                "ABOTYPERCORE_PREDICTPHENOTYPE": {
+                    "abotyper-core": "0.3.1"
                 },
                 "BCFTOOLS_NORM": {
                     "bcftools": 1.25
@@ -542,10 +542,10 @@
                 "       6  n/a (no A allele)"
             ]
         ],
-        "timestamp": "2026-11-13T08:19:35.08008775",
+        "timestamp": "2026-11-14T00:07:08.848809718",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.10.2"
+            "nextflow": "26.10.6"
         }
     }
 }

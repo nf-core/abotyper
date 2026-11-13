@@ -70,12 +70,9 @@ Feel free to raise an issue or reach out if you need any support getting this to
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [NanoPlot](#nanoplot) – Raw long-read quality control
-- [Minimap2](#minimap2) – Mapping reads to the combined ABO reference
-- [SAMtools Coverage](#samtools-modules) – Coverage metrics
-- [SAMtools Flagstat](#samtools-modules) – Alignment summary statistics
-- [SAMtools Stats](#samtools-modules) – Detailed alignment metrics
-- [Clair3](#variant-calling-and-quantification) – Small-variant calling and phasing, converted into per-position nucleotide frequencies and a haplotype table
-- [ABO SNP Interpretation](#abo-snp-interpretation) – Custom logic to infer ABO phenotype
+- [Alignment and alignment statistics](#alignment-and-alignment-statistics) – minimap2 alignment to the ABO reference, with samtools coverage, flagstat and stats
+- [Variant calling and evidence](#variant-calling-and-evidence) – Clair3 calls and phasing, the BAM pileup, and both converted into per-position evidence
+- [ABO typing](#abo-typing) – Per-sample phenotype prediction and the run's result tables (abotyper-core)
 - [MultiQC](#multiqc) – Aggregate report describing results and QC from the whole pipeline
 
 ### NanoPlot
@@ -89,87 +86,79 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 </details>
 
-[NanoPlot](https://github.com/wdecoster/NanoPlot) (part of NanoPack) provides quality metrics designed for long reads, including the read length distribution, mean read quality, and the number of reads and bases. The `NanoStats` files are also read by MultiQC. Because the sequencing is an amplicon of the ABO gene, read lengths cluster around the amplicon size; a very different distribution, or few reads, points to a library or run problem before alignment.
+[NanoPlot](https://github.com/wdecoster/NanoPlot) (part of NanoPack) provides quality metrics designed for long reads, including the read length distribution, mean read quality, and the number of reads and bases. The `NanoStats` files are also read by MultiQC. Because the sequencing is an amplicon of the ABO gene, read lengths cluster around the amplicon size; a very different distribution, or few reads, points to a library or run problem before alignment. A sample with no reads (for example a clean negative control) has no NanoPlot report; it is still typed.
 
-### Minimap2
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `alignment/`
-  - `*.bam`: Aligned reads in BAM format.
-  - `*.bai`: BAM index files.
-
-</details>
-
-[Minimap2](https://github.com/lh3/minimap2) is used to align Nanopore reads to the single combined ABO reference FASTA. It supports long-read data and is optimized for speed and accuracy.
-
-### SAMtools Modules
-
-This set of modules use [SAMtools](http://www.htslib.org/) and its subtools to extract key metrics and data from aligned BAM files. These outputs are used for quality control and coverage analysis.
-
-<details markdown="1">
-<summary>Output subtool files</summary>
-
-- `coverage/`
-  - `*.coverage.txt`: Coverage metrics per sample.
-- `flagstat/`
-  - `*.flagstat.txt`: Summary of alignment flags.
-- `stats/`
-  - `*.stats.txt`: Detailed alignment statistics.
-
-</details>
-
-**Coverage**: Calculates per-base and overall coverage statistics to assess sequencing depth and uniformity.
-
-**Flagstat**: Provides a quick summary of alignment quality, including total reads, mapped reads, duplicates, and other key metrics.
-
-**Stats**: Generates comprehensive metrics such as insert size distributions, read lengths, and mapping quality.
-
-### Variant Calling and Quantification
+### Alignment and alignment statistics
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `clair3/`
-  - `*.merge_output.vcf.gz`: Clair3's PASS-filtered small-variant calls.
-  - `*.merge_output.gvcf.gz`: Clair3's gVCF, including non-variant reference blocks.
-  - `*.phased_merge_output.vcf.gz`: Clair3's phased small-variant calls (GT + PS tags).
-  - `*.panel.vcf.gz` / `*.panel.tsv`: normalized calls restricted to the ABO panel positions, and a flat TSV of the same, for manual review (`VARIANTS_QC`).
-- `clair2metrics/`
-  - `*.AlignmentStatistics.tsv`: Per-position nucleotide frequency and coverage table, converted from Clair3's gVCF.
-  - `*.Haplotypes.tsv`: Haplotype table, synthesized from Clair3's phased-VCF phase-set allele depths (not literal per-read observations).
+- `per_sample_processing/<sample>/alignment/`
+  - `<sample>.bam` and `<sample>.bam.bai`: reads aligned to NG_006669.2 with minimap2, and their index.
+  - `<sample>.coverage.txt`: samtools coverage of the ABO reference (reads, covered bases, mean depth).
+  - `<sample>.flagstat`: samtools flagstat summary (total, mapped, secondary and supplementary reads).
+  - `<sample>.stats`: samtools stats (read lengths, mapping and base qualities, error rates).
 
 </details>
 
-Clair3 (`--gvcf --enable_phasing`) calls small variants directly from the aligned BAM, with phasing. `abotyper-clair2metrics` (the `ABO_CLAIR2METRICS` module) and `abotyper-clair2haplotypes` (the `ABO_CLAIR2HAPLOTYPES` module) then convert its gVCF and phased VCF into per-position nucleotide frequencies and a haplotype table respectively, in the same formats the retired BAM-pileup-based `HAPLOSCAN` module used to produce, so downstream phenotype prediction needs no changes.
+[minimap2](https://github.com/lh3/minimap2) aligns the Nanopore reads to the single combined ABO reference (`--minimap2_preset`, `map-ont` by default). The [samtools](http://www.htslib.org/) coverage, flagstat and stats files feed the read and depth metrics of the `Typing` sheet and the MultiQC report.
 
-### ABO SNP Interpretation
+### Variant calling and evidence
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `phenotype/`
-  - `*.snp_summary.txt`: Summary of ABO-related SNPs.
-  - `*.phenotype.txt`: Predicted ABO phenotype per sample.
+- `per_sample_processing/<sample>/clair3/`
+  - `<sample>_clair3.merge_output.vcf.gz`: Clair3's PASS-filtered small-variant calls.
+  - `<sample>_clair3.merge_output.gvcf.gz`: Clair3's gVCF, including non-variant reference blocks.
+  - `<sample>_clair3.phased_merge_output.vcf.gz`: Clair3's phased small-variant calls (GT and PS tags).
+  - `<sample>_norm.vcf.gz`: the Clair3 calls normalised with bcftools norm.
+  - `<sample>.panel.vcf.gz` and `<sample>.panel.tsv`: the normalised calls restricted to the ABO panel positions, and a flat table of the same, for manual review.
+  - Each `.vcf.gz` has a `.tbi` index.
+- `per_sample_processing/<sample>/clair2metrics/`
+  - `<sample>.AlignmentStatistics.tsv`: per-position nucleotide frequencies and depth, from Clair3, with positions Clair3 had no evidence for filled from the BAM pileup.
+  - `<sample>.Haplotypes.tsv`: haplotype table built from Clair3's phased calls (phase-set allele depths, not per-read observations).
+  - `<sample>.pileup_metrics.tsv`: the same per-position table from the BAM pileup alone.
+  - `<sample>.concordance.tsv`: Clair3 and the BAM pileup compared at every panel position.
+  - `<sample>.evidence_status.tsv`: the evidence source of the sample (Clair3 and BAM, Clair3 only, BAM only or none) and the number of positions that disagree.
 
 </details>
 
-This custom module interprets SNP data to infer ABO blood group phenotypes using curated reference profiles and decision rules.
+Clair3 (`--gvcf --enable_phasing`, restricted to the ABO exon 2-7 region) calls small variants from the aligned BAM. `abotyper-clair2metrics` and `abotyper-clair2haplotypes` (modules `ABOTYPERCORE_CLAIR2METRICS` and `ABOTYPERCORE_CLAIR2HAPLOTYPES`) convert its gVCF and phased VCF into per-position frequencies and a haplotype table. An independent pileup of the BAM (nf-core `samtools/mpileup`) is the second line of evidence: `abotyper-pileup2metrics` (`ABOTYPERCORE_PILEUP2METRICS`) combines the two, fills positions Clair3 had no evidence for, and records where they disagree.
+
+### ABO typing
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `per_sample_processing/<sample>/`
+  - `<sample>.ABOPhenotype.txt`: the sample's per-position calls and its predicted phenotype, genotype and allele names (`abotyper-predict-phenotype`, `ABOTYPERCORE_PREDICTPHENOTYPE`).
+  - `<sample>.log.txt`: the log of that step.
+- The output directory itself (`abotyper-aggregate`, `ABOTYPERCORE_AGGREGATE`):
+  - `ABO_result.xlsx`: the `Typing`, `Variants` and `About` sheets described above.
+  - `ABO_result.txt`: one row per sample with the full per-position counts and the QC notes.
+  - `final_export.csv`: the typing results for laboratory information systems.
+  - `ABO_run_qc.txt`: run-level QC summary.
+  - `ABO_evidence_summary_mqc.tsv`: per-sample evidence summary, also shown in the MultiQC report.
+  - `ABO_results.log`: the log of the aggregation.
+
+</details>
+
+The typing steps come from the [abotyper-core](https://github.com/fmobegi/abotyper-core) package. They score the panel positions against the panel's thresholds, resolve phenotype, genotype and ISBT-style allele names (per haplotype when the Clair3 phasing is clean), and add the depth, evidence, control and replicate checks that decide each sample's QC status (PASS or REVIEW).
 
 ### MultiQC
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `multiqc/`
+- `qc_and_preprocessing/multiqc/`
   - `multiqc_report.html`: A standalone HTML file that can be viewed in your web browser.
   - `multiqc_data/`: Directory containing parsed statistics from the different tools used in the pipeline.
   - `multiqc_plots/`: Directory containing static images from the report in various formats.
 
 </details>
 
-[MultiQC](http://multiqc.info) aggregates results from NanoPlot, SAMtools, and other modules, plus the per-sample ABO evidence summary table, into a single interactive report. It also includes software version tracking for reproducibility.
+[MultiQC](http://multiqc.info) aggregates results from NanoPlot and samtools, plus the per-sample ABO evidence summary table, into a single interactive report. It also includes software version tracking for reproducibility.
 
 ### Pipeline information
 
@@ -177,10 +166,10 @@ This custom module interprets SNP data to infer ABO blood group phenotypes using
 <summary>Output files</summary>
 
 - `pipeline_info/`
-  - Reports generated by Nextflow: `execution_report.html`, `execution_timeline.html`, `execution_trace.txt` and `pipeline_dag.dot`/`pipeline_dag.svg`.
-  - Reports generated by the pipeline: `pipeline_report.html`, `pipeline_report.txt` and `software_versions.yml`. The `pipeline_report*` files will only be present if the `--email` / `--email_on_fail` parameter's are used when running the pipeline.
-  - Reformatted samplesheet files used as input to the pipeline: `samplesheet.valid.csv`.
-  - Parameters used by the pipeline run: `params.json`.
+  - Reports generated by Nextflow: `execution_report_<date>.html`, `execution_timeline_<date>.html`, `execution_trace_<date>.txt` and `pipeline_dag_<date>.html`.
+  - Software versions of every step: `abotyper_software_mqc_versions.yml`.
+  - Parameters used by the pipeline run: `params_<date>.json`.
+  - The panel positions as a BED file: `abo_variant_panel.bed`.
 
 </details>
 
