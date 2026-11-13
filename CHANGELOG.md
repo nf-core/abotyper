@@ -38,5 +38,5 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 ### `Known gaps / not yet done`
 
 - Only Oxford Nanopore reads are supported (`--minimap2_preset` `map-ont` or `lr:hq`): Clair3 runs with platform `ont` and an ONT model. Ion Torrent and Illumina reads from the pilot study typed correctly with the earlier pipeline; their Clair3 settings are still to be validated.
-- The large ABO deletion (c.204-98_*3252del) and the exon 1 start-codon variants (c.1A>G, c.2T>C) are out-of-scope structural/assay gaps; no current engine scores them.
+- The exon 1 start-codon variants (c.1A>G, c.2T>C) lie outside the exon 2–7 amplicon, so ABO\*AW.13 and ABO\*AW.16 are reported as ABO\*A1.01 and ABO\*A2.01 (the right genotype class, the wrong A subgroup). The large deletion c.204-98\_\*3252del (ABO\*O.16) is not callable from the pileup, and the other allele may appear homozygous. See [docs/intended_use.md](docs/intended_use.md#alleles-this-assay-cannot-resolve).
 - The A2 subtype markers c.907G>A and c.1032G>A are pipeline-defined background markers; ISBT table v9 does not list them as allele-defining.
