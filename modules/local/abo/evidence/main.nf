@@ -12,7 +12,7 @@
         concordance table
       * writes a one-line status file (evidence source, covered-by-both counts,
         discordant positions overall and at the primary typing markers, primary
-        positions filled from the BAM) that aggregate_abo_reports.py turns into
+        positions filled from the BAM) that abotyper-aggregate turns into
         Typing-sheet columns and REVIEW flags
 
     See abotyper-core (pileup2metrics).
@@ -23,8 +23,8 @@ process ABO_EVIDENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518'}"
 
     input:
     // staged in clair3/ so its name (<id>.AlignmentStatistics.tsv) does not collide with the
@@ -48,7 +48,7 @@ process ABO_EVIDENCE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def clair  = clair_metrics ? "--clair-metrics ${clair_metrics}" : ''
     """
-    pileup2metrics.py \\
+    abotyper-pileup2metrics \\
         --pileup ${pileup} \\
         ${clair} \\
         ${panel} \\

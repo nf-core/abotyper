@@ -84,7 +84,7 @@ workflow VARIANTS_QUANTIFICATION {
     // MODULE: ABO_CLAIR2METRICS
     //
     // Converts Clair3's gVCF into HAPLOSCAN-format metrics, replacing
-    // HAPLOSCAN as the ABO_GETABOSNPS/predict_abo_phenotype.py input.
+    // HAPLOSCAN as the ABO_GETABOSNPS (abotyper-predict-phenotype) input.
     ABO_CLAIR2METRICS(
         CLAIR3.out.gvcf,
         panel_file,

@@ -5,7 +5,7 @@ description: |
   with BAM coverage, extracting ABO-specific SNPs, and aggregating per-sample results
   into a unified report. Stages haplotype tables (from ABO_CLAIR2HAPLOTYPES) alongside
   phenotype files to enable PhaseConfidence scoring and Bw/B(A) subtype detection in
-  aggregate_abo_reports.py.
+  abotyper-aggregate.
 keywords:
   - abo
   - blood typing
@@ -38,7 +38,7 @@ input:
       description: |
         Channel containing haplotype tables (Haplotypes.tsv) with exon metadata,
         produced by ABO_CLAIR2HAPLOTYPES. Staged into ABO_SNPS2PHENO with the other per-sample
-        files so that aggregate_abo_reports.py can compute PhaseConfidence scores.
+        files so that abotyper-aggregate can compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"
   - ch_evidence_status:

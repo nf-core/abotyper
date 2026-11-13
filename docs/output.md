@@ -142,7 +142,7 @@ This set of modules use [SAMtools](http://www.htslib.org/) and its subtools to e
 
 </details>
 
-Clair3 (`--gvcf --enable_phasing`) calls small variants directly from the aligned BAM, with phasing. `clair2metrics.py` (the `ABO_CLAIR2METRICS` module) and `clair2haplotypes.py` (the `ABO_CLAIR2HAPLOTYPES` module) then convert its gVCF and phased VCF into per-position nucleotide frequencies and a haplotype table respectively, in the same formats the retired BAM-pileup-based `HAPLOSCAN` module used to produce, so downstream phenotype prediction needs no changes.
+Clair3 (`--gvcf --enable_phasing`) calls small variants directly from the aligned BAM, with phasing. `abotyper-clair2metrics` (the `ABO_CLAIR2METRICS` module) and `abotyper-clair2haplotypes` (the `ABO_CLAIR2HAPLOTYPES` module) then convert its gVCF and phased VCF into per-position nucleotide frequencies and a haplotype table respectively, in the same formats the retired BAM-pileup-based `HAPLOSCAN` module used to produce, so downstream phenotype prediction needs no changes.
 
 ### ABO SNP Interpretation
 

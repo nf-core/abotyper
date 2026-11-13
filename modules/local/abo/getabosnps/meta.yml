@@ -92,25 +92,25 @@ maintainers:
   - "@fmobegi"
 containers:
   docker:
-    linux/amd64:
-      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950
-      build_id: bd-3d286526d138a950_2
-      scan_id: sc-40583d99a38bfd33_1
     linux/arm64:
-      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:012e4f05fb30e0a7
-      build_id: bd-012e4f05fb30e0a7_1
-      scan_id: sc-76f6f42a0fb9e1ca_1
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:95a88de3ab755e54
+      build_id: bd-95a88de3ab755e54_1
+      scan_id: sc-bd2534407c2a65f1_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518
+      build_id: bd-317ee119edadb518_1
+      scan_id: sc-861c3aa5590af1cb_1
   singularity:
-    linux/arm64:
-      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:891d66210b149d1f
-      build_id: bd-891d66210b149d1f_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2e/2e7e10d854e609427ca88c1c997bbf8cdaaef5ac302c619e34ba06dba11bd3db/data
     linux/amd64:
-      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:58e3117f1d42013a
-      build_id: bd-58e3117f1d42013a_2
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:f121e323203c9909
+      build_id: bd-f121e323203c9909_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:0560cb8442294607
+      build_id: bd-0560cb8442294607_3
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/41/41bbb8904da89fa1fa8011922f974093a21cea750a2725d46c3d1c75a5a171ef/data
   conda:
     linux/amd64:
-      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_amd64-bd-3d286526d138a950_2.txt
+      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_amd64-bd-317ee119edadb518_1.txt
     linux/arm64:
-      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_arm64-bd-012e4f05fb30e0a7_1.txt
+      lock_file: modules/local/abo/getabosnps/.conda-lock/linux_arm64-bd-95a88de3ab755e54_1.txt

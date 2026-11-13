@@ -3,22 +3,22 @@
         "content": [
             {
                 "ABO_CLAIR2HAPLOTYPES": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "ABO_CLAIR2METRICS": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "ABO_EVIDENCE": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "ABO_GETABOSNPS": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "ABO_PANEL2BED": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "ABO_SNPS2PHENO": {
-                    "abotyper-core": "0.2.0"
+                    "abotyper-core": "0.3.0"
                 },
                 "BCFTOOLS_NORM": {
                     "bcftools": 1.25
@@ -412,7 +412,6 @@
             ],
             [
                 "ABO_evidence_summary_mqc.tsv:md5,cd002708e66d0edb35f167ab4c424fc8",
-                "ABO_run_qc.txt:md5,892251e9428b614a951ca8014ef15c77",
                 "ABO_AA_barcode01.coverage.txt:md5,a56b588d1055666e9249d0ff43258b2f",
                 "ABO_AA_barcode01.flagstat:md5,8e18b05edac99b4cf78279ee79977ec8",
                 "ABO_AA_barcode01.stats:md5,7fdf3859ca275a7a880544da080ef226",
@@ -518,9 +517,32 @@
                 "ABO_O1O1,,O,O,O,,O,,,,N/A: No haplotype data available,Low (<=40 reads),REVIEW,low depth at primary positions (min 23 reads < 30),n/a (no A allele),variant evidence,",
                 "ABO_O1O2,,O,O,O,,O,,,Possible 646/681/771/829 cassette(c.646T>A:A=49%); Possible 646/681/771/829 cassette(c.681G>A:A=48%); Possible O-null/A2/Aweak backbone(c.106G>T:T=57%); Possible O-null/A2/Aweak backbone(c.188G>A:A=46%); Possible O-null/A2 backbone(c.189C>T:T=48%); Possible O-null/Aweak backbone(c.220C>T:T=48%); Possible O.02 backbone(c.53G>T:T=45%); Possible O.02.02 (c.649C>T)(c.649C>T:T=45%); Possible O.02.02 +1 (c.689G>A)(c.689G>A:A=48%),High: Top 2 haplotypes cover 100% of 67 reads; alleles named per haplotype,Normal,PASS,,n/a (no A allele),variant evidence,",
                 "ABO_O2O2,,O,O,O,,O,,,Confirmed O.02 backbone(c.53G>T:T=97%); Possible O.02.02 (c.649C>T)(c.649C>T:T=43%); Possible O.02.02 +1 (c.689G>A)(c.689G>A:A=43%),High: Homozygous; phasing trivial; alleles named per haplotype,Low (<=40 reads),PASS,,n/a (no A allele),variant evidence,"
+            ],
+            [
+                "=== QC SUMMARY ===",
+                "RESEARCH USE ONLY. Not validated for, and not to be used for, clinical diagnosis or transfusion decisions; confirm results with an accredited method before any clinical use.",
+                "Panel version: 2.3.0",
+                "Panel source: nf-core/abotyper legacy panel (v1.2.0) + ISBT ABO allele table v9",
+                "ISBT ABO allele table: v9 (blooddatabase.isbtweb.org/system/ABO)",
+                "ISBT table checked: 2026-10-16",
+                "ISBT table release date: not stated in the table file; set from the ISBT database release notes",
+                "Samples: 10   flagged REVIEW: 2 (20.0%)",
+                "Flags (a sample can carry more than one):",
+                "       1  A1.02 pattern: c.467C>T seen in 44% of reads, c.1061delC in only 0% (85 reads)",
+                "       1  ISBT defines A1.02 as c.467C>T alone. Rare allele: confirm that the deletion is truly absent. c.467C>T plus c.804dupG is ABO*AEL.08 (insertion signal here: 0%)",
+                "       1  ONT can under-read an insertion in the 7-G run",
+                "       1  low depth at primary positions (min 23 reads < 30)",
+                "Evidence (Clair3 + BAM pileup):",
+                "      10  CLAIR3+BAM",
+                "Evidence basis: variant evidence=10",
+                "A2 trace:",
+                "       2  1 A2 confirmed (c.467 + c.1061delC)",
+                "       1  2 A1.02 pattern: c.467C>T without c.1061delC (ABO*A1.02)",
+                "       1  4 No A2 evidence (both primary markers reference)",
+                "       6  n/a (no A allele)"
             ]
         ],
-        "timestamp": "2026-11-12T20:58:24.82649703",
+        "timestamp": "2026-11-13T08:19:35.08008775",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

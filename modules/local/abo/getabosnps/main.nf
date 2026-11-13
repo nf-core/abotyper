@@ -1,7 +1,7 @@
 /*
   MODULE: ABO_GETABOSNPS
   Description:
-    Runs predict_abo_phenotype.py: reads the per-position metrics
+    Runs abotyper-predict-phenotype: reads the per-position metrics
     (AlignmentStatistics.tsv, from ABO_CLAIR2METRICS) and BAM coverage for
     one sample, and writes a human-readable *.ABOPhenotype.txt report --
     one marker per diagnostic panel position, with its interpretation text.
@@ -15,8 +15,8 @@ process ABO_GETABOSNPS {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f4/f422524ff1f0a53db36925961f748d882e0ed9dcccd39c4cc066a3abde4191c9/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:3d286526d138a950'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data'
+        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518'}"
 
     input:
     tuple val(meta), path(variants_freq), path(coverage)
@@ -33,7 +33,7 @@ process ABO_GETABOSNPS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    predict_abo_phenotype.py \\
+    abotyper-predict-phenotype \\
         -i ${variants_freq} \\
         -o ${prefix}.ABOPhenotype.txt \\
         -c ${coverage} \\

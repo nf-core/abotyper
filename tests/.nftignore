@@ -21,3 +21,5 @@ final_export.csv
 per_sample_processing/*/*.ABOPhenotype.txt
 per_sample_processing/*/clair2metrics/*.{AlignmentStatistics,concordance}.tsv
 per_sample_processing/*/combined/*.{ABOPhenotype.txt,concordance.tsv}
+# Its abotyper-core version line changes with every package release; the rest is snapshotted in tests/default.nf.test
+ABO_run_qc.txt
