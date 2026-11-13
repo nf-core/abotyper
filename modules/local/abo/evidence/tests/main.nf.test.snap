@@ -38,7 +38,7 @@
                     [
                         "ABO_EVIDENCE",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ],
                 "concordance": [
@@ -77,12 +77,12 @@
                     [
                         "ABO_EVIDENCE",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:37:54.600616959",
+        "timestamp": "2026-11-13T07:58:06.794577293",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -144,12 +144,12 @@
                     [
                         "ABO_EVIDENCE",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:37:07.22658222",
+        "timestamp": "2026-11-13T07:57:16.96149656",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

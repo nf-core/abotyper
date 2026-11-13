@@ -14,7 +14,7 @@
                     [
                         "ABO_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ],
                 "tsv": [
@@ -29,12 +29,12 @@
                     [
                         "ABO_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:35:55.896503808",
+        "timestamp": "2026-11-13T07:56:02.017935288",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -55,12 +55,12 @@
                     [
                         "ABO_CLAIR2HAPLOTYPES",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:35:32.535835853",
+        "timestamp": "2026-11-13T07:55:38.3347556",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"

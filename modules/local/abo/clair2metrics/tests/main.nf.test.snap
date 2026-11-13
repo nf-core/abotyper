@@ -14,12 +14,12 @@
                     [
                         "ABO_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:36:19.526188226",
+        "timestamp": "2026-11-13T07:56:28.113493166",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
@@ -40,7 +40,7 @@
                     [
                         "ABO_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ],
                 "tsv": [
@@ -55,12 +55,12 @@
                     [
                         "ABO_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.2.0"
+                        "0.3.0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-12T20:36:42.695437748",
+        "timestamp": "2026-11-13T07:56:51.359452252",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.2"
