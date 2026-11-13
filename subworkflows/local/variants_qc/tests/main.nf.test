@@ -1,0 +1,67 @@
+nextflow_workflow {
+
+    name "Test Subworkflow VARIANTS_QC"
+    script "../main.nf"
+    workflow "VARIANTS_QC"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/variants_qc"
+    tag "bcftools/norm"
+    tag "bcftools/view"
+    tag "bcftools/query"
+    tag "abotyper"
+
+    test("variants_qc - Clair3 calls -> panel VCF and TSV") {
+
+        when {
+            workflow {
+                """
+                def d = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01_clair3.merge_output.vcf.gz", checkIfExists: true) ])
+                input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01_clair3.merge_output.vcf.gz.tbi", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.bed", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.panel_vcf.size() == 1 },
+                { assert workflow.out.panel_vcf_index.size() == 1 },
+                { assert workflow.out.panel_query_tsv.size() == 1 },
+                // VCF headers carry the command line and a date, so snapshot names, not contents
+                { assert snapshot(
+                    workflow.out.panel_vcf.collect { meta, f -> [ meta, file(f).name ] },
+                    workflow.out.panel_query_tsv.collect { meta, f -> [ meta, file(f).name ] }
+                ).match() }
+            )
+        }
+    }
+
+    test("variants_qc - Clair3 calls - stub") {
+
+        options "-stub"
+
+        when {
+            workflow {
+                """
+                def d = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                input[0] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01_clair3.merge_output.vcf.gz", checkIfExists: true) ])
+                input[1] = channel.of([ [ id:'ABO_AA_barcode01' ], file("\$d/ABO_AA_barcode01_clair3.merge_output.vcf.gz.tbi", checkIfExists: true) ])
+                input[2] = channel.value([ [ id:'NG_006669v2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ])
+                input[3] = file("$projectDir/assets/refs/abo_variant_panel.bed", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
+}

@@ -1,0 +1,69 @@
+{
+    "abotyper - ABO_AA_barcode01 - Clair3 gVCF -> metrics": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,cb819c9016bceacf9c17b3a059b7d153"
+                ]
+            ],
+            {
+                "versions_abotyper_core": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "abotyper-core",
+                        "0.3.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-13T07:56:28.113493166",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    },
+    "abotyper - ABO_AA_barcode01 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "abotyper-core",
+                        "0.3.0"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_abotyper_core": [
+                    [
+                        "ABO_CLAIR2METRICS",
+                        "abotyper-core",
+                        "0.3.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-13T07:56:51.359452252",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    }
+}

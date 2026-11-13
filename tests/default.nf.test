@@ -1,0 +1,51 @@
+nextflow_pipeline {
+
+    name "Test pipeline"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("-profile test") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            // stable_content: All files in ${params.outdir}/ with stable content
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            // typing_calls: every column of final_export.csv except #Reads (mean read depth), which differs by a
+            // read or two between the conda and container builds of Clair3 (see tests/.nftignore)
+            def export_rows = path("$outputDir/final_export.csv").text.readLines().collect { line ->
+                line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/, -1) as List
+            }
+            def keep_cols = (0..<export_rows[0].size()).findAll { i -> export_rows[0][i] != '#Reads' }
+            // One joined line per row: nf-test reads a bare empty string as a path and would md5 the working directory
+            def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
+            // ABO_run_qc.txt without the abotyper-core version line, so a package release does not change the snapshot
+            def run_qc = path("$outputDir/ABO_run_qc.txt").readLines().findAll { line -> !line.startsWith('abotyper-core:') }
+            // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple
+            // Nextflow versions. CLAIR3_DOWNLOADMODEL is left out: it runs only where the Clair3 container's packaged model is
+            // not available (conda), so whether it is listed depends on the profile, not on the pipeline.
+            def versions = removeNextflowVersion("$outputDir/pipeline_info/abotyper_software_mqc_versions.yml")
+                .findAll { process, tools -> process != 'CLAIR3_DOWNLOADMODEL' }
+            assert workflow.success
+            assertAll(
+                { assert snapshot(
+                    versions,
+                    // All stable path name, with a relative path
+                    stable_path,
+                    // All files with stable contents
+                    stable_content,
+                    // Genotype, phenotype and QC calls for every sample
+                    typing_calls,
+                    // Run QC report, version line removed
+                    run_qc
+                ).match() }
+            )
+        }
+    }
+}

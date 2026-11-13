@@ -1,0 +1,135 @@
+{
+    "minimap2_align_reads - one sample - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.coverage.txt:md5,5b5fbaf1b8a9645ab2e9d34891ae165a"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.flagstat:md5,67394650dbae96d1a4fcc70484822159"
+                    ]
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "NG_006669v2"
+                        },
+                        "NG_006669v2.fasta:md5,7473a18433a8dd10f8343d737513c70a"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "NG_006669v2"
+                        },
+                        "NG_006669v2.fasta.fai:md5,f65564ccba561d3707a9557072d01c2d"
+                    ]
+                ],
+                "bai": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.bam.bai:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "bam": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.bam:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "coverage": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.coverage.txt:md5,5b5fbaf1b8a9645ab2e9d34891ae165a"
+                    ]
+                ],
+                "fai": [
+                    [
+                        {
+                            "id": "NG_006669v2"
+                        },
+                        "NG_006669v2.fasta.fai:md5,f65564ccba561d3707a9557072d01c2d"
+                    ]
+                ],
+                "fasta": [
+                    [
+                        {
+                            "id": "NG_006669v2"
+                        },
+                        "NG_006669v2.fasta:md5,7473a18433a8dd10f8343d737513c70a"
+                    ]
+                ],
+                "flagstat": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.flagstat:md5,67394650dbae96d1a4fcc70484822159"
+                    ]
+                ],
+                "stats": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01",
+                            "single_end": true
+                        },
+                        "ABO_AA_barcode01.stats:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-16T14:36:15.578051627",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    }
+}

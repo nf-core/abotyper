@@ -1,0 +1,38 @@
+{
+    "variants_quantification - one sample - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.evidence_status.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.concordance.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "abo_variant_panel.bed:md5,d41d8cd98f00b204e9800998ecf8427e"
+            ]
+        ],
+        "timestamp": "2026-10-16T14:01:53.957077733",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    }
+}

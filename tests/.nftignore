@@ -1,0 +1,25 @@
+.DS_Store
+qc_and_preprocessing/multiqc/multiqc_data/multiqc.parquet
+qc_and_preprocessing/multiqc/multiqc_data/multiqc.log
+qc_and_preprocessing/multiqc/multiqc_data/multiqc_data.json
+qc_and_preprocessing/multiqc/multiqc_data/multiqc_sources.txt
+qc_and_preprocessing/multiqc/multiqc_data/multiqc_software_versions.txt
+qc_and_preprocessing/multiqc/multiqc_data/llms-full.txt
+qc_and_preprocessing/multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
+qc_and_preprocessing/multiqc/multiqc_report.html
+qc_and_preprocessing/nanoplot/*_NanoPlot-report.html
+ABO_results.log
+ABO_result.xlsx
+per_sample_processing/*/alignment/*.{bam,bam.bai}
+per_sample_processing/*/clair3/*.{gz,tbi}
+per_sample_processing/*/*.log.txt
+pipeline_info/*.{html,json,txt,yml,bed}
+# Read depths differ by a read or two between the conda and container builds of Clair3;
+# the typing calls from final_export.csv are snapshotted separately in tests/default.nf.test
+ABO_result.txt
+final_export.csv
+per_sample_processing/*/*.ABOPhenotype.txt
+per_sample_processing/*/clair2metrics/*.{AlignmentStatistics,concordance}.tsv
+per_sample_processing/*/combined/*.{ABOPhenotype.txt,concordance.tsv}
+# Its abotyper-core version line changes with every package release; the rest is snapshotted in tests/default.nf.test
+ABO_run_qc.txt

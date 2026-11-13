@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - conda-forge::numpy=2.5.3
+  - conda-forge::openpyxl=3.1.5
+  - conda-forge::pandas=3.0.5
+  - conda-forge::pip=26.2.2
+  - conda-forge::python=3.13.15
+  - conda-forge::pyyaml=6.0.3
+  - conda-forge::xlsxwriter=3.2.9
+  - pip:
+      - abotyper-core==0.3.0

@@ -3,14 +3,162 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.0dev - [date]
+> Versions below `v1.0.0` are retrospective labels for unreleased development milestones. They group the work of the merged pull requests in the git history (December 2024 – October 2026) and were never released; `v1.0.0` is the first release.
+
+## v1.1.0dev - [unreleased]
+
+### `Changed`
+
+- Clair3 model choice: `--clair3_model_url` downloads a model, else `--clair3_model_path` uses a local model folder, else the model packaged in the Clair3 container is used (`--clair3_model`, default `r1041_e82_400bps_sup_v500`). Under conda and apptainer, which have no packaged models, that model is downloaded by name. Before, the model was always downloaded.
+
+## v1.0.0 - [2026-11-07]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.
 
+The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons of the ABO gene (exons 2–7, aligned to the RefSeqGene record NG_006669.2 / LRG_792), as described in Mobegi et al. 2025, IJMS 26(12):5443. Positions, thresholds and allele associations come from an external variant panel aligned to the [ISBT ABO allele table](https://blooddatabase.isbtweb.org/system/ABO), so new variants are added by editing the panel and not the code.
+
+**Research use only.** The pipeline has not been validated for clinical diagnosis; see [docs/intended_use.md](docs/intended_use.md).
+
 ### `Added`
+
+- Two lines of evidence for every panel position: Clair3 and an independent BAM pileup (nf-core `samtools/mpileup`, abotyper-core `pileup2metrics`), combined and compared by `ABO_EVIDENCE`. Clair3 is the primary line, the pileup fills positions Clair3 had no evidence for, and a per-position concordance table and an evidence status file are written for every sample. The pipeline warns at run time when Clair3 produces no gVCF for a sample.
+- Clair3 is restricted to the ABO exon 2–7 region (`abo_clair3_region_bed`, `assets/refs/abo_clair3_region.bed`).
+- `ABO_result.xlsx` with three sheets: `Typing` (one row per sample: reads, read length, ABO-mapped reads, on-target %, depths, evidence source, typing result, phenotype, genotype, variants detected, QC), `Variants` (one column per panel position with the call and depth, such as `A 50% (215x)`; alleles that reach the marker's threshold are highlighted and low depth is coloured; the full per-base table stays in `ABO_result.txt`) and `About` (script, panel and ISBT-table versions and the research-use statement).
+- ISBT-style allele names (for example `ABO*A1.01/ABO*O.01.01`) that start from the reference allele of each family and are narrowed to the specific allele when non-primary panel markers fire. The panel records its own version and the ISBT allele-table version it was checked against (v9).
+- Variant panel v2.3.0, checked against ISBT ABO allele table v9 and the v1.1 PDF: every DNA change in the tables inside the exon 2-7 amplicon is a panel marker (135 markers; the 82 rare ones are marked `report: detected`, so they only get columns in `ABO_result.xlsx` and `ABO_result.txt` when a sample carries them), except the silent c.930G>A. The two exon 1 start-codon changes and the c.204-98_*3252del deletion are documented as structural or assay gaps, and abotyper-core's `abo_isbt_v9_coverage.tsv` lists every change and where it is handled. Reference bases were verified and the background at the new positions in the reference runs is below 3.5%. Indel rows carry their own `search_window`, so neighbouring indel markers never read each other's calls. New markers c.542G>A (`onull_542`, ABO*O.06 / O.01.11 / O.01.75) and c.768C>A (`o1_768`, ABO*O.01.26) were confirmed in two independent replicate pairs of reference samples. c.539 and c.1054 now carry both ISBT alt bases (G>C / G>A and C>T / C>G).
+- QC and review flags: low-read A1 calls, A2 evidence gaps, disagreement between Clair3 and the BAM pileup at primary markers, primary positions that rest on the pileup alone, and a specific "No reads over ABO region (likely amplicon dropout)" flag in place of a reference-only call. Replicates of the same sample on different barcodes that disagree (genotype, A2 evidence or allele level) are marked in red, with a `ReplicateNote` recording each run's genotype and zygosity and possible allele dropout.
+- Run-level outputs: `ABO_run_qc.txt` and an `ABO_evidence_summary_mqc.tsv` table that is added to the MultiQC report.
+- `abotyper-aggregate --threads` for parallel parsing of large runs, and `--nanoplot-dir` to take library read counts from NanoPlot.
+- Intended-use statement ([docs/intended_use.md](docs/intended_use.md)), linked from the README and written into every output.
+- nf-test suite for the local modules and subworkflows, with small committed fixtures in `tests/fixtures/` and `tests/run_nf_tests.sh` for running them on Linux.
 
 ### `Fixed`
 
+- Clair3 failed with "Can't stage file … clair3_model_dir -- file does not exist" when the work directory was in cloud storage (for example AWS Batch with an `s3://` work directory), and every sample fell back to the BAM pileup alone, flagged REVIEW. The downloaded model directory was passed to `CLAIR3` as a string, which dropped the `s3://` scheme; it is now passed as a path.
+- The pipeline no longer writes into or reads back from `--outdir`. The per-sample files the final aggregation reads (phenotype, haplotype, evidence, coverage, samtools stats and flagstat) are staged into `ABO_SNPS2PHENO` as task inputs and arranged inside the task. Before, a rerun into an existing output directory reported the samples of earlier runs too, and the Typing-sheet read metrics were taken from published files that were never declared inputs, so they were lost when that publishing was turned off.
+- Controls are declared in a new optional samplesheet column, `control` (`negative` or `positive`), instead of being recognised by `NEG`/`POS` anywhere in the sample name, which treated any name containing them (for example `NEGASH01`) as a control and cleared its low-depth flags. `--negative-control-pattern` and `--positive-control-pattern` remain as opt-in fallbacks, off by default.
+- Every sample name that passes the samplesheet validation (no spaces) is reported. `abotyper-aggregate` only kept folder names that matched its own patterns, so names such as `patient-01` or `S1.r1` were missing from the results, and `X_barcode06_rep2` stopped the aggregation for every sample. A barcode is now read only from a trailing `_barcode<digits>`; any other name is reported whole.
+- The variant panel is validated when it is loaded: a value that is not a number, an integer field that is not a whole number, an unknown or misspelt key, a missing or duplicate `id` all stop the run with a message. Before, an unreadable coordinate silently fell back to the obsolete exon 6/7 coordinate and a misspelt threshold key was ignored. `abotyper-aggregate` also checks at start-up that the panel defines the 13 marker IDs it reads by name.
+- `abotyper-aggregate` exits with an error when any sample fails or an output cannot be written, after writing the outputs it can. A sample whose files could not be parsed was dropped from the tables with exit status 0; an unreadable haplotype table was read as "no phase data", and an unreadable evidence-status file now sends the sample to REVIEW instead of silently skipping the Clair3/BAM checks.
+- `abotyper-clair2haplotypes` sizes each haplotype by the depth of the allele it carries (`AD[GT]`); side 0 always used the reference depth, so `1|0` and `0|1` records gave different `PhaseConfidence` inputs. A marker with a search window (indel and homopolymer rows) is only credited with an indel of its own kind, never with a SNP at another marker's position (c.803G>C was also recorded at the c.804 markers).
+- Clair3 is retried once after a resource failure (for example running out of memory) before the sample falls back to the BAM pileup alone; `errorStrategy 'ignore'` had overridden the retry in `conf/base.config`.
+- The BAM pileup row of c.1061delC left the reference (C) column at 0, so a position filled from the BAM instead of Clair3 read as heterozygous whatever the deletion fraction.
+- The reference FASTA is stored as a regular file. It had been committed as a Git LFS pointer, which broke the pipeline for any checkout without LFS.
+- `ABO_SNPS2PHENO` stub runs create all declared outputs.
+- A1 and A2 subtypes follow the ISBT definitions: c.1061delC with a reference c.467 is named ABO*A2.06 and c.467C>T with a clearly absent c.1061delC (30 reads or more) is named ABO*A1.02, both flagged for review as rare alleles. c.907G>A and c.1032G>A are not part of any ISBT definition, so they are reported in the QC flags but no longer name or support an allele.
+- Ael alleles: c.804dupG and c.804delG are named ABO*AEL.01, ABO*AEL.08 (with c.467C>T) and ABO*AEL.03, with a review flag because Ael is a very weak or silent A. The BAM pileup now searches the whole 7-G homopolymer run (NG 24283-24289) for that indel, because the aligner anchors it on the base before the run or on its first G, outside the old +-2 bp window; the marker threshold is 25% because the run gives up to 13% deletion signal in reference runs. A1.02 and A2.06 review flags now give the read percentages that caused them.
+- Allele names are decided per haplotype when the Clair3 phasing is clean (two haplotypes covering at least 90% of the phased reads, every fired marker phased): each marker is given to the haplotype that carries it and counts as absent for the other. This stops the markers of an O allele renaming the A allele (A2.01 reported as A2) and names the two alleles of an O1/O1 sample separately. The sample falls back to pooled naming when the phasing is not clean, and `PhaseConfidence` says when the haplotypes decided the names.
+- Depth check for every sample (`Depth check` column in the `Typing` sheet, coloured red for very low or no data, orange for low): fewer than `--min-depth` reads at a primary position sends the sample to review. Samples marked `negative` in the samplesheet `control` column are negative controls, where few reads is the expected result (green) and reads above `--min-depth` are flagged as possible contamination; samples marked `positive` are positive controls, which need normal depth and fail with too few reads. Calls are never changed by the check.
+- Panel `associated_alleles` completed from ISBT v9 for every non-primary marker and six unsupported claims removed (c.297, c.722, c.742, c.907, c.1032, c.1054). Allele naming now also rules out any allele that is defined by a marker that was covered but did not fire, so a sample with the c.542G>A + c.646/681/771/829 cassette pattern is named ABO*O.01.11 and with c.106/188/189/220 added ABO*O.01.75, not the family name ABO*O.01.
+- Path parameters shipped in `assets/` no longer carry a hardcoded `default` in `nextflow_schema.json`; their defaults are set in `nextflow.config` from `${projectDir}`.
+- The pipeline test snapshots the typing calls from `final_export.csv` (every column except `#Reads`) instead of the md5 of the files that carry read depths, which differ by a read or two between the conda and container builds of Clair3 2.0.0 and failed the conda test. Genotypes, phenotypes and QC calls are identical under both.
+- Panel-filtered calls were published with a doubled dot (`<sample>.panel..vcf.gz`, `<sample>.panel..tsv`); they are now `<sample>.panel.vcf.gz` and `<sample>.panel.tsv`.
+- The Clair3 region BED (`--abo_clair3_region_bed`) is staged into the task as a file instead of being passed as a path in `ext.args`. On executors that do not share the launch directory (AWS Batch, other cloud and many HPC set-ups) Clair3 could not read it and, with `errorStrategy ignore`, every sample silently fell back to the BAM pileup. The nf-core `clair3` module is patched with an optional `bed` input for this.
+- The variant panel (`--abo_panel`) is staged into `ABO_GETABOSNPS` and `ABO_SNPS2PHENO` as a task input. Both read it through `ext.args` as a path in the launch directory, so on AWS Batch and other executors without that directory `abotyper-predict-phenotype` could not open the panel and no report was written.
+- New `conda_lock` profile (`-profile conda,conda_lock`) that installs the exact package builds of the nf-core modules with lock files (bcftools, samtools, MultiQC). The lock-file configs generated by nf-core tools (`conf/containers_conda_lock_files_{amd64,arm64}.config`) point at pixi `version: 6` locks that `conda create --file` cannot read, so environment creation failed when they were used; the MultiQC lock is also invalid YAML in nf-core/modules. `conda_lock` uses conda `@EXPLICIT` copies of the same locks (same package URLs and md5s) in `assets/conda-lock/`, through `conf/conda_lock_explicit_{amd64,arm64}.config`. The generated configs are left as nf-core tools makes them. See [Conda](docs/usage.md#conda).
+
+### `Changed`
+
+- The Python typing steps are the [abotyper-core](https://github.com/fmobegi/abotyper-core) package (0.3.0), released on its own to PyPI and Bioconda with its own tests (including golden-output tests on the pipeline's test samples), CLI and CI. The `abo/*` local modules install it from PyPI in their conda environment, use Seqera Containers (Wave) images built with `nf-core modules containers create`, call its `abotyper-*` commands and report the `abotyper-core` version; the scripts in `bin/` are removed. The package has one version for all its steps, which `ABO_run_qc.txt` and the About sheet report as `abotyper-core: <version>`; the pipeline test leaves that line out of its snapshot, so a new package release does not change the snapshot. Typing results are unchanged: the package reproduces the former `bin/` outputs byte for byte on the test samples. Standalone tools (`abotyper-rename-samples`, `abotyper-calibrate-panel`) come with the package.
+- The default variant panel is the one bundled with abotyper-core and versioned with it: `--abo_panel` is unset by default and stays as the override. `assets/refs/abo_variant_panel.yaml`, its `.csv` export and `abo_isbt_v9_coverage.tsv` are removed from the pipeline (they ship with the package).
+- The BAM pileup is the nf-core `samtools/mpileup` module (bgzipped output, read directly by `pileup2metrics`); the local `ABO_PILEUP` module is removed. Its options (`-a -B -d 0 -Q 7 -q 1`) are unchanged.
+- The sample name and barcode in the result tables are set from the samplesheet when it is read (`meta.sample_name`, `meta.barcode`) and passed to the typing step in its sample table, instead of being parsed from per-sample folder names. A new optional samplesheet column, `barcode`, sets the barcode directly; without it, names ending in `_barcode<NN>` are split as before.
+- README acknowledgements (Stem Cell Donors Australia, Eurobio-GenDx, PathWest and UWA) and a use-of-AI statement.
+- minimap2 is given an explicit platform preset, `-x map-ont`, set in `conf/modules.config` from the new `--minimap2_preset` parameter (`map-ont`, `lr:hq`, `map-pb`, `map-hifi` or `sr`). minimap2 previously ran with no `-x` and used its built-in defaults. Only `map-ont` has been validated.
+- nf-core template updated to tools 4.2.2 (nf-schema 2.7.3, nft-utils 1.2.1, `manifest.diagram` set to the v2 metro map).
+- nf-core modules updated to the latest versions (bcftools 1.25, samtools/htslib 1.25, MultiQC 1.35, NanoPlot 1.48.0). The NanoPlot patch now only adds plain `.fastq`/`.fq` input. bcftools/query is no longer patched: the module's `.txt` table is published as `<sample>.panel.tsv`.
+- Unused parameters removed: `--abo_bed` (the BED is generated from the panel), `--renaming_file`/`--skip_renaming` (no process used them; renaming stays a standalone utility, now `abotyper-rename-samples` in abotyper-core) and `--logo`. MultiQC no longer uses the PathWest logo by default (`--multiqc_logo` is unset).
+- samtools stats and flagstat results are added to the MultiQC report.
+- `docs/usage.md` describes this pipeline's samplesheet (it was the template text for paired-end Illumina reads).
+- All text files are stored with LF line endings (`.gitattributes`).
+- The pipeline-specific nf-core/configs include (`pipeline/abotyper.config`) is enabled.
+- The Clair3 model download is a local module (`modules/local/clair3/downloadmodel`, `CLAIR3_DOWNLOADMODEL`) with its own wget 1.25.0 conda environment and Docker/Singularity containers, and reports its wget version. It ran without a container before, so it needed wget on the host.
+- The `abo/*` local modules pick their Singularity image under Apptainer too (they checked for `singularity` only, so Apptainer pulled the Docker image).
+- Metro map (`docs/images/nf-core-abotyperv2-metro-map.*`): the pileup line is labelled SAMtools pileup, minimap2 is written in lower case and the amplicon is labelled ~7 kb. The README image is a 2,400-pixel-wide JPEG so it loads quickly; the PNG and SVG keep the full resolution.
+
 ### `Dependencies`
 
-### `Deprecated`
+| Tool              | Version / source                                                         |
+| ----------------- | ------------------------------------------------------------------------ |
+| Nextflow          | `>=25.10.4`                                                              |
+| Clair3            | container `hkubal/clair3:v2.0.0` (PyTorch models downloaded at run time) |
+| samtools / htslib | 1.25 (alignment statistics, coverage and `samtools/mpileup`)             |
+| minimap2          | via the nf-core `minimap2/align` module                                  |
+| abotyper-core     | 0.3.0 (PyPI, Seqera Containers); the `abo/*` typing modules              |
+
+### `Known gaps / not yet done`
+
+- The large ABO deletion (c.204-98_*3252del) and the exon 1 start-codon variants (c.1A>G, c.2T>C) are documented as out-of-scope structural/assay gaps; no current engine scores them.
+- Samples with very few reads can still receive a genotype (a negative control with 3 ABO reads was typed); a minimum-depth gate is planned.
+- The A2 subtype markers c.907G>A and c.1032G>A are pipeline-defined background markers; ISBT table v9 does not list them as allele-defining.
+
+## v0.10.0dev - [2026-10-15]
+
+Pull requests #40, #43, #44, #45.
+
+- A1/A2 aggregation logic streamlined and an A1/A2 zygosity fix.
+- FastQC replaced by NanoPlot for long-read QC; `_NanoStats.txt` is published and the NanoPlot module patched.
+- Modules config and Python scripts updated; reference files housekeeping; README and metro map refreshed.
+
+## v0.9.0dev - [2026-09-15]
+
+Pull requests #33–#35, #37–#39. The move to the full-length reference and the Clair3 call path.
+
+- Full-length ABO reference (NG_006669.2) and the ISBT ABO allele table v9 adopted as the reference data; `schema_input.json` updated.
+- Clair3 replaces HAPLOSCAN: Clair3 gVCF metrics and bcftools panel filtering wired into `VARIANTS_QUANTIFICATION`; new `ABO_PANEL2BED` module (with a fix for unpadded indel and homopolymer BED intervals); bcftools modules added; final audit of the change-over.
+- Fix for an A2.01 subtype miscall; `bin/` documentation tidied; pipeline configuration gaps closed.
+- The real ABO reference FASTA added (stored in Git LFS at this stage; reversed in v1.0.0).
+
+## v0.8.0dev - [2026-07-30]
+
+Pull request #31.
+
+- nf-core template sync to tools 4.1.0, with post-lint fixes to the utils subworkflow.
+- Biocontainers replaced by Seqera containers for the HAPLOSCAN module.
+
+## v0.7.0dev - [2026-05-26]
+
+Pull requests #25 and #27.
+
+- nf-core template syncs to tools 4.0.0 and 4.0.2.
+- Final fine-tuning of A1/A2 subtyping; introductory text added to the MultiQC configuration.
+
+## v0.6.0dev - [2026-04-02]
+
+Pull requests #20, #21 and #23.
+
+- nf-core template syncs (tools 3.4.1 and 3.5.2); version reporting migrated to topic channels in the local modules.
+- Pre-commit fixes and lint clean-up; unused positions removed from `aggregate_abo_reports.py`; changelog, README and RO-Crate metadata updated.
+
+## v0.5.0dev - [2025-09-03]
+
+Pull request #13.
+
+- Schema update and release lint; test-data paths fixed; review comments addressed.
+- MultiQC configuration consolidated; containers added to local modules; Python version updated for the mpileup statistics module.
+
+## v0.4.0dev - [2025-08-14]
+
+Pull requests #5, #7, #10 and #11. Release candidate hardening.
+
+- Modules reworked to avoid aliasing; Python scripts upgraded and example data added.
+- Docker and Singularity profiles finalised; MultiQC report customised and pinned to 1.28 for broader AVX CPU compatibility.
+- Test and debug checks, lint fixes and pre-commit formatting before the first release candidate.
+
+## v0.3.0dev - [2025-07-30]
+
+Pull requests #3 and #4.
+
+- Adopted the nf-core pipeline template (sync from tools 3.2.1 to 3.3.2) with merge fixes and pre-lint clean-up.
+
+## v0.2.0dev - [2025-04-24]
+
+The first working analysis pipeline, built as a dual exon 6 / exon 7 mini-amplicon design.
+
+- Alignment and BAM-statistics modules, then mpileup, mpileup statistics, phenotype/genotype modules and an aggregation script.
+- A1/A2/A3 subtyping, a fix for mpileup computations, accurate capture of OB blood types, and the aggregation process finalised in the workflow.
+- First nf-core template update (tools 3.2.1).
+
+## v0.1.0dev - [2024-12-05]
+
+- Repository created with the README and first modules (December 2024); project logo and metro map followed (January–February 2025).

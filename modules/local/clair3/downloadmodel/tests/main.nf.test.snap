@@ -1,0 +1,39 @@
+{
+    "clair3 model url - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        "full_alignment.pt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "pileup.pt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CLAIR3_DOWNLOADMODEL",
+                        "wget",
+                        "1.25.0"
+                    ]
+                ],
+                "model_dir": [
+                    [
+                        "full_alignment.pt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "pileup.pt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_wget": [
+                    [
+                        "CLAIR3_DOWNLOADMODEL",
+                        "wget",
+                        "1.25.0"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-07T18:04:51.705116084",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.2"
+        }
+    }
+}

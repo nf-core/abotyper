@@ -1,0 +1,21 @@
+Changes in component 'nf-core/nanoplot'
+Changes in 'nanoplot/main.nf':
+--- modules/nf-core/nanoplot/main.nf
++++ modules/nf-core/nanoplot/main.nf
+@@ -24,7 +24,8 @@
+ 
+     script:
+     def args = task.ext.args ?: ''
+-    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz")) ? "--fastq ${ontfile}" :
++    def input_file = ("$ontfile".endsWith(".fastq.gz") || "$ontfile".endsWith(".fq.gz") ||
++                      "$ontfile".endsWith(".fastq")    || "$ontfile".endsWith(".fq")) ? "--fastq ${ontfile}" :
+         ("$ontfile".endsWith(".txt")) ? "--summary ${ontfile}" : ''
+     """
+     NanoPlot \\
+
+'modules/nf-core/nanoplot/environment.yml' is unchanged
+'modules/nf-core/nanoplot/meta.yml' is unchanged
+'modules/nf-core/nanoplot/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/nanoplot/tests/tags.yaml' is unchanged
+'modules/nf-core/nanoplot/tests/main.nf.test' is unchanged
+************************************************************
