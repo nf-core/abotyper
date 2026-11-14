@@ -119,7 +119,7 @@ Off by default. With `--filter_reads`, [chopper](https://github.com/wdecoster/ch
 
 ### Development containers
 
-On this development branch, `ABOTYPERCORE_READTYPER` and `ABOTYPERCORE_AGGREGATE` use abotyper-core 0.4.0.dev2, which is on TestPyPI only. With `-profile conda` their environments install it with pip. With Docker or Podman, build the image once:
+On this development branch, all `ABOTYPERCORE_*` modules use abotyper-core 0.4.0.dev2, which is on TestPyPI only. With `-profile conda` their environments install it with pip. With Docker or Podman, build the image once:
 
 ```bash
 docker build -t abotyper.local/abotyper-core:0.4.0.dev2 -f assets/dev/Dockerfile.abotyper-core-dev .

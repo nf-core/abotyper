@@ -14,9 +14,8 @@ process ABOTYPERCORE_PREDICTPHENOTYPE {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518'}"
+    // development image (abotyper-core 0.4.0.dev2, TestPyPI): see ABOTYPERCORE_READTYPER
+    container "abotyper.local/abotyper-core:0.4.0.dev2"
 
     input:
     tuple val(meta), path(variants_freq), path(coverage)

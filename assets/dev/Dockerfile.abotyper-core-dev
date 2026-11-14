@@ -1,5 +1,5 @@
 # Development image for the read-level typing branch: abotyper-core 0.4.0.dev2 is on TestPyPI only, so there is no
-# Seqera Containers image yet. ABOTYPERCORE_READTYPER and ABOTYPERCORE_AGGREGATE use this tag under docker/podman:
+# Seqera Containers image yet. Every ABOTYPERCORE_* module uses this tag under docker/podman:
 #
 #   docker build -t abotyper.local/abotyper-core:0.4.0.dev2 -f assets/dev/Dockerfile.abotyper-core-dev .
 #
