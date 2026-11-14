@@ -31,6 +31,12 @@
                 "pattern": "^([Bb]arcode)?\\d+$",
                 "errorMessage": "barcode must be empty, a number (07) or barcode<number> (barcode07)",
                 "meta": ["barcode"]
+            },
+            "expected": {
+                "type": "string",
+                "pattern": "^((A|B|O){2}|ABO\*[^/\s]+/ABO\*[^/\s]+)$",
+                "errorMessage": "expected must be empty, a genotype class (AO, BB, ...) or an ISBT allele pair (ABO*A1.01/ABO*O.01.01); it is the genotype a positive control must type as",
+                "meta": ["expected"]
             }
         },
         "required": ["sample", "fastq_1"]

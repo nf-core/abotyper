@@ -9,15 +9,20 @@
     Scores primary and named-marker calls per the panel's thresholds, resolves
     Phenotype/Genotype/ExtendedGenotype, and writes the pipeline's final output:
     ABO_result.txt/.xlsx and final_export.csv. Runs once per pipeline run, not per sample.
+
+    With read-level typing (ABOTYPERCORE_READTYPER), the samples table also names each sample's
+    *.ReadTyping.tsv and *.ReadTypingHaplotypes.tsv. The read-level call is then the primary call and the
+    per-position call (when it ran: --clair3_mode) the second line of evidence; disagreements go to REVIEW.
+    Also written then: ABO_novel_variants.tsv (coding variants not in the ISBT table, per haplotype) and
+    ABO_readtyping_mqc.tsv (MultiQC table).
 */
 process ABOTYPERCORE_AGGREGATE {
     tag "COMPILING ABO RESULTS"
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518'}"
+    // development image (abotyper-core 0.4.0.dev2, TestPyPI): see ABOTYPERCORE_READTYPER
+    container "abotyper.local/abotyper-core:0.4.0.dev2"
 
     input:
     path sample_files, stageAs: 'sample_files/*'
@@ -31,6 +36,8 @@ process ABOTYPERCORE_AGGREGATE {
     path "final_export.csv", emit: csv
     path "ABO_run_qc.txt", emit: qc, optional: true
     path "ABO_evidence_summary_mqc.tsv", emit: mqc, optional: true
+    path "ABO_readtyping_mqc.tsv", emit: readtyping_mqc, optional: true
+    path "ABO_novel_variants.tsv", emit: novel_variants, optional: true
     tuple val("${task.process}"), val('abotyper-core'), eval('python3 -c "import abotyper_core; print(abotyper_core.__version__)"'), emit: versions_abotyper_core, topic: versions
 
     when:
@@ -56,5 +63,7 @@ process ABOTYPERCORE_AGGREGATE {
     touch ABO_result.xlsx
     touch ABO_run_qc.txt
     touch ABO_evidence_summary_mqc.tsv
+    touch ABO_readtyping_mqc.tsv
+    touch ABO_novel_variants.tsv
     """
 }

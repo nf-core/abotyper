@@ -1,0 +1,2 @@
+sample	reads_aligned	reads_typed	allele_1	allele_2	genotype	phenotype	status	loglik	margin	alt_pair	tied_pairs	reads_a_b	minor_allele_share	unexplained_share	chimera_share	third_allele	novel_variants	haplotype_mismatches	flags
+ABO_AA_barcode01	92	92	ABO*A1.01	ABO*A2.01	AA	A1	PASS	-1254.81	49.11	ABO*A1.01/ABO*O.03	1	45/47	0.489	0.0	0.0				

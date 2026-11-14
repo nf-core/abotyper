@@ -120,7 +120,8 @@ workflow PIPELINE_INITIALISATION {
                 def control = meta.control ?: ''
                 // sample name and barcode reported in the result tables (see sampleNameAndBarcode)
                 def names   = sampleNameAndBarcode(meta.id, meta.barcode)
-                def extra   = [ control:control, sample_name:names.sample_name, barcode:names.barcode ]
+                def extra   = [ control:control, sample_name:names.sample_name, barcode:names.barcode,
+                                expected:(meta.expected ?: '') ]
                 // Nanopore reads: one FASTQ per row, single-end
                 return [ meta.id, meta + extra + [ single_end:true ], [ fastq_1 ] ]
         }

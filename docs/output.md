@@ -17,6 +17,8 @@ OUTDIR/
 ├── ABO_results.log
 ├── ABO_run_qc.txt
 ├── ABO_evidence_summary_mqc.tsv
+├── ABO_readtyping_mqc.tsv
+├── ABO_novel_variants.tsv
 ├── final_export.csv
 ├── per_sample_processing
 │   └── SAMPLE1_barcode01
@@ -30,6 +32,9 @@ OUTDIR/
 │       │   ├── SAMPLE1_barcode01_clair3.merge_output.gvcf.gz
 │       │   ├── SAMPLE1_barcode01_clair3.merge_output.vcf.gz
 │       │   └── SAMPLE1_barcode01_clair3.phased_merge_output.vcf.gz
+│       ├── read_typing
+│       │   ├── SAMPLE1_barcode01.ReadTyping.tsv
+│       │   └── SAMPLE1_barcode01.ReadTypingHaplotypes.tsv
 │       ├── clair2metrics
 │       │   ├── SAMPLE1_barcode01.AlignmentStatistics.tsv
 │       │   ├── SAMPLE1_barcode01.Haplotypes.tsv
@@ -71,7 +76,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [NanoPlot](#nanoplot) – Raw long-read quality control
 - [Alignment and alignment statistics](#alignment-and-alignment-statistics) – minimap2 alignment to the ABO reference, with samtools coverage, flagstat and stats
-- [Variant calling and evidence](#variant-calling-and-evidence) – Clair3 calls and phasing, the BAM pileup, and both converted into per-position evidence
+- [Read-level typing](#read-level-typing) – The ISBT allele pair that best explains every read, with a consensus per haplotype
+- [Variant calling and evidence](#variant-calling-and-evidence) – Clair3 calls and phasing, the BAM pileup, and both converted into per-position evidence (for the samples `--clair3_mode` selects)
 - [ABO typing](#abo-typing) – Per-sample phenotype prediction and the run's result tables (abotyper-core)
 - [MultiQC](#multiqc) – Aggregate report describing results and QC from the whole pipeline
 
@@ -103,6 +109,19 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 [minimap2](https://github.com/lh3/minimap2) aligns the Nanopore reads to the single combined ABO reference (`--minimap2_preset`, `map-ont` by default). The [samtools](http://www.htslib.org/) coverage, flagstat and stats files feed the read and depth metrics of the `Typing` sheet and the MultiQC report.
 
+### Read-level typing
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `per_sample_processing/<sample>/read_typing/`
+  - `<sample>.ReadTyping.tsv`: one row: the two ISBT alleles, genotype and phenotype, status (PASS, REVIEW or NOCALL), reads aligned and informative, likelihood margin and the next-best pair, allele balance, the share of foreign reads (a third haplotype) and of chimeras, novel coding variants, known sites where a haplotype differs from its allele, and the flags behind a REVIEW.
+  - `<sample>.ReadTypingHaplotypes.tsv`: one row per haplotype: its allele and reads, the ISBT alleles its consensus matches exactly, the nearest allele and the number of mismatches, the known sites where it differs from its allele, and novel coding variants.
+
+</details>
+
+`abotyper-readtyper` (`ABOTYPERCORE_READTYPER`) runs on every sample. Each long read spans the amplicon, so each read is a haplotype: the reads are scored against every ISBT allele and the pair that best explains all of them is called. It needs at least 5 informative reads, and sends a sample to REVIEW on a small margin, a skewed allele balance, foreign reads (possible contamination), an excess of chimeric reads, a novel variant, or a haplotype that differs from its ISBT allele at a known site (possible new allele). Its call is the primary call in the result tables.
+
 ### Variant calling and evidence
 
 <details markdown="1">
@@ -124,7 +143,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 </details>
 
-Clair3 (`--gvcf --enable_phasing`, restricted to the ABO exon 2-7 region) calls small variants from the aligned BAM. `abotyper-clair2metrics` and `abotyper-clair2haplotypes` (modules `ABOTYPERCORE_CLAIR2METRICS` and `ABOTYPERCORE_CLAIR2HAPLOTYPES`) convert its gVCF and phased VCF into per-position frequencies and a haplotype table. An independent pileup of the BAM (nf-core `samtools/mpileup`) is the second line of evidence: `abotyper-pileup2metrics` (`ABOTYPERCORE_PILEUP2METRICS`) combines the two, fills positions Clair3 had no evidence for, and records where they disagree.
+These files exist for the samples `--clair3_mode` sends to the per-position caller (every sample by default). Clair3 (`--gvcf --enable_phasing`, restricted to the ABO exon 2-7 region) calls small variants from the aligned BAM. `abotyper-clair2metrics` and `abotyper-clair2haplotypes` (modules `ABOTYPERCORE_CLAIR2METRICS` and `ABOTYPERCORE_CLAIR2HAPLOTYPES`) convert its gVCF and phased VCF into per-position frequencies and a haplotype table. An independent pileup of the BAM (nf-core `samtools/mpileup`) is the second line of evidence: `abotyper-pileup2metrics` (`ABOTYPERCORE_PILEUP2METRICS`) combines the two, fills positions Clair3 had no evidence for, and records where they disagree.
 
 ### ABO typing
 
@@ -140,11 +159,13 @@ Clair3 (`--gvcf --enable_phasing`, restricted to the ABO exon 2-7 region) calls 
   - `final_export.csv`: the typing results for laboratory information systems.
   - `ABO_run_qc.txt`: run-level QC summary.
   - `ABO_evidence_summary_mqc.tsv`: per-sample evidence summary, also shown in the MultiQC report.
+  - `ABO_readtyping_mqc.tsv`: per-sample read-level typing (call, status, margin, allele balance, foreign and chimeric reads, primary method and method agreement), also shown in the MultiQC report.
+  - `ABO_novel_variants.tsv`: every haplotype in the run with a coding variant not in the ISBT table (sample, haplotype, allele, reads, variants, nearest ISBT allele), for confirmation, for example by Sanger sequencing.
   - `ABO_results.log`: the log of the aggregation.
 
 </details>
 
-The typing steps come from the [abotyper-core](https://github.com/fmobegi/abotyper-core) package. They score the panel positions against the panel's thresholds, resolve phenotype, genotype and ISBT-style allele names (per haplotype when the Clair3 phasing is clean), and add the depth, evidence, control and replicate checks that decide each sample's QC status (PASS or REVIEW).
+The typing steps come from the [abotyper-core](https://github.com/fmobegi/abotyper-core) package. The read-level call is the primary call. Where the per-position caller also ran, the two are compared: `PrimaryMethod`, `MethodAgreement`, `PositionQC` and the read-level `Margin` and `AlleleBalance` are in the `Notes` columns of `ABO_result.txt` (the method columns also in the `Typing` sheet), and a disagreement sends the sample to REVIEW. A sample the read-level typer cannot call keeps the per-position call, with REVIEW. When a sample's foreign allele is called in another sample of the run, that sample is named as a possible source of contamination. The per-position caller scores the panel positions against the panel's thresholds, resolve phenotype, genotype and ISBT-style allele names (per haplotype when the Clair3 phasing is clean), and add the depth, evidence, control and replicate checks that decide each sample's QC status (PASS or REVIEW).
 
 ### MultiQC
 

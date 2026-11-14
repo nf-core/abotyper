@@ -17,11 +17,11 @@ You will need to create a samplesheet with information about the samples you wou
 ```
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,control,barcode
-SAMPLE1_barcode01,/path/to/SAMPLE1_barcode01.fastq.gz,,
-SAMPLE2,/path/to/SAMPLE2.fastq.gz,,02
-NTC,/path/to/NTC.fastq.gz,negative,95
-POSCTRL,/path/to/POSCTRL.fastq.gz,positive,96
+sample,fastq_1,control,barcode,expected
+SAMPLE1_barcode01,/path/to/SAMPLE1_barcode01.fastq.gz,,,
+SAMPLE2,/path/to/SAMPLE2.fastq.gz,,02,
+NTC,/path/to/NTC.fastq.gz,negative,95,
+POSCTRL,/path/to/POSCTRL.fastq.gz,positive,96,AO
 ```
 
 | Column    | Description                                                                                                                                                                                                                          |
@@ -30,6 +30,7 @@ POSCTRL,/path/to/POSCTRL.fastq.gz,positive,96
 | `fastq_1` | Path to the sample's demultiplexed Nanopore reads, with the extension `.fastq`, `.fq`, `.fastq.gz` or `.fq.gz`.                                                                                                                      |
 | `control` | Optional. `negative` for a no-template control, `positive` for a positive control, empty for a sample. Controls are only recognised from this column, never from the sample name.                                                    |
 | `barcode` | Optional. The barcode to report for the sample (`7`, `07` or `barcode07`). When it is given, the sample is reported under its full `sample` name; when it is empty, the barcode is taken from a trailing `_barcode<NN>` in the name. |
+| `expected` | Optional, for positive controls. The genotype the control must type as: a class (`AO`) or an ISBT allele pair (`ABO*A1.01/ABO*O.01.01`). A positive control typed as something else goes to REVIEW. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -39,7 +40,7 @@ Sample names may contain letters, digits, `.`, `_` and `-`, for example `ABO_AA_
 
 ### Controls
 
-A sample marked `negative` is expected to have few or no ABO reads: low depth is reported as the expected result, and reads above the depth threshold are flagged as possible contamination. A sample marked `positive` must reach normal depth, or it is flagged as a failed control. Every other sample is typed and checked in the same way, whatever its name.
+A sample marked `negative` is expected to have few or no ABO reads: low depth is reported as the expected result, and reads above the depth threshold are flagged as possible contamination. A sample marked `positive` must reach normal depth, or it is flagged as a failed control; with an `expected` genotype it must also type as that genotype. Every other sample is typed and checked in the same way, whatever its name.
 
 ### Multiple runs of the same sample
 
@@ -94,6 +95,35 @@ outdir: './results/'
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+### Typing methods (`--clair3_mode`)
+
+Every sample is typed from its BAM in up to two ways:
+
+- **Read-level typing** (`abotyper-readtyper`, the primary call): each read covers the whole exon 2-7 amplicon, so it is one haplotype. Every read is scored against every ISBT ABO allele and the pair that best explains all reads is called, with its likelihood margin, allele balance, foreign and chimeric reads, and a consensus per haplotype that confirms rare alleles and places novel variants on the right allele.
+- **Per-position typing** (Clair3 + BAM pileup, the second line of evidence): the panel positions are called and the panel's rules give the genotype.
+
+`--clair3_mode` decides which samples also get the per-position caller:
+
+| Value | Per-position caller runs on | Use |
+| --- | --- | --- |
+| `always` (default) | every sample | validation, and runs where both lines of evidence are wanted |
+| `review` | samples the read-level typer sends to REVIEW or cannot call | routine runs: Clair3 only where it is needed |
+| `off` | no sample | fastest; read-level typing only |
+
+Where both ran, a sample whose two calls disagree goes to REVIEW. The read-level files are in `per_sample_processing/<sample>/read_typing/` (see the [output documentation](output.md#read-level-typing)).
+
+### Read filtering (`--filter_reads`)
+
+Off by default. With `--filter_reads`, [chopper](https://github.com/wdecoster/chopper) drops reads shorter than `--min_read_length` (default 1000) or with a mean quality below `--min_read_quality` (default 10) before alignment. NanoPlot still reports the reads as sequenced.
+
+### Development containers
+
+On this development branch, `ABOTYPERCORE_READTYPER` and `ABOTYPERCORE_AGGREGATE` use abotyper-core 0.4.0.dev2, which is on TestPyPI only. With `-profile conda` their environments install it with pip. With Docker or Podman, build the image once:
+
+```bash
+docker build -t abotyper.local/abotyper-core:0.4.0.dev2 -f assets/dev/Dockerfile.abotyper-core-dev .
+```
 
 ### Clair3 model
 

@@ -1,0 +1,3 @@
+sample	haplotype	allele	reads	isbt_exact_matches	nearest_isbt	nearest_mismatches	sites_called	allele_mismatches	novel_variants	note
+ABO_AA_barcode01	1	ABO*A1.01	45	ABO*A1.01,ABO*AW.13	ABO*A1.01	0	134			
+ABO_AA_barcode01	2	ABO*A2.01	47	ABO*A2.01,ABO*AW.16	ABO*A2.01	0	134			

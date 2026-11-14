@@ -1,0 +1,70 @@
+nextflow_process {
+
+    name "Test Process ABOTYPERCORE_READTYPER"
+    script "../main.nf"
+    process "ABOTYPERCORE_READTYPER"
+
+    tag "modules"
+    tag "modules_local"
+    tag "abotypercore/readtyper"
+    tag "abotyper"
+
+    test("abotyper - ABO_AA_barcode01 - read-level typing") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.bam", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.bam.bai", checkIfExists: true)
+                ]
+                input[1] = [ [ id:'NG_006669.2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            def lines = path(process.out.tsv[0][1]).readLines()
+            def row   = [lines[0].split('\t'), lines[1].split('\t', -1)].transpose().collectEntries { k, v -> [k, v] }
+            assertAll(
+                { assert process.success },
+                { assert row.sample == 'ABO_AA_barcode01' },
+                { assert row.genotype == 'AA' },
+                { assert row.status in ['PASS', 'REVIEW'] },
+                { assert row.reads_typed.toInteger() >= 5 },
+                { assert path(process.out.haplotypes[0][1]).readLines().size() >= 2 },
+                { assert snapshot(
+                    process.out.tsv,
+                    process.out.haplotypes,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+    }
+
+    test("abotyper - ABO_AA_barcode01 - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'ABO_AA_barcode01' ],
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.bam", checkIfExists: true),
+                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.bam.bai", checkIfExists: true)
+                ]
+                input[1] = [ [ id:'NG_006669.2' ], file("$projectDir/assets/refs/NG_006669v2.fasta", checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

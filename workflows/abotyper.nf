@@ -3,6 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { CHOPPER                 } from '../modules/nf-core/chopper/main'
 include { MULTIQC                 } from '../modules/nf-core/multiqc'
 include { NANOPLOT                } from '../modules/nf-core/nanoplot/main'
 include { paramsSummaryMap        } from 'plugin/nf-schema'
@@ -15,6 +16,7 @@ include { methodsDescriptionText  } from '../subworkflows/local/utils_nfcore_abo
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { ABOTYPERCORE_READTYPER  } from '../modules/local/abotypercore/readtyper/main'
 include { MINIMAP2_ALIGN_READS    } from '../subworkflows/local/minimap2_align_reads'
 include { PREDICTABOPHENOTYPE     } from '../subworkflows/local/predictabophenotype'
 include { VARIANTS_QUANTIFICATION } from '../subworkflows/local/variants_quantification'
@@ -49,10 +51,19 @@ workflow ABOTYPER {
     ch_multiqc_files = ch_multiqc_files.mix(NANOPLOT.out.txt.map { _meta, txt -> txt })
 
     //
+    // MODULE: CHOPPER (--filter_reads): drop short and low-quality reads before alignment
+    //
+    ch_reads = ch_samplesheet
+    if (params.filter_reads) {
+        CHOPPER(ch_samplesheet, [])
+        ch_reads = CHOPPER.out.fastq
+    }
+
+    //
     // SUBWORKFLOW: MINIMAP2_ALIGN_READS
     //
     MINIMAP2_ALIGN_READS(
-        ch_samplesheet,
+        ch_reads,
         abo_reference_fasta,
         abo_reference_fai,
     )
@@ -61,12 +72,37 @@ workflow ABOTYPER {
         MINIMAP2_ALIGN_READS.out.flagstat.map { _meta, flagstat -> flagstat },
     )
 
+    ch_bam_bai = MINIMAP2_ALIGN_READS.out.bam.join(MINIMAP2_ALIGN_READS.out.bai)
+
+    //
+    // MODULE: ABOTYPERCORE_READTYPER - typing A, the primary call: every sample, from its reads
+    //
+    ABOTYPERCORE_READTYPER(
+        ch_bam_bai,
+        MINIMAP2_ALIGN_READS.out.fasta.first(),
+    )
+
+    //
+    // Typing B, the per-position caller (Clair3 + BAM pileup), for the samples --clair3_mode selects:
+    // always = every sample, review = samples the read-level typer did not PASS (REVIEW or NOCALL), off = none
+    //
+    if (params.clair3_mode == 'off') {
+        ch_position_input = channel.empty()
+    } else if (params.clair3_mode == 'review') {
+        ch_position_input = ch_bam_bai
+            .join(ABOTYPERCORE_READTYPER.out.tsv)
+            .filter { _meta, _bam, _bai, tsv -> readTypingStatus(tsv) != 'PASS' }
+            .map { meta, bam, bai, _tsv -> [meta, bam, bai] }
+    } else {
+        ch_position_input = ch_bam_bai
+    }
+
     //
     // SUBWORKFLOW: VARIANTS_QUANTIFICATION
     //
     VARIANTS_QUANTIFICATION(
-        MINIMAP2_ALIGN_READS.out.bam,
-        MINIMAP2_ALIGN_READS.out.bai,
+        ch_position_input.map { meta, bam, _bai -> [meta, bam] },
+        ch_position_input.map { meta, _bam, bai -> [meta, bai] },
         MINIMAP2_ALIGN_READS.out.fasta,
         MINIMAP2_ALIGN_READS.out.fai,
         clair3_model,
@@ -88,27 +124,24 @@ workflow ABOTYPER {
     // SUBWORKFLOW: PREDICTABOPHENOTYPE
     //
 
-    // Join metrics and coverage by metadata to ensure correct pairing
-    ch_prediction_input = VARIANTS_QUANTIFICATION.out.metrics
-        .join(MINIMAP2_ALIGN_READS.out.coverage)
-        .multiMap { meta, metrics, coverage ->
-            metrics: [meta, metrics]
-            coverage: [meta, coverage]
-        }
-
     PREDICTABOPHENOTYPE(
-        ch_prediction_input.metrics,
-        ch_prediction_input.coverage,
+        VARIANTS_QUANTIFICATION.out.metrics,
+        MINIMAP2_ALIGN_READS.out.coverage,
         VARIANTS_QUANTIFICATION.out.haplotypes,
         VARIANTS_QUANTIFICATION.out.evidence_status,
         VARIANTS_QUANTIFICATION.out.concordance,
         MINIMAP2_ALIGN_READS.out.stats,
         MINIMAP2_ALIGN_READS.out.flagstat,
+        ABOTYPERCORE_READTYPER.out.tsv,
+        ABOTYPERCORE_READTYPER.out.haplotypes,
         abo_panel,
     )
 
-    // Per-sample evidence summary (Clair3 + BAM pileup) as a MultiQC table
-    ch_multiqc_files = ch_multiqc_files.mix(PREDICTABOPHENOTYPE.out.evidence_summary)
+    // Per-sample evidence summary (Clair3 + BAM pileup) and read-level typing as MultiQC tables
+    ch_multiqc_files = ch_multiqc_files.mix(
+        PREDICTABOPHENOTYPE.out.evidence_summary,
+        PREDICTABOPHENOTYPE.out.readtyping_mqc,
+    )
 
     //
     // Collate and save software versions
@@ -179,3 +212,21 @@ workflow ABOTYPER {
     THE END
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// Status of a read-level call (PASS, REVIEW or NOCALL) from its one-row ReadTyping.tsv; NOCALL if unreadable
+def readTypingStatus(tsv) {
+    def lines = tsv.readLines()
+    if (lines.size() < 2) {
+        return 'NOCALL'
+    }
+    def header = lines[0].split('	') as List
+    def values = lines[1].split('	', -1) as List
+    def i = header.indexOf('status')
+    return (i >= 0 && i < values.size()) ? values[i] : 'NOCALL'
+}

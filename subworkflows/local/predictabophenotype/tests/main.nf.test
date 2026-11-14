@@ -31,7 +31,9 @@ nextflow_workflow {
                 input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
                 input[5] = channel.empty()
                 input[6] = channel.of([ meta, file("\$p/ABO_AA_barcode01.flagstat", checkIfExists: true) ])
-                input[7] = []  // panel bundled with abotyper-core
+                input[7] = channel.empty()  // no read-level typing
+                input[8] = channel.empty()
+                input[9] = []  // panel bundled with abotyper-core
                 """
             }
         }
@@ -44,6 +46,47 @@ nextflow_workflow {
                 { assert path(workflow.out.abo_results[0]).exists() },
                 { assert workflow.out.evidence_summary.size() == 1 },
                 { assert path(workflow.out.evidence_summary[0]).text.contains("ABO_AA") }
+            )
+        }
+    }
+
+    test("abo_phenotype_prediction - read-level typing only (--clair3_mode off)") {
+
+        when {
+            workflow {
+                """
+                def meta = [ id:'ABO_AA_barcode01' ]
+                def d    = "$projectDir/tests/fixtures/ABO_AA_barcode01"
+                def p    = "$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01/combined"
+                input[0] = channel.empty()   // no per-position typing
+                input[1] = channel.of([ meta, file("\$d/ABO_AA_barcode01.coverage.txt", checkIfExists: true) ])
+                input[2] = channel.empty()
+                input[3] = channel.empty()
+                input[4] = channel.empty()
+                input[5] = channel.empty()
+                input[6] = channel.of([ meta, file("\$p/ABO_AA_barcode01.flagstat", checkIfExists: true) ])
+                input[7] = channel.of([ meta, file("\$d/ABO_AA_barcode01.ReadTyping.tsv", checkIfExists: true) ])
+                input[8] = channel.of([ meta, file("\$d/ABO_AA_barcode01.ReadTypingHaplotypes.tsv", checkIfExists: true) ])
+                input[9] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def lines = path(workflow.out.abo_results[0]).readLines()
+            def hdr   = lines[1].split('\t') as List
+            def row   = lines[2].split('\t', -1) as List
+            def col   = { name -> row[hdr.indexOf(name)] }
+            assertAll(
+                { assert workflow.success },
+                { assert workflow.out.abo_results.size() == 1 },
+                // the read-level call is reported on its own, with its evidence columns
+                { assert col('Genotype') == 'AA' },
+                { assert col('PrimaryMethod') == 'read-level' },
+                { assert col('MethodAgreement') == 'position caller not run' },
+                { assert col('EvidenceBasis') == 'read-level only' },
+                { assert workflow.out.readtyping_mqc.size() == 1 },
+                { assert workflow.out.novel_variants.size() == 1 }
             )
         }
     }
@@ -65,7 +108,9 @@ nextflow_workflow {
                 input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
                 input[5] = channel.empty()
                 input[6] = channel.of([ meta, file("\$p/ABO_AA_barcode01.flagstat", checkIfExists: true) ])
-                input[7] = []  // panel bundled with abotyper-core
+                input[7] = channel.empty()  // no read-level typing
+                input[8] = channel.empty()
+                input[9] = []  // panel bundled with abotyper-core
                 """
             }
         }

@@ -1,0 +1,82 @@
+nextflow_pipeline {
+
+    name "Test pipeline - read-level typing"
+    script "../main.nf"
+    tag "pipeline"
+    tag "readtyping"
+
+    test("-profile test - --clair3_mode off: read-level typing only") {
+
+        when {
+            params {
+                outdir      = "$outputDir"
+                clair3_mode = 'off'
+            }
+        }
+
+        then {
+            def result = path("$outputDir/ABO_result.txt").readLines().collect { line -> line.split('\t', -1) as List }
+            def hdr    = result[1]
+            def rows   = result[2..-1]
+            def col    = { r, name -> r[hdr.indexOf(name)] }
+            assertAll(
+                { assert workflow.success },
+                // every test sample is typed, from its reads alone
+                { assert rows.size() == 10 },
+                { assert rows.every { r -> col(r, 'PrimaryMethod') == 'read-level' } },
+                { assert rows.every { r -> col(r, 'PositionQC') == 'not run' } },
+                // the genotype class is in every test sample's name (ABO_<class>..._barcodeNN)
+                { assert rows.every { r -> col(r, 'Genotype') == col(r, 'Sequencing_ID').replaceAll(/^ABO_|\d/, '').with { g ->
+                        g.toList().sort { c -> 'ABO'.indexOf(c) }.join('') } } },
+                // the per-position caller did not run; the read-level files sit in each sample's read_typing/
+                { assert !file("$outputDir/per_sample_processing/ABO_AA_barcode01/clair3").exists() },
+                { assert file("$outputDir/per_sample_processing/ABO_AA_barcode01/read_typing/ABO_AA_barcode01.ReadTyping.tsv").exists() },
+                { assert file("$outputDir/ABO_novel_variants.tsv").exists() },
+                { assert file("$outputDir/ABO_readtyping_mqc.tsv").exists() }
+            )
+        }
+    }
+
+    test("-profile test - --clair3_mode review, positive control with expected genotype, --filter_reads") {
+
+        when {
+            params {
+                def base = 'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/abotyper/abotyper'
+                def sheet = new File("$outputDir/samplesheet_review.csv")
+                sheet.parentFile.mkdirs()
+                sheet.text = [
+                    'sample,fastq_1,control,barcode,expected',
+                    "ABO_AO1_barcode03,${base}/ABO_AO1_barcode03.fastq.gz,,,",
+                    "ABO_O2O2_barcode10,${base}/ABO_O2O2_barcode10.fastq.gz,,,",
+                    "POS_BB,${base}/ABO_BB_barcode05.fastq.gz,positive,96,BB",
+                    "POS_WRONG,${base}/ABO_AA_barcode01.fastq.gz,positive,97,OO",
+                ].join('\n') + '\n'
+                input        = sheet.toString()
+                outdir       = "$outputDir"
+                clair3_mode  = 'review'
+                filter_reads = true
+            }
+        }
+
+        then {
+            def result = path("$outputDir/ABO_result.txt").readLines().collect { line -> line.split('\t', -1) as List }
+            def hdr    = result[1]
+            def row    = { name -> result.find { r -> r[1] == name } }
+            def col    = { r, name -> r[hdr.indexOf(name)] }
+            def read_status = { id ->
+                def lines = path("$outputDir/per_sample_processing/${id}/read_typing/${id}.ReadTyping.tsv").readLines()
+                lines[1].split('\t', -1)[lines[0].split('\t').toList().indexOf('status')]
+            }
+            assertAll(
+                { assert workflow.success },
+                // review mode: the per-position caller runs exactly on the samples the read-level typer did not PASS
+                { assert ['ABO_AO1_barcode03', 'ABO_O2O2_barcode10', 'POS_BB', 'POS_WRONG'].every { id ->
+                        file("$outputDir/per_sample_processing/${id}/clair3").exists() == (read_status(id) != 'PASS') } },
+                // a positive control typed as expected is confirmed; one typed otherwise goes to REVIEW
+                { assert col(row('POS_BB'), 'DepthCheck').startsWith('Positive control: expected BB') },
+                { assert col(row('POS_WRONG'), 'QCStatus') == 'REVIEW' },
+                { assert col(row('POS_WRONG'), 'QCFlags').contains('positive control: expected OO') }
+            )
+        }
+    }
+}

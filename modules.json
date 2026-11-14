@@ -20,6 +20,11 @@
                         "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
                         "installed_by": ["modules"]
                     },
+                    "chopper": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
                     "clair3": {
                         "branch": "master",
                         "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",

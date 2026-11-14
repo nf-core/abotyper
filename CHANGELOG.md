@@ -3,6 +3,18 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Development: read-level typing (branch `feat/readtyper-integration`)
+
+Not part of a release. Uses abotyper-core 0.4.0.dev2 (TestPyPI).
+
+### `Added`
+
+- Read-level typing (`abotyper-readtyper`, module `ABOTYPERCORE_READTYPER`) on every sample: the ISBT allele pair that best explains all reads, with likelihood margin, allele balance, foreign and chimeric reads, and a consensus per haplotype. It is the primary call; the per-position caller (Clair3 + BAM pileup) is the second line of evidence, and a disagreement sends the sample to REVIEW.
+- `--clair3_mode always|review|off`: which samples also get the per-position caller (`review`: only samples the read-level typer does not PASS).
+- `--filter_reads` (`--min_read_length`, `--min_read_quality`): optional read filter before alignment, with the nf-core `chopper` module.
+- Samplesheet column `expected`: the genotype a positive control must type as.
+- Per-sample read-level files in `per_sample_processing/<sample>/read_typing/`; run-level `ABO_novel_variants.tsv` and `ABO_readtyping_mqc.tsv` (MultiQC); evidence columns `PrimaryMethod`, `MethodAgreement`, `Margin`, `AlleleBalance` and `PositionQC`; possible contamination sources named from the other samples of the run.
+
 ## v1.0.0 - [unreleased]
 
 Initial release of nf-core/abotyper, created with the [nf-core](https://nf-co.re/) template.

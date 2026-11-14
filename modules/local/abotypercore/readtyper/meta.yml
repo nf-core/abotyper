@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABOTYPERCORE_READTYPER
+description: Read-level ABO typing - the ISBT allele pair that best explains every read of the amplicon, with QC and per-haplotype consensus
+keywords:
+  - abo
+  - blood group
+  - genotyping
+  - long reads
+  - haplotype
+tools:
+  - abotyper-core:
+      description: ABO blood group typing logic of nf-core/abotyper, as a Python package and command-line tools
+      homepage: https://github.com/fmobegi/abotyper-core
+      documentation: https://github.com/fmobegi/abotyper-core#readme
+      tool_dev_url: https://github.com/fmobegi/abotyper-core
+      licence:
+        - "MIT"
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information, e.g. [ id:'sample1' ]
+    - bam:
+        type: file
+        description: Reads aligned to NG_006669.2
+        pattern: "*.bam"
+        ontologies:
+          - edam: http://edamontology.org/format_2572 # BAM
+    - bai:
+        type: file
+        description: BAM index (staged with the BAM)
+        pattern: "*.bai"
+        ontologies: []
+  - - meta2:
+        type: map
+        description: Groovy Map containing reference information
+    - fasta:
+        type: file
+        description: NG_006669.2 FASTA the reads were aligned to
+        pattern: "*.{fa,fasta}"
+        ontologies:
+          - edam: http://edamontology.org/format_1929 # FASTA
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.ReadTyping.tsv":
+          type: file
+          description: One-row read-level call (alleles, genotype, phenotype, PASS/REVIEW/NOCALL, margin, allele balance, foreign and chimeric read shares, novel variants, haplotype mismatches, flags)
+          pattern: "*.ReadTyping.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  haplotypes:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.ReadTypingHaplotypes.tsv":
+          type: file
+          description: One row per haplotype (allele, reads, exact and nearest ISBT matches, known sites differing from the allele, novel coding variants)
+          pattern: "*.ReadTypingHaplotypes.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_abotyper_core:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - abotyper-core:
+          type: string
+          description: The name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - abotyper-core:
+          type: string
+          description: The name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"

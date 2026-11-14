@@ -130,6 +130,34 @@
                     "description": "minimap2 alignment preset (`-x`) for Oxford Nanopore reads.",
                     "help_text": "`map-ont` (default) for Oxford Nanopore reads, the platform the pipeline was validated on; `lr:hq` for high-accuracy Nanopore reads (Q20+). Clair3 runs with platform `ont` and an ONT model, so only Nanopore presets are offered.",
                     "fa_icon": "fas fa-sliders-h"
+                },
+                "clair3_mode": {
+                    "type": "string",
+                    "default": "always",
+                    "enum": ["always", "review", "off"],
+                    "description": "Which samples also get the per-position caller (Clair3 + BAM pileup), next to the read-level typer.",
+                    "help_text": "The read-level typer (abotyper-readtyper) types every sample and gives the primary call. The per-position caller is the second line of evidence: `always` runs it on every sample (validation; the default), `review` only on samples the read-level typer sends to REVIEW or cannot call, and `off` never (fastest). Where both ran, a disagreement sends the sample to REVIEW.",
+                    "fa_icon": "fas fa-code-branch"
+                },
+                "filter_reads": {
+                    "type": "boolean",
+                    "description": "Filter reads by length and quality (chopper) before alignment.",
+                    "help_text": "Off by default. With `--filter_reads`, reads shorter than `--min_read_length` or with mean quality below `--min_read_quality` are dropped before alignment. NanoPlot still reports the unfiltered reads.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "min_read_length": {
+                    "type": "integer",
+                    "default": 1000,
+                    "minimum": 0,
+                    "description": "Minimum read length kept by `--filter_reads`.",
+                    "fa_icon": "fas fa-ruler-horizontal"
+                },
+                "min_read_quality": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 0,
+                    "description": "Minimum mean read quality (Phred) kept by `--filter_reads`.",
+                    "fa_icon": "fas fa-star-half-alt"
                 }
             }
         },
