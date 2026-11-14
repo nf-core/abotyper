@@ -6,7 +6,9 @@
 # With -profile conda nothing needs building: the module environments install the same package with pip.
 # Once abotyper-core 0.4.0 is on Bioconda, both modules go back to Bioconda-built Seqera Containers images.
 FROM python:3.12-slim
-RUN pip install --no-cache-dir \
+# dependencies from PyPI first: TestPyPI's copies of pandas and numpy are not usable
+RUN pip install --no-cache-dir "numpy>=1.26" "pandas>=2.2" "pyyaml>=6.0" "xlsxwriter>=3.1" "openpyxl>=3.1" \
+    && pip install --no-cache-dir \
         --index-url https://test.pypi.org/simple/ \
         --extra-index-url https://pypi.org/simple/ \
         abotyper-core==0.4.0.dev2 \
