@@ -7,12 +7,12 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:42:06.680884442",
+        "timestamp": "2026-11-15T21:30:15.740230297",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
@@ -28,7 +28,7 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ],
                 "bed": [
@@ -38,12 +38,12 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:42:32.689269449",
+        "timestamp": "2026-11-15T21:30:47.350382978",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

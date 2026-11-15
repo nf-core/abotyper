@@ -8,18 +8,30 @@
                 "1": [
                     "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
+                "2": [
+                    "ABO_readtyping_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "3": [
+                    "ABO_novel_variants.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
                 "abo_results": [
                     "ABO_result.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
                 "evidence_summary": [
                     "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "novel_variants": [
+                    "ABO_novel_variants.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "readtyping_mqc": [
+                    "ABO_readtyping_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ]
             }
         ],
-        "timestamp": "2026-10-16T13:37:43.415356149",
+        "timestamp": "2026-11-15T21:38:03.484460733",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.2"
+            "nextflow": "26.10.6"
         }
     }
 }

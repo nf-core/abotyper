@@ -22,7 +22,7 @@
                     [
                         "ABOTYPERCORE_PREDICTPHENOTYPE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ],
                 "log": [
@@ -45,12 +45,12 @@
                     [
                         "ABOTYPERCORE_PREDICTPHENOTYPE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:44:48.808762556",
+        "timestamp": "2026-11-15T21:33:37.076811205",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
@@ -71,12 +71,12 @@
                     [
                         "ABOTYPERCORE_PREDICTPHENOTYPE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:44:22.762418772",
+        "timestamp": "2026-11-15T21:33:03.296998387",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

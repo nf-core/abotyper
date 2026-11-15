@@ -1,0 +1,93 @@
+{
+    "abotyper - ABO_AA_barcode01 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.ReadTyping.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.ReadTypingHaplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        "ABOTYPERCORE_READTYPER",
+                        "abotyper-core",
+                        "0.4.0.dev3"
+                    ]
+                ],
+                "haplotypes": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.ReadTypingHaplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AA_barcode01"
+                        },
+                        "ABO_AA_barcode01.ReadTyping.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_abotyper_core": [
+                    [
+                        "ABOTYPERCORE_READTYPER",
+                        "abotyper-core",
+                        "0.4.0.dev3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-15T21:34:45.600483584",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    },
+    "abotyper - ABO_AA_barcode01 - read-level typing": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.ReadTyping.tsv:md5,6edf301083993b038e1f6481154a2eb2"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AA_barcode01"
+                    },
+                    "ABO_AA_barcode01.ReadTypingHaplotypes.tsv:md5,52d2f3ba4a96fa20657fa22a132bf2eb"
+                ]
+            ],
+            {
+                "versions_abotyper_core": [
+                    [
+                        "ABOTYPERCORE_READTYPER",
+                        "abotyper-core",
+                        "0.4.0.dev3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-15T21:34:13.326387688",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    }
+}

@@ -9,12 +9,12 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:37:49.247135211",
+        "timestamp": "2026-11-15T21:24:44.067035278",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
@@ -42,10 +42,16 @@
                     "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
                 "6": [
+                    "ABO_readtyping_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "7": [
+                    "ABO_novel_variants.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "8": [
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ],
                 "csv": [
@@ -57,8 +63,14 @@
                 "mqc": [
                     "ABO_evidence_summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
+                "novel_variants": [
+                    "ABO_novel_variants.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
                 "qc": [
                     "ABO_run_qc.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "readtyping_mqc": [
+                    "ABO_readtyping_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                 ],
                 "txt": [
                     "ABO_result.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
@@ -67,7 +79,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ],
                 "xls": [
@@ -75,7 +87,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:39:52.994250766",
+        "timestamp": "2026-11-15T21:27:30.063847425",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

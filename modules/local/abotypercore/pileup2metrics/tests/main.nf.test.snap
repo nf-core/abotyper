@@ -38,7 +38,7 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ],
                 "concordance": [
@@ -77,12 +77,12 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:43:54.291900437",
+        "timestamp": "2026-11-15T21:32:28.260987495",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
@@ -144,12 +144,12 @@
                     [
                         "ABOTYPERCORE_PILEUP2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0.dev3"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:43:00.154507545",
+        "timestamp": "2026-11-15T21:31:21.374514482",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
