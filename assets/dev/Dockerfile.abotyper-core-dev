@@ -1,7 +1,7 @@
-# Development image for the read-level typing branch: abotyper-core 0.4.0.dev2 is on TestPyPI only, so there is no
+# Development image for the read-level typing branch: abotyper-core 0.4.0.dev3 is on TestPyPI only, so there is no
 # Seqera Containers image yet. Every ABOTYPERCORE_* module uses this tag under docker/podman:
 #
-#   docker build -t abotyper.local/abotyper-core:0.4.0.dev2 -f assets/dev/Dockerfile.abotyper-core-dev .
+#   docker build -t abotyper.local/abotyper-core:0.4.0.dev3 -f assets/dev/Dockerfile.abotyper-core-dev .
 #
 # With -profile conda nothing needs building: the module environments install the same package with pip.
 # Once abotyper-core 0.4.0 is on Bioconda, the modules go back to Bioconda-built Seqera Containers images.
@@ -11,6 +11,6 @@ RUN pip install --no-cache-dir "numpy>=1.26" "pandas>=2.2" "pyyaml>=6.0" "xlsxwr
     && pip install --no-cache-dir \
         --index-url https://test.pypi.org/simple/ \
         --extra-index-url https://pypi.org/simple/ \
-        abotyper-core==0.4.0.dev2 \
+        abotyper-core==0.4.0.dev3 \
     && apt-get update && apt-get install -y --no-install-recommends procps \
     && rm -rf /var/lib/apt/lists/*

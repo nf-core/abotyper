@@ -22,8 +22,8 @@ process ABOTYPERCORE_PILEUP2METRICS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // development image (abotyper-core 0.4.0.dev2, TestPyPI): see ABOTYPERCORE_READTYPER
-    container "abotyper.local/abotyper-core:0.4.0.dev2"
+    // development image (abotyper-core 0.4.0.dev3, TestPyPI): see ABOTYPERCORE_READTYPER
+    container "abotyper.local/abotyper-core:0.4.0.dev3"
 
     input:
     // staged in clair3/ so its name (<id>.AlignmentStatistics.tsv) does not collide with the

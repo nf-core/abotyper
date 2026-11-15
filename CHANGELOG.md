@@ -5,7 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Development: read-level typing (branch `feat/readtyper-integration`)
 
-Not part of a release. Every `abotypercore/*` module uses abotyper-core 0.4.0.dev2 (TestPyPI; dependencies from conda-forge).
+Not part of a release. Every `abotypercore/*` module uses abotyper-core 0.4.0.dev3 (TestPyPI; dependencies from conda-forge).
 
 ### `Added`
 

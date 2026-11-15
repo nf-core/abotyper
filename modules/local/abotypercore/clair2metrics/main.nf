@@ -17,8 +17,8 @@ process ABOTYPERCORE_CLAIR2METRICS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // development image (abotyper-core 0.4.0.dev2, TestPyPI): see ABOTYPERCORE_READTYPER
-    container "abotyper.local/abotyper-core:0.4.0.dev2"
+    // development image (abotyper-core 0.4.0.dev3, TestPyPI): see ABOTYPERCORE_READTYPER
+    container "abotyper.local/abotyper-core:0.4.0.dev3"
 
     input:
     tuple val(meta), path(gvcf)

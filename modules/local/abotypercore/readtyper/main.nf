@@ -16,9 +16,9 @@ process ABOTYPERCORE_READTYPER {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // development image: abotyper-core 0.4.0.dev2 is not on Bioconda yet, so there is no Seqera Containers image.
+    // development image: abotyper-core 0.4.0.dev3 is not on Bioconda yet, so there is no Seqera Containers image.
     // Build it with assets/dev/Dockerfile.abotyper-core-dev (see docs/usage.md), or run with -profile conda.
-    container "abotyper.local/abotyper-core:0.4.0.dev2"
+    container "abotyper.local/abotyper-core:0.4.0.dev3"
 
     input:
     tuple val(meta), path(bam), path(bai)
