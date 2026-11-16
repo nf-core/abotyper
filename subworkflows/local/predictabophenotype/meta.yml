@@ -60,6 +60,12 @@ input:
         ABOTYPERCORE_AGGREGATE so they can read it on any executor.
       pattern: "*.{yaml,yml,json,csv,tsv}"
 output:
+  - samples:
+      type: file
+      description: |
+        Sample table given to abotyper-aggregate: id, control type, sample name, barcode and each sample's files.
+        Structure: [ path(samples.tsv) ]
+      pattern: "samples.tsv"
   - abo_results:
       type: file
       description: |

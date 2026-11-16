@@ -3,6 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { CAT_FASTQ               } from '../modules/nf-core/cat/fastq/main'
 include { MULTIQC                 } from '../modules/nf-core/multiqc'
 include { NANOPLOT                } from '../modules/nf-core/nanoplot/main'
 include { paramsSummaryMap        } from 'plugin/nf-schema'
@@ -41,10 +42,27 @@ workflow ABOTYPER {
     ch_multiqc_files = channel.empty()
 
     //
+    // MODULE: CAT_FASTQ
+    //
+    // Samples with several FASTQ rows are merged into one file (meta.single_end is set when the
+    // samplesheet is read, so cat/fastq concatenates them as single-end reads).
+    ch_fastq = ch_samplesheet
+        .branch { meta, fastqs ->
+            single: fastqs.size() == 1
+                return [meta, fastqs[0]]
+            multiple: true
+                return [meta, fastqs]
+        }
+
+    CAT_FASTQ(ch_fastq.multiple)
+
+    ch_reads = CAT_FASTQ.out.reads.mix(ch_fastq.single)
+
+    //
     // MODULE: NANOPLOT
     //
     NANOPLOT (
-        ch_samplesheet
+        ch_reads
     )
     ch_multiqc_files = ch_multiqc_files.mix(NANOPLOT.out.txt.map { _meta, txt -> txt })
 
@@ -52,7 +70,7 @@ workflow ABOTYPER {
     // SUBWORKFLOW: MINIMAP2_ALIGN_READS
     //
     MINIMAP2_ALIGN_READS(
-        ch_samplesheet,
+        ch_reads,
         abo_reference_fasta,
         abo_reference_fai,
     )
@@ -73,6 +91,21 @@ workflow ABOTYPER {
         abo_panel,
         clair3_region_bed,
     )
+
+    //
+    // Clair3 failing for every sample usually means a configuration error (for example a bad
+    // --clair3_model_path): CLAIR3 failures are ignored per sample, so without this check every sample
+    // would be typed from the pileup alone (REVIEW) in a run that reports success
+    //
+    MINIMAP2_ALIGN_READS.out.bam
+        .filter { meta, _bam -> meta.control != 'negative' }
+        .count()
+        .combine(VARIANTS_QUANTIFICATION.out.clair3_gvcf.count())
+        .subscribe { n_samples, n_gvcf ->
+            if (n_samples > 0 && n_gvcf == 0) {
+                error("Clair3 produced no gVCF for any of the ${n_samples} samples, so none could use Clair3 evidence. Check the CLAIR3 task logs and the Clair3 model settings (--clair3_model, --clair3_model_path, --clair3_model_url).")
+            }
+        }
 
     //
     // SUBWORKFLOW: VARIANTS_QC

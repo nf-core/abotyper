@@ -112,8 +112,11 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
+    def samplesheet_rows = samplesheetToList(input, "${projectDir}/assets/schema_input.json")
+    validateReportedNames(samplesheet_rows)
+
     channel
-        .fromList(samplesheetToList(input, "${projectDir}/assets/schema_input.json"))
+        .fromList(samplesheet_rows)
         .map {
             meta, fastq_1 ->
                 // `control` is empty unless the samplesheet declares one
@@ -232,6 +235,24 @@ def normaliseBarcode(String value) {
 }
 
 //
+// Different `sample` values must not be reported under the same sample name and barcode
+//
+def validateReportedNames(rows) {
+    def clashes = rows
+        .collect { row -> row[0] }
+        .unique { meta -> meta.id }
+        .groupBy { meta ->
+            def names = sampleNameAndBarcode(meta.id, meta.barcode)
+            "${names.sample_name} (${names.barcode ?: 'no barcode'})"
+        }
+        .findAll { _reported, metas -> metas.size() > 1 }
+    if (clashes) {
+        def details = clashes.collect { reported, metas -> "${reported}: ${metas*.id.join(', ')}" }.join('; ')
+        error("Please check input samplesheet -> these samples would be reported under the same sample name and barcode: ${details}")
+    }
+}
+
+//
 // Validate channels from input samplesheet
 //
 def validateInputSamplesheet(input) {
@@ -261,6 +282,7 @@ def toolCitationText() {
             "minimap2 (Li 2018),",
             "SAMtools and BCFtools (Danecek et al. 2021),",
             "Clair3 (Zheng et al. 2022),",
+            "abotyper-core (Mobegi et al. 2025),",
             "MultiQC (Ewels et al. 2016)",
             "."
         ].join(' ').trim()
@@ -274,6 +296,7 @@ def toolBibliographyText() {
             "<li>Li H (2018) Minimap2: pairwise alignment for nucleotide sequences, Bioinformatics, 34(18), 3094-3100. doi: 10.1093/bioinformatics/bty191</li>",
             "<li>Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H (2021) Twelve years of SAMtools and BCFtools, GigaScience, 10(2), giab008. doi: 10.1093/gigascience/giab008</li>",
             "<li>Zheng Z, Li S, Su J, Leung AW-S, Lam T-W, Luo R (2022) Symphonizing pileup and full-alignment for deep learning-based long-read variant calling, Nature Computational Science, 2, 797-803. doi: 10.1038/s43588-022-00387-x</li>",
+            "<li>Mobegi FM, Bruce S, El-Lagta N, Ayora F, Matern BM, Groeneweg M, D\'Orsogna LJ, De Santis D (2025) Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing, International Journal of Molecular Sciences, 26(12), 5443. doi: 10.3390/ijms26125443</li>",
             "<li>Ewels P, Magnusson M, Lundin S, K\u00e4ller M (2016) MultiQC: summarize analysis results for multiple tools and samples in a single report, Bioinformatics, 32(19), 3047-3048. doi: 10.1093/bioinformatics/btw354</li>"
         ].join(' ').trim()
 

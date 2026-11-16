@@ -34,17 +34,10 @@ workflow NFCORE_ABOTYPER {
         .map { ref -> [[id: ref.baseName], ref] } : channel.empty()
     abo_reference_fasta = params.abo_reference_fasta ? channel.fromPath(params.abo_reference_fasta)
         .map { ref -> [[id: ref.baseName], ref] } : channel.empty()
-    // Clair3 model: a URL is downloaded, else a local model folder is staged, else the packaged model is used.
-    // The nf-core clair3 module has no packaged models under conda, so there the packaged model is downloaded by name.
-    def no_packaged_models = !(workflow.containerEngine in ['docker', 'singularity', 'podman'])
-    def clair3_url = params.clair3_model_url ?:
-        (!params.clair3_model_path && no_packaged_models ? "${params.clair3_models_base_url.replaceAll('/+$', '')}/${params.clair3_model}/" : null)
-    if (!params.clair3_model_url && clair3_url) {
-        log.info "Clair3: packaged models are not available with this profile; downloading '${params.clair3_model}' from ${clair3_url}"
-    }
+    // Clair3 model: a URL is downloaded, else a local model folder is staged, else the model bundled with Clair3 is used
     clair3_model = [
-        url:      clair3_url,
-        path:     (!clair3_url && params.clair3_model_path) ? channel.fromPath(params.clair3_model_path, type: 'dir', checkIfExists: true).first() : null,
+        url:      params.clair3_model_url,
+        path:     (!params.clair3_model_url && params.clair3_model_path) ? channel.fromPath(params.clair3_model_path, type: 'dir', checkIfExists: true).first() : null,
         packaged: params.clair3_model,
     ]
     // no --abo_panel: [] and the abotypercore/* modules use the panel bundled with abotyper-core

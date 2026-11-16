@@ -7,8 +7,8 @@
     The files are staged into the task. A samples table names each sample's files
     (staged paths) together with the samplesheet's control type, sample name and barcode.
     Scores primary and named-marker calls per the panel's thresholds, resolves
-    Phenotype/Genotype/ExtendedGenotype, and writes the pipeline's final output:
-    ABO_result.txt/.xlsx and final_export.csv. Runs once per pipeline run, not per sample.
+    Phenotype/Genotype/ExtendedGenotype, and writes the pipeline's final results
+    (ABO_result.txt/.xlsx and final_export.csv). Runs once per pipeline run, not per sample.
 */
 process ABOTYPERCORE_AGGREGATE {
     tag "COMPILING ABO RESULTS"

@@ -19,9 +19,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
-                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                    [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
-                input[1] = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true)
+                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true)
                 input[2] = []  // panel bundled with abotyper-core
                 """
             }
@@ -59,9 +59,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
-                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                    [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
-                input[1] = file("$projectDir/tests/fixtures/controls_AA_negative.tsv", checkIfExists: true)
+                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/controls_AA_negative.tsv", checkIfExists: true)
                 input[2] = []  // panel bundled with abotyper-core
                 """
             }
@@ -90,9 +90,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
-                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                    [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
-                input[1] = file("$projectDir/tests/fixtures/samples_named.tsv", checkIfExists: true)
+                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_named.tsv", checkIfExists: true)
                 input[2] = []  // panel bundled with abotyper-core
                 """
             }
@@ -120,7 +120,7 @@ nextflow_process {
                 def renamed = [ 'ABO_AA_barcode01': 'patient-01', 'ABO_BO1_barcode06': 'X_barcode06_rep2' ]
                 def staged = []
                 renamed.each { old_id, new_id ->
-                    file("$projectDir/tests/fixtures/per_sample_processing/\${old_id}/combined", checkIfExists: true).listFiles().each { f ->
+                    [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${old_id}/\${dir}\${old_id}.\${ext}", checkIfExists: true) } }.each { f ->
                         def dest = file("$outputDir/renamed/\${f.name.replace(old_id, new_id)}")
                         dest.parent.mkdirs()
                         f.copyTo(dest)
@@ -128,7 +128,7 @@ nextflow_process {
                     }
                 }
                 def table = file("$outputDir/renamed/samples.tsv")
-                table.text = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true).text
+                table.text = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true).text
                     .replace('ABO_AA_barcode01', 'patient-01').replace('ABO_BO1_barcode06', 'X_barcode06_rep2')
                 input[0] = staged
                 input[1] = table
@@ -157,9 +157,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
-                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                    [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
-                input[1] = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true)
+                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true)
                 input[2] = []  // panel bundled with abotyper-core
                 """
             }

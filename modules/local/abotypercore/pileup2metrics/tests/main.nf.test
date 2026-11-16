@@ -16,8 +16,8 @@ nextflow_process {
                 """
                 input[0] = [
                     [ id:'ABO_AA_barcode01' ],
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
@@ -59,7 +59,7 @@ nextflow_process {
                 """
                 input[0] = [
                     [ id:'ABO_AA_barcode01' ],
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
                     []
                 ]
                 input[1] = []  // panel bundled with abotyper-core
@@ -91,8 +91,8 @@ nextflow_process {
                 """
                 input[0] = [
                     [ id:'ABO_AA_barcode01' ],
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
