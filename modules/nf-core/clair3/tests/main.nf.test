@@ -224,6 +224,9 @@ nextflow_process {
         options "-stub"
 
         when {
+            params {
+                args = ""
+            }
             process {
                 """
                 def model_path = UNTAR.out.untar
