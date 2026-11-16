@@ -9,7 +9,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ]
             }
@@ -45,7 +45,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ],
                 "csv": [
@@ -67,7 +67,7 @@
                     [
                         "ABOTYPERCORE_AGGREGATE",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ],
                 "xls": [

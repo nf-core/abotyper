@@ -14,7 +14,7 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ]
             }
@@ -40,7 +40,7 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ],
                 "tsv": [
@@ -55,7 +55,7 @@
                     [
                         "ABOTYPERCORE_CLAIR2METRICS",
                         "abotyper-core",
-                        "0.3.1"
+                        "0.4.0"
                     ]
                 ]
             }
