@@ -1,6 +1,6 @@
 # Conda lock files
 
-These files pin the conda environments of the nf-core modules that ship lock files (bcftools, samtools and MultiQC). Use them with the `conda_lock` profile:
+These files pin the conda environments of the modules that ship lock files (NanoPlot, Clair3, samtools, bcftools, MultiQC, abotyper-core and the Clair3 model download). Use them with the `conda_lock` profile:
 
 ```bash
 nextflow run nf-core/abotyper -profile conda,conda_lock ...

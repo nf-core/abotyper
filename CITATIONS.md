@@ -28,6 +28,10 @@
 
 > Zheng Z, Li S, Su J, Leung AW-S, Lam T-W, Luo R. Symphonizing pileup and full-alignment for deep learning-based long-read variant calling. Nature Computational Science. 2022;2:797-803. doi: 10.1038/s43588-022-00387-x.
 
+- [abotyper-core](https://github.com/fmobegi/abotyper-core)
+
+> Mobegi FM, Bruce S, El-Lagta N, Ayora F, Matern BM, Groeneweg M, D'Orsogna LJ, De Santis D. Characterisation of the ABO Blood Group Phenotypes Using Third-Generation Sequencing. Int J Mol Sci. 2025;26(12):5443. doi: 10.3390/ijms26125443.
+
 - [ISBT ABO allele table](https://blooddatabase.isbtweb.org/system/ABO)
 
 > International Society of Blood Transfusion, Working Party on Red Cell Immunogenetics and Blood Group Terminology. Blood group allele tables: ABO (ISBT 001), table v9.

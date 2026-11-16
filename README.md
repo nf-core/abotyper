@@ -9,7 +9,6 @@
 [![GitHub Actions CI Status](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/nf-test.yml)
 [![GitHub Actions Linting Status](https://github.com/nf-core/abotyper/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/abotyper/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/abotyper/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/nf-core/abotyper)
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core template version](https://img.shields.io/badge/nf--core_template-4.2.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.2.2)
@@ -23,7 +22,7 @@
 # ABO blood typing using Oxford Nanopore MinION sequencing
 
 **nf-core/abotyper** is a bioinformatics pipeline that analyses data obtained from Third Generation Sequencing of the `Homo sapiens ABO, alpha 1-3-N-acetylgalactosaminyltransferase and alpha 1-3-galactosyltransferase` (ABO) gene to deduce the ABO blood type.
-It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related Single nucleotide variants (SVNs).
+It takes a samplesheet and FASTQ files as input, performs quality control (QC), mapping to the reference sequences, variant characterisation, and finally deduce the Blood Group Statistics based on known ABO-related single nucleotide variants (SNVs).
 
 > [!WARNING]
 > **Research use only.** This pipeline has not been validated for clinical diagnosis or transfusion decisions. Results must be confirmed by an accredited method before any clinical use. See the [intended use statement](docs/intended_use.md).
@@ -67,7 +66,7 @@ The pipeline makes use of the following core dependencies:
 | minimap2       | 2.30            | long-read alignment               |
 | samtools       | 1.23            | BAM sort, index, alignment QC     |
 | clair3         | 2.0.0           | variant calling, phasing          |
-| bcftools       | 1.23.1          | VCF normalize, filter (QC export) |
+| bcftools       | 1.25            | VCF normalize, filter (QC export) |
 | multiqc        | 1.35            | aggregate QC report               |
 | **Typing**     |                 |                                   |
 | abotyper-core  | 0.4.1           | panel, evidence and ABO typing    |
