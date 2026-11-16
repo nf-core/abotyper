@@ -1,0 +1,175 @@
+nextflow_process {
+
+    name "Test Process ABOTYPERCORE_AGGREGATE"
+    script "../main.nf"
+    process "ABOTYPERCORE_AGGREGATE"
+
+    tag "modules"
+    tag "modules_local"
+    tag "abotypercore/aggregate"
+    tag "abotyper"
+
+    // Two samples, ABO_AA_barcode01 (AA) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is
+    // every per-sample file (staged under sample_files/) and input 1 the sample table that names each
+    // sample's files, with the samplesheet's control type, sample name and barcode.
+
+    test("abotyper - two samples compiled into the final tables") {
+
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[1] = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true)
+                input[2] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def csv = path(process.out.csv[0]).readLines()
+            assertAll(
+                { assert process.success },
+                { assert process.out.txt[0] ==~ ".*/ABO_result.txt" },
+                { assert process.out.xls[0] ==~ ".*/ABO_result.xlsx" },
+                { assert process.out.csv[0] ==~ ".*/final_export.csv" },
+                { assert path(process.out.xls[0]).exists() },
+                // header + one row per sample
+                { assert csv.size() == 3 },
+                { assert csv.any { it.contains("ABO_AA") } && csv.any { it.contains("ABO_BO1") } },
+                // genotypes of the two fixtures
+                { assert path(process.out.txt[0]).text.contains("AA") && path(process.out.txt[0]).text.contains("BO") },
+                // the run-level QC report and the MultiQC evidence table are emitted
+                { assert path(process.out.qc[0]).text.contains("RESEARCH USE ONLY") },
+                { assert path(process.out.mqc[0]).text.contains("abo_evidence_summary") },
+                { assert snapshot(
+                    process.out.csv,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+    }
+
+    test("abotyper - declared negative control with reads is flagged") {
+
+        // ABO_AA_barcode01 is declared a negative control in the sample table; it has ABO reads, so
+        // its row in ABO_result.txt and the run QC report both flag possible contamination.
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[1] = file("$projectDir/tests/fixtures/controls_AA_negative.tsv", checkIfExists: true)
+                input[2] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def flag = "negative control has reads (max 87 > 30): possible contamination"
+            def rows = path(process.out.txt[0]).readLines()
+            assertAll(
+                { assert process.success },
+                // QCFlags of the control's row (Barcode 1, Sequencing_ID ABO_AA) in ABO_result.txt
+                { assert rows.find { it.startsWith("1\tABO_AA\t") }.contains(flag) },
+                // the other sample is not flagged
+                { assert !rows.find { it.startsWith("6\tABO_BO1\t") }.contains("possible contamination") },
+                // the run QC report lists it
+                { assert path(process.out.qc[0]).text.contains(flag) }
+            )
+        }
+    }
+
+    test("abotyper - sample name and barcode from the sample table") {
+
+        // The sample table (from the samplesheet) names ABO_AA_barcode01 "DonorA" on barcode 11; the
+        // other row has no name, so ABO_BO1_barcode06 is still split from its ID (ABO_BO1, barcode06).
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[1] = file("$projectDir/tests/fixtures/samples_named.tsv", checkIfExists: true)
+                input[2] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def csv = path(process.out.csv[0]).readLines()
+            assertAll(
+                { assert process.success },
+                { assert csv.size() == 3 },
+                { assert csv.any { it.startsWith("DonorA,") } },
+                { assert csv.any { it.startsWith("ABO_BO1,") } },
+                // the Barcode column of ABO_result.txt (tab-separated, after Sequencing_ID)
+                { assert path(process.out.txt[0]).readLines().any { it.split("\t").toList().take(3).containsAll(["DonorA", "11"]) } }
+            )
+        }
+    }
+
+    test("abotyper - any sample name is reported") {
+
+        // The two fixtures under names the aggregation used to drop or crash on.
+        when {
+            process {
+                """
+                def renamed = [ 'ABO_AA_barcode01': 'patient-01', 'ABO_BO1_barcode06': 'X_barcode06_rep2' ]
+                def staged = []
+                renamed.each { old_id, new_id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${old_id}/combined", checkIfExists: true).listFiles().each { f ->
+                        def dest = file("$outputDir/renamed/\${f.name.replace(old_id, new_id)}")
+                        dest.parent.mkdirs()
+                        f.copyTo(dest)
+                        staged << dest
+                    }
+                }
+                def table = file("$outputDir/renamed/samples.tsv")
+                table.text = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true).text
+                    .replace('ABO_AA_barcode01', 'patient-01').replace('ABO_BO1_barcode06', 'X_barcode06_rep2')
+                input[0] = staged
+                input[1] = table
+                input[2] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            def csv = path(process.out.csv[0]).readLines()
+            assertAll(
+                { assert process.success },
+                // header + one row per sample, under the names given
+                { assert csv.size() == 3 },
+                { assert csv.any { it.startsWith("patient-01,") } },
+                { assert csv.any { it.startsWith("X_barcode06_rep2,") } }
+            )
+        }
+    }
+
+    test("abotyper - two samples compiled - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                    file("$projectDir/tests/fixtures/per_sample_processing/\${id}/combined", checkIfExists: true).listFiles().toList()
+                }
+                input[1] = file("$projectDir/tests/fixtures/samples_two.tsv", checkIfExists: true)
+                input[2] = []  // panel bundled with abotyper-core
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

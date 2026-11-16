@@ -7,16 +7,16 @@ nextflow_workflow {
     tag "subworkflows"
     tag "subworkflows_local"
     tag "subworkflows/variants_quantification"
-    tag "abo/pileup"
-    tag "abo/evidence"
-    tag "abo/clair2metrics"
-    tag "abo/clair2haplotypes"
-    tag "abo/panel2bed"
+    tag "samtools/mpileup"
+    tag "abotypercore/pileup2metrics"
+    tag "abotypercore/clair2metrics"
+    tag "abotypercore/clair2haplotypes"
+    tag "abotypercore/paneltobed"
     tag "clair3"
     tag "abotyper"
 
     // Clair3 needs a downloaded model and minutes of CPU, so the subworkflow is exercised in stub
-    // mode: this checks the wiring (join with remainder:true, the SAMTOOLS_MPILEUP / ABO_EVIDENCE
+    // mode: this checks the wiring (join with remainder:true, the SAMTOOLS_MPILEUP / ABOTYPERCORE_PILEUP2METRICS
     // branch and every emit) without the caller. Real-data behaviour of each step is covered by
     // the module tests.
 

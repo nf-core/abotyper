@@ -27,7 +27,7 @@ workflow MINIMAP2_ALIGN_READS {
     // pinned as a value channel with .first
     def ch_ref_bundle = ch_reference_fasta
         .combine(ch_reference_fai)
-        .map { meta_fa, fa, meta_fai, fai -> [ [id: 'ABO_REF'], fa, fai ] }
+        .map { _meta_fa, fa, _meta_fai, fai -> [ [id: 'ABO_REF'], fa, fai ] }
         .first()
 
     //

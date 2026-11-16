@@ -7,8 +7,6 @@ lint:
     - .github/workflows/branch.yml
   nextflow_config:
     - config_defaults:
-        - params.fasta
-        - params.fai
         - params.abo_clair3_region_bed
         - params.abo_panel
         - params.abo_reference_fasta
@@ -27,4 +25,6 @@ template:
   name: abotyper
   org: nf-core
   outdir: .
+  skip_features:
+    - igenomes
   version: 1.0.0

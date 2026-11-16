@@ -20,11 +20,11 @@ keywords:
 components:
   - clair3
   - clair3/downloadmodel
-  - abo/panel2bed
-  - abo/clair2metrics
-  - abo/clair2haplotypes
-  - abo/pileup
-  - abo/evidence
+  - abotypercore/paneltobed
+  - abotypercore/clair2metrics
+  - abotypercore/clair2haplotypes
+  - samtools/mpileup
+  - abotypercore/pileup2metrics
 input:
   - ch_bam:
       type: channel
@@ -60,8 +60,8 @@ input:
       type: file
       description: |
         ABO variant panel file (abo_variant_panel.yaml), the single source of
-        truth for diagnostic positions -- broadcast to ABO_PANEL2BED,
-        ABO_CLAIR2METRICS, ABO_CLAIR2HAPLOTYPES and ABO_EVIDENCE.
+        truth for diagnostic positions -- broadcast to ABOTYPERCORE_PANELTOBED,
+        ABOTYPERCORE_CLAIR2METRICS, ABOTYPERCORE_CLAIR2HAPLOTYPES and ABOTYPERCORE_PILEUP2METRICS.
       pattern: "*.{yaml,yml,json,csv,tsv}"
   - region_bed:
       type: file
@@ -74,7 +74,7 @@ output:
       type: file
       description: |
         Per-position allele frequency / alignment statistics table scored by
-        PREDICTABOPHENOTYPE, from ABO_EVIDENCE: Clair3's table (ABO_CLAIR2METRICS,
+        PREDICTABOPHENOTYPE, from ABOTYPERCORE_PILEUP2METRICS: Clair3's table (ABOTYPERCORE_CLAIR2METRICS,
         reading the gVCF directly) is the primary line and the BAM pileup
         (SAMTOOLS_MPILEUP) fills positions Clair3 had no evidence for.
         Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
@@ -95,7 +95,7 @@ output:
   - haplotypes:
       type: file
       description: |
-        Haplotype table from ABO_CLAIR2HAPLOTYPES, synthesized from Clair3's
+        Haplotype table from ABOTYPERCORE_CLAIR2HAPLOTYPES, synthesized from Clair3's
         phased-VCF phase-set allele depths (not literal per-read
         observations -- see the abotyper-core clair2haplotypes docstring). Consumed by
         PREDICTABOPHENOTYPE to compute PhaseConfidence scores.
@@ -125,7 +125,7 @@ output:
       type: file
       description: |
         Clair3's gVCF (--gvcf), including non-variant reference blocks --
-        what ABO_CLAIR2METRICS reads to recover indel signal a plain VCF
+        what ABOTYPERCORE_CLAIR2METRICS reads to recover indel signal a plain VCF
         would silently drop.
         Structure: [ val(meta), path(*.gvcf.gz) ]
       pattern: "*.gvcf.gz"
@@ -136,7 +136,7 @@ output:
   - panel_bed:
       type: file
       description: |
-        ABO panel BED regenerated from panel_file by ABO_PANEL2BED
+        ABO panel BED regenerated from panel_file by ABOTYPERCORE_PANELTOBED
         (broadcast value channel), for VARIANTS_QC's bcftools view -R filtering.
       pattern: "*.bed"
 authors:

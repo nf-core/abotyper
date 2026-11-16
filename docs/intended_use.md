@@ -13,6 +13,25 @@
   no reads over the ABO region (likely amplicon dropout) are reported as `Unknown`.
   These flags support, and do not replace, expert review.
 
+## Alleles this assay cannot resolve
+
+The pipeline types the exon 2-7 amplicon. The variant panel scores 135 positions in exons 2-7
+and the adjacent introns (NG_006669.2 18064-24544). Three ISBT alleles are defined by changes
+outside what that amplicon and the panel can see, and are reported as another allele without a
+QC flag:
+
+| ISBT allele | Phenotype | Defining changes                                 | Reported as                                                                                  |
+| ----------- | --------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| ABO\*AW.13  | Aweak     | c.2T>C (exon 1 start codon)                      | ABO\*A1.01, phenotype A1                                                                     |
+| ABO\*AW.16  | Aweak     | c.1A>G (exon 1 start codon), c.467C>T, c.1061del | ABO\*A2.01, phenotype A2                                                                     |
+| ABO\*O.16   | O         | c.106G>T, c.188G>A, c.204-98\_\*3252del          | the other allele may appear homozygous (no exon 5-7 reads from O.16), e.g. A1/A1 for A1/O.16 |
+
+For AW.13 and AW.16 the genotype class (A) is right but the A subgroup is not: the weak expression
+comes from the exon 1 change. A weaker serological A reaction than the reported A1 or A2 suggests
+one of these alleles. Typing them needs reads that cover exon 1 (a forward primer upstream of exon 1),
+scored panel markers for c.1A>G and c.2T>C, and a Clair3 region (`--abo_clair3_region_bed`) that
+includes exon 1. The large O.16 deletion cannot be called from the pileup.
+
 ## What an IVD pathway would need
 
 If the pipeline is ever to be used diagnostically, the work goes beyond this repository:

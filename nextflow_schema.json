@@ -43,36 +43,6 @@
                 }
             }
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "help_text": "Not used by the ABO analysis, which aligns to the ABO reference given by `--abo_reference_fasta`. Kept because the nf-core template and `conf/igenomes.config` expect the parameter.",
-                    "fa_icon": "fas fa-book",
-                    "hidden": true
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "default": "s3://ngi-igenomes/igenomes/",
-                    "format": "directory-path",
-                    "description": "The base path to the igenomes reference files",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true
-                }
-            }
-        },
         "abo_typing_options": {
             "title": "ABO typing options",
             "type": "object",
@@ -119,6 +89,16 @@
                 "clair3_model": {
                     "type": "string",
                     "default": "r1041_e82_400bps_sup_v500",
+                    "enum": [
+                        "r1041_e82_400bps_sup_v500",
+                        "r1041_e82_400bps_hac_v500",
+                        "r1041_e82_400bps_sup_v520_with_mv",
+                        "r1041_e82_400bps_hac_v520_with_mv",
+                        "r1041_e82_400bps_sup_v410",
+                        "r1041_e82_400bps_hac_v410",
+                        "r941_prom_sup_g5014",
+                        "r941_prom_hac_g360+g422"
+                    ],
                     "description": "Name of the Clair3 model packaged in the Clair3 container, used when neither --clair3_model_url nor --clair3_model_path is given.",
                     "help_text": "Pick the model that matches your flow cell and basecaller. With the conda profile the packaged models are not available, so this model is downloaded by name from --clair3_models_base_url.",
                     "fa_icon": "fas fa-brain"
@@ -146,9 +126,9 @@
                 "minimap2_preset": {
                     "type": "string",
                     "default": "map-ont",
-                    "enum": ["map-ont", "lr:hq", "map-pb", "map-hifi", "sr"],
-                    "description": "minimap2 alignment preset (`-x`) for the sequencing platform.",
-                    "help_text": "`map-ont` (default) for Oxford Nanopore reads, the platform the pipeline was validated on; `lr:hq` for high-accuracy Nanopore reads (Q20+); `map-pb` or `map-hifi` for PacBio CLR or HiFi; `sr` for short reads. Results from presets other than `map-ont` have not been validated.",
+                    "enum": ["map-ont", "lr:hq"],
+                    "description": "minimap2 alignment preset (`-x`) for Oxford Nanopore reads.",
+                    "help_text": "`map-ont` (default) for Oxford Nanopore reads, the platform the pipeline was validated on; `lr:hq` for high-accuracy Nanopore reads (Q20+). Clair3 runs with platform `ont` and an ONT model, so only Nanopore presets are offered.",
                     "fa_icon": "fas fa-sliders-h"
                 }
             }
@@ -316,9 +296,6 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
-        },
-        {
-            "$ref": "#/$defs/reference_genome_options"
         },
         {
             "$ref": "#/$defs/abo_typing_options"

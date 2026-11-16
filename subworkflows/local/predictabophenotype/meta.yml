@@ -3,7 +3,7 @@ name: "PREDICTABOPHENOTYPE"
 description: |
   Predicts ABO phenotype and extended genotype by combining variant frequency data
   with BAM coverage, extracting ABO-specific SNPs, and aggregating per-sample results
-  into a unified report. Stages haplotype tables (from ABO_CLAIR2HAPLOTYPES) alongside
+  into a unified report. Stages haplotype tables (from ABOTYPERCORE_CLAIR2HAPLOTYPES) alongside
   phenotype files to enable PhaseConfidence scoring and Bw/B(A) subtype detection in
   abotyper-aggregate.
 keywords:
@@ -16,14 +16,14 @@ keywords:
   - snp analysis
   - variant frequency
 components:
-  - abo/getabosnps
-  - abo/snps2pheno
+  - abotypercore/predictphenotype
+  - abotypercore/aggregate
 input:
   - ch_variants_freq:
       type: channel
       description: |
         Channel containing per-position allele frequency files (AlignmentStatistics.tsv)
-        with exon metadata, produced by ABO_CLAIR2METRICS.
+        with exon metadata, produced by ABOTYPERCORE_CLAIR2METRICS.
         Structure: [ val(meta), path(*.AlignmentStatistics.tsv) ]
       pattern: "*.AlignmentStatistics.tsv"
   - ch_bam_coverage:
@@ -37,16 +37,16 @@ input:
       type: channel
       description: |
         Channel containing haplotype tables (Haplotypes.tsv) with exon metadata,
-        produced by ABO_CLAIR2HAPLOTYPES. Staged into ABO_SNPS2PHENO with the other per-sample
+        produced by ABOTYPERCORE_CLAIR2HAPLOTYPES. Staged into ABOTYPERCORE_AGGREGATE with the other per-sample
         files so that abotyper-aggregate can compute PhaseConfidence scores.
         Structure: [ val(meta), path(*.Haplotypes.tsv) ]
       pattern: "*.Haplotypes.tsv"
   - ch_evidence_status:
       type: channel
-      description: "[ val(meta), path(*.evidence_status.tsv) ] from ABO_EVIDENCE"
+      description: "[ val(meta), path(*.evidence_status.tsv) ] from ABOTYPERCORE_PILEUP2METRICS"
   - ch_concordance:
       type: channel
-      description: "[ val(meta), path(*.concordance.tsv) ] from ABO_EVIDENCE"
+      description: "[ val(meta), path(*.concordance.tsv) ] from ABOTYPERCORE_PILEUP2METRICS"
   - ch_bam_stats:
       type: channel
       description: "[ val(meta), path(*.stats) ] from SAMTOOLS_STATS"
@@ -56,8 +56,8 @@ input:
   - ch_panel:
       type: file
       description: |
-        ABO variant panel file (params.abo_panel), staged into ABO_GETABOSNPS and
-        ABO_SNPS2PHENO so they can read it on any executor.
+        ABO variant panel file (params.abo_panel), staged into ABOTYPERCORE_PREDICTPHENOTYPE and
+        ABOTYPERCORE_AGGREGATE so they can read it on any executor.
       pattern: "*.{yaml,yml,json,csv,tsv}"
 output:
   - abo_results:
