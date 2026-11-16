@@ -11,8 +11,8 @@ process CLAIR3_DOWNLOADMODEL {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'oras://community.wave.seqera.io/library/wget:1.25.0--6d2130bfb28314a4'
-        : 'community.wave.seqera.io/library/wget:1.25.0--452eb4bbcccd1c30'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/a1/a16db78e0a9f742ece8c129ab8ee925e416d02df054fe023c44c32fbaede944c/data'
+        : 'community.wave.seqera.io/library/wget:1.25.0--5aec898b4eacb870'}"
 
     input:
     val url
