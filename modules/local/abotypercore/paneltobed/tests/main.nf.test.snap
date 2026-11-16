@@ -7,7 +7,7 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ]
             }
@@ -28,7 +28,7 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ],
                 "bed": [
@@ -38,7 +38,7 @@
                     [
                         "ABOTYPERCORE_PANELTOBED",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ]
             }

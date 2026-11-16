@@ -22,7 +22,7 @@
                     [
                         "ABOTYPERCORE_READTYPER",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ],
                 "haplotypes": [
@@ -45,7 +45,7 @@
                     [
                         "ABOTYPERCORE_READTYPER",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ]
             }
@@ -79,7 +79,7 @@
                     [
                         "ABOTYPERCORE_READTYPER",
                         "abotyper-core",
-                        "0.4.0.dev3"
+                        "0.4.1"
                     ]
                 ]
             }

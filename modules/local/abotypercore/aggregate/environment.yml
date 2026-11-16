@@ -1,19 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
-# Development: abotyper-core 0.4.0.dev3 (read-level typing) is on TestPyPI only. Its dependencies come from
-# conda-forge, so pip only fetches abotyper-core itself (TestPyPI's copies of pandas and numpy are not usable).
-# Once 0.4.0 is on Bioconda this becomes "bioconda::abotyper-core=0.4.0", like the other abotypercore modules.
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - conda-forge::python=3.12
-  - conda-forge::pip=25.2
-  - conda-forge::numpy>=1.26
-  - conda-forge::pandas>=2.2
-  - conda-forge::pyyaml>=6.0
-  - conda-forge::xlsxwriter>=3.1
-  - conda-forge::openpyxl>=3.1
-  - pip:
-      - --index-url https://test.pypi.org/simple/
-      - --extra-index-url https://pypi.org/simple/
-      - abotyper-core==0.4.0.dev3
+  - bioconda::abotyper-core=0.4.1

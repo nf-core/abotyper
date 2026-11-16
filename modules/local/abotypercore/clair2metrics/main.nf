@@ -17,8 +17,9 @@ process ABOTYPERCORE_CLAIR2METRICS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // development image (abotyper-core 0.4.0.dev3, TestPyPI): see ABOTYPERCORE_READTYPER
-    container "abotyper.local/abotyper-core:0.4.0.dev3"
+    // abotyper-core 0.4.1 is on PyPI; its Bioconda recipe is in review. Until the Seqera Containers image is built
+    // from that recipe, docker/podman use a local image of the same release (assets/dev/Dockerfile.abotyper-core).
+    container "abotyper.local/abotyper-core:0.4.1"
 
     input:
     tuple val(meta), path(gvcf)

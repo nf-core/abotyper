@@ -117,12 +117,12 @@ Where both ran, a sample whose two calls disagree goes to REVIEW. The read-level
 
 Off by default. With `--filter_reads`, [chopper](https://github.com/wdecoster/chopper) drops reads shorter than `--min_read_length` (default 1000) or with a mean quality below `--min_read_quality` (default 10) before alignment. NanoPlot still reports the reads as sequenced.
 
-### Development containers
+### abotyper-core image
 
-On this development branch, all `ABOTYPERCORE_*` modules use abotyper-core 0.4.0.dev3, which is on TestPyPI only. With `-profile conda` their environments install it with pip. With Docker or Podman, build the image once:
+The `ABOTYPERCORE_*` modules use abotyper-core 0.4.1 (`bioconda::abotyper-core=0.4.1`). Its Bioconda recipe is in review; until the Seqera Containers image is built from it, Docker and Podman use a local image of the same release. Build it once:
 
 ```bash
-docker build -t abotyper.local/abotyper-core:0.4.0.dev3 -f assets/dev/Dockerfile.abotyper-core-dev .
+docker build -t abotyper.local/abotyper-core:0.4.1 -f assets/dev/Dockerfile.abotyper-core .
 ```
 
 ### Clair3 model

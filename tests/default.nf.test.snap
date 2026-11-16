@@ -3,25 +3,25 @@
         "content": [
             {
                 "ABOTYPERCORE_AGGREGATE": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_CLAIR2HAPLOTYPES": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_CLAIR2METRICS": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_PANELTOBED": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_PILEUP2METRICS": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_PREDICTPHENOTYPE": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "ABOTYPERCORE_READTYPER": {
-                    "abotyper-core": "0.4.0.dev3"
+                    "abotyper-core": "0.4.1"
                 },
                 "BCFTOOLS_NORM": {
                     "bcftools": 1.25
