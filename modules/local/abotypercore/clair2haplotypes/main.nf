@@ -15,8 +15,8 @@ process ABOTYPERCORE_CLAIR2HAPLOTYPES {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/63/6335514e9473e3b78713d0155b0f7968ecefcf84be243029fcce1ed504264d68/data'
-        : 'community.wave.seqera.io/library/numpy_openpyxl_pandas_pip_pruned:317ee119edadb518'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/29/2940cf2c699856e950dec959665c37d18e9db61d9a8189c3266298571999fe24/data'
+        : 'community.wave.seqera.io/library/abotyper-core:0.4.1--b514d32455c1eab3'}"
 
     input:
     tuple val(meta), path(phased_vcf)
