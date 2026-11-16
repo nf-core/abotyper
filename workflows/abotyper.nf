@@ -177,7 +177,7 @@ workflow ABOTYPER {
     //
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
 
-    def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def ch_summary_params = paramsSummaryMap(parameters_schema: "nextflow_schema.json")
     def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
 

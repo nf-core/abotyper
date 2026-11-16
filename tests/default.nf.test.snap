@@ -1,4 +1,20 @@
 {
+    "-profile test - zero-read negative control, numeric barcode and multi-row sample": {
+        "content": [
+            [
+                "Sample ID,Shipment Date,ABO Geno Type1,ABO Geno Type2,ABO Pheno Type,RH,Blood Type,ABORH Comments,A Subtype,Bw Subtype,Phase Confidence,Read Reliability,QC Status,QC Flags,A2 Trace,Evidence Basis,Replicate Note",
+                "ABO_AA,,A,A,A,,A,,,,N/A: No haplotype data available,Normal,PASS,,1 A2 confirmed (c.467 + c.1061delC),variant evidence,",
+                "ABO_AO1,,A,O,A,,A,,Note: c.297G detected without c.1061del \u2014 possible A2-derived O allele (O1v); manual review recommended,Possible 646/681/771/829 cassette(c.646T>A:A=46%); Possible 646/681/771/829 cassette(c.681G>A:A=42%); Possible O-null/A2/Aweak backbone(c.106G>T:T=45%); Possible O-null/A2/Aweak backbone(c.188G>A:A=40%); Possible O-null/A2 backbone(c.189C>T:T=43%); Possible O-null/Aweak backbone(c.220C>T:T=45%),High: Top 2 haplotypes cover 100% of 86 reads; alleles named per haplotype,Normal,PASS,,4 No A2 evidence (both primary markers reference),variant evidence,",
+                "ABO_BB,,B,B,B,,B,,,,N/A: No haplotype data available,Normal,PASS,,n/a (no A allele),variant evidence,",
+                "NTC,,,,Unknown,,Unknown,,,,N/A: No haplotype data available,Very Low(<=20 reads),PASS,,n/a (no A allele),no data,"
+            ]
+        ],
+        "timestamp": "2026-11-17T07:28:00.931304756",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    },
     "-profile test": {
         "content": [
             {
@@ -30,7 +46,7 @@
                     "bcftools": 1.25
                 },
                 "CLAIR3": {
-                    "clair3": "2.0.0"
+                    "clair3": "2.0.5"
                 },
                 "MINIMAP2_ALIGN": {
                     "minimap2": "2.30-r1287"
@@ -542,7 +558,7 @@
                 "       6  n/a (no A allele)"
             ]
         ],
-        "timestamp": "2026-11-14T00:07:08.848809718",
+        "timestamp": "2026-11-17T07:20:58.258837508",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
