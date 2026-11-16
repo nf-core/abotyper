@@ -65,7 +65,7 @@ The pipeline makes use of the following core dependencies:
 | nanoplot       | 1.48.0          | long-read quality control         |
 | minimap2       | 2.30            | long-read alignment               |
 | samtools       | 1.23            | BAM sort, index, alignment QC     |
-| clair3         | 2.0.0           | variant calling, phasing          |
+| clair3         | 2.0.5           | variant calling, phasing          |
 | bcftools       | 1.25            | VCF normalize, filter (QC export) |
 | multiqc        | 1.35            | aggregate QC report               |
 | **Typing**     |                 |                                   |

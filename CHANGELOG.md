@@ -27,16 +27,16 @@ The pipeline types the ABO blood group from Oxford Nanopore long-read amplicons 
 
 ### `Dependencies`
 
-| Tool              | Version / source                                                                         |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Nextflow          | `>=25.10.4`                                                                              |
-| Clair3            | container `hkubal/clair3:v2.0.0` (packaged PyTorch models; other profiles download them) |
-| samtools / htslib | 1.25 (alignment statistics, coverage and `samtools/mpileup`)                             |
-| bcftools          | 1.25 (normalisation and panel-filtered calls)                                            |
-| NanoPlot          | 1.48.0 (read QC)                                                                         |
-| MultiQC           | 1.35                                                                                     |
-| minimap2          | 2.30, via the nf-core `minimap2/align` module                                            |
-| abotyper-core     | 0.4.1 (Bioconda, Seqera Containers); the `abotypercore/*` typing modules                 |
+| Tool              | Version / source                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| Nextflow          | `>=25.10.4`                                                                        |
+| Clair3            | 2.0.5 (Bioconda, with its bundled PyTorch models), via the nf-core `clair3` module |
+| samtools / htslib | 1.25 (alignment statistics, coverage and `samtools/mpileup`)                       |
+| bcftools          | 1.25 (normalisation and panel-filtered calls)                                      |
+| NanoPlot          | 1.48.0 (read QC)                                                                   |
+| MultiQC           | 1.35                                                                               |
+| minimap2          | 2.30, via the nf-core `minimap2/align` module                                      |
+| abotyper-core     | 0.4.1 (Bioconda, Seqera Containers); the `abotypercore/*` typing modules           |
 
 ### `Known gaps / not yet done`
 
