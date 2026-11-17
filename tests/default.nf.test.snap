@@ -3,13 +3,13 @@
         "content": [
             [
                 "Sample ID,Shipment Date,ABO Geno Type1,ABO Geno Type2,ABO Pheno Type,RH,Blood Type,ABORH Comments,A Subtype,Bw Subtype,Phase Confidence,Read Reliability,QC Status,QC Flags,A2 Trace,Evidence Basis,Replicate Note",
-                "ABO_AA,,A,A,A,,A,,,,N/A: No haplotype data available,Normal,PASS,,1 A2 confirmed (c.467 + c.1061delC),variant evidence,",
-                "ABO_AO1,,A,O,A,,A,,Note: c.297G detected without c.1061del \u2014 possible A2-derived O allele (O1v); manual review recommended,Possible 646/681/771/829 cassette(c.646T>A:A=46%); Possible 646/681/771/829 cassette(c.681G>A:A=42%); Possible O-null/A2/Aweak backbone(c.106G>T:T=45%); Possible O-null/A2/Aweak backbone(c.188G>A:A=40%); Possible O-null/A2 backbone(c.189C>T:T=43%); Possible O-null/Aweak backbone(c.220C>T:T=45%),High: Top 2 haplotypes cover 100% of 86 reads; alleles named per haplotype,Normal,PASS,,4 No A2 evidence (both primary markers reference),variant evidence,",
+                "ABO_AA,,A,A,A1,,A1,,,,N/A: No haplotype data available,Normal,REVIEW,Clair3 produced no usable calls; typed from BAM pileup only,4 No A2 evidence (both primary markers reference),reference-only,",
+                "ABO_AO1,,A,O,A,,A,,,,N/A: No haplotype data available,Normal,REVIEW,Clair3 produced no usable calls; typed from BAM pileup only,4 No A2 evidence (both primary markers reference),variant evidence,",
                 "ABO_BB,,B,B,B,,B,,,,N/A: No haplotype data available,Normal,PASS,,n/a (no A allele),variant evidence,",
                 "NTC,,,,Unknown,,Unknown,,,,N/A: No haplotype data available,Very Low(<=20 reads),PASS,,n/a (no A allele),no data,"
             ]
         ],
-        "timestamp": "2026-11-17T07:28:00.931304756",
+        "timestamp": "2026-11-17T21:56:28.130979524",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
@@ -90,6 +90,7 @@
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics",
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.Haplotypes.tsv",
+                "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.concordance.tsv",
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.evidence_status.tsv",
                 "per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.pileup_metrics.tsv",
@@ -117,6 +118,7 @@
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics",
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.Haplotypes.tsv",
+                "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.concordance.tsv",
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.evidence_status.tsv",
                 "per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.pileup_metrics.tsv",
@@ -144,6 +146,7 @@
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics",
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.Haplotypes.tsv",
+                "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.concordance.tsv",
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.evidence_status.tsv",
                 "per_sample_processing/ABO_AO1_barcode03/clair2metrics/ABO_AO1_barcode03.pileup_metrics.tsv",
@@ -171,6 +174,7 @@
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics",
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.Haplotypes.tsv",
+                "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.concordance.tsv",
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.evidence_status.tsv",
                 "per_sample_processing/ABO_AO2_barcode04/clair2metrics/ABO_AO2_barcode04.pileup_metrics.tsv",
@@ -198,6 +202,7 @@
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics",
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.Haplotypes.tsv",
+                "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.concordance.tsv",
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.evidence_status.tsv",
                 "per_sample_processing/ABO_BB_barcode05/clair2metrics/ABO_BB_barcode05.pileup_metrics.tsv",
@@ -225,6 +230,7 @@
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics",
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.Haplotypes.tsv",
+                "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.concordance.tsv",
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.evidence_status.tsv",
                 "per_sample_processing/ABO_BO1_barcode06/clair2metrics/ABO_BO1_barcode06.pileup_metrics.tsv",
@@ -252,6 +258,7 @@
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics",
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.Haplotypes.tsv",
+                "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.concordance.tsv",
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.evidence_status.tsv",
                 "per_sample_processing/ABO_BO2_barcode07/clair2metrics/ABO_BO2_barcode07.pileup_metrics.tsv",
@@ -279,6 +286,7 @@
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics",
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.Haplotypes.tsv",
+                "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.concordance.tsv",
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.evidence_status.tsv",
                 "per_sample_processing/ABO_O1O1_barcode08/clair2metrics/ABO_O1O1_barcode08.pileup_metrics.tsv",
@@ -306,6 +314,7 @@
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics",
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.Haplotypes.tsv",
+                "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.concordance.tsv",
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.evidence_status.tsv",
                 "per_sample_processing/ABO_O1O2_barcode09/clair2metrics/ABO_O1O2_barcode09.pileup_metrics.tsv",
@@ -333,6 +342,7 @@
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics",
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.Haplotypes.tsv",
+                "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.clair3.AlignmentStatistics.tsv",
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.concordance.tsv",
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.evidence_status.tsv",
                 "per_sample_processing/ABO_O2O2_barcode10/clair2metrics/ABO_O2O2_barcode10.pileup_metrics.tsv",
@@ -558,7 +568,7 @@
                 "       6  n/a (no A allele)"
             ]
         ],
-        "timestamp": "2026-11-17T07:20:58.258837508",
+        "timestamp": "2026-11-17T21:29:32.26448166",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

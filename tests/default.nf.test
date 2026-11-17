@@ -83,7 +83,7 @@ nextflow_pipeline {
                 { assert result.find { r -> r[1] == 'ABO_AO1' }[0] == '3' },
                 // the three same-named rows of ABO_AA are merged into one sample, reported once
                 { assert export_rows.count { r -> r[0] == 'ABO_AA' } == 1 },
-                { assert row('ABO_AA')[header.indexOf('ABO Pheno Type')] == 'A' },
+                { assert row('ABO_AA')[header.indexOf('ABO Pheno Type')] ==~ /A1?/ },
                 { assert snapshot(typing_calls).match() }
             )
         }

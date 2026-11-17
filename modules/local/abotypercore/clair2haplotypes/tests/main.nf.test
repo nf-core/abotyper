@@ -9,14 +9,14 @@ nextflow_process {
     tag "abotypercore/clair2haplotypes"
     tag "abotyper"
 
-    test("abotyper - ABO_AA_barcode01 - phased VCF -> haplotypes") {
+    test("abotyper - ABO_AB_barcode02 - phased VCF -> haplotypes") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair3/ABO_AA_barcode01_clair3.phased_merge_output.vcf.gz", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair3/ABO_AB_barcode02_clair3.phased_merge_output.vcf.gz", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
@@ -27,7 +27,7 @@ nextflow_process {
             def lines = path(process.out.tsv[0][1]).readLines()
             assertAll(
                 { assert process.success },
-                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.Haplotypes.tsv" },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AB_barcode02.Haplotypes.tsv" },
                 { assert lines.size() > 1 },
                 { assert snapshot(
                     process.out.tsv,
@@ -37,7 +37,7 @@ nextflow_process {
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - stub") {
+    test("abotyper - ABO_AB_barcode02 - stub") {
 
         options "-stub"
 
@@ -45,8 +45,8 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair3/ABO_AA_barcode01_clair3.phased_merge_output.vcf.gz", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair3/ABO_AB_barcode02_clair3.phased_merge_output.vcf.gz", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """

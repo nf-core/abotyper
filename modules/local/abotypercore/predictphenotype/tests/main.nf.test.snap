@@ -1,21 +1,21 @@
 {
-    "abotyper - ABO_AA_barcode01 - stub": {
+    "abotyper - ABO_AB_barcode02 - stub": {
         "content": [
             {
                 "0": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "1": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "2": [
@@ -28,17 +28,17 @@
                 "log": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.log.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "phenotype": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.ABOPhenotype.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "versions_abotyper_core": [
@@ -50,20 +50,20 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:44:48.808762556",
+        "timestamp": "2026-11-17T21:07:07.070218342",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
         }
     },
-    "abotyper - ABO_AA_barcode01 - metrics + coverage -> ABOPhenotype report": {
+    "abotyper - ABO_AB_barcode02 - metrics + coverage -> ABOPhenotype report": {
         "content": [
             [
                 [
                     {
-                        "id": "ABO_AA_barcode01"
+                        "id": "ABO_AB_barcode02"
                     },
-                    "ABO_AA_barcode01.ABOPhenotype.txt:md5,91af94f4d3ebfd36d797c3fd1caea0f7"
+                    "ABO_AB_barcode02.ABOPhenotype.txt:md5,22a863443b0714c7c5dc408f32e70991"
                 ]
             ],
             {
@@ -76,7 +76,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:44:22.762418772",
+        "timestamp": "2026-11-17T21:06:44.262276",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

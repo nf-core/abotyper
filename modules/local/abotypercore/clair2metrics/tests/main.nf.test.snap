@@ -1,12 +1,12 @@
 {
-    "abotyper - ABO_AA_barcode01 - Clair3 gVCF -> metrics": {
+    "abotyper - ABO_AB_barcode02 - Clair3 gVCF -> metrics": {
         "content": [
             [
                 [
                     {
-                        "id": "ABO_AA_barcode01"
+                        "id": "ABO_AB_barcode02"
                     },
-                    "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,cb819c9016bceacf9c17b3a059b7d153"
+                    "ABO_AB_barcode02.clair3.AlignmentStatistics.tsv:md5,79b4721e4e375791ff710d058803d903"
                 ]
             ],
             {
@@ -19,21 +19,21 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:41:13.823054806",
+        "timestamp": "2026-11-17T21:03:51.382957428",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"
         }
     },
-    "abotyper - ABO_AA_barcode01 - stub": {
+    "abotyper - ABO_AB_barcode02 - stub": {
         "content": [
             {
                 "0": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.clair3.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "1": [
@@ -46,9 +46,9 @@
                 "tsv": [
                     [
                         {
-                            "id": "ABO_AA_barcode01"
+                            "id": "ABO_AB_barcode02"
                         },
-                        "ABO_AA_barcode01.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "ABO_AB_barcode02.clair3.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ],
                 "versions_abotyper_core": [
@@ -60,7 +60,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:41:39.82057489",
+        "timestamp": "2026-11-17T21:04:15.227167748",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

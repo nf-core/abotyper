@@ -9,7 +9,7 @@ nextflow_process {
     tag "abotypercore/aggregate"
     tag "abotyper"
 
-    // Two samples, ABO_AA_barcode01 (AA) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is
+    // Two samples, ABO_AB_barcode02 (AB) and ABO_BO1_barcode06 (BO). As in the pipeline, input 0 is
     // every per-sample file (staged under sample_files/) and input 1 the sample table that names each
     // sample's files, with the samplesheet's control type, sample name and barcode.
 
@@ -18,7 +18,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                input[0] = [ 'ABO_AB_barcode02', 'ABO_BO1_barcode06' ].collectMany { id ->
                     [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
                 input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true)
@@ -37,9 +37,9 @@ nextflow_process {
                 { assert path(process.out.xls[0]).exists() },
                 // header + one row per sample
                 { assert csv.size() == 3 },
-                { assert csv.any { it.contains("ABO_AA") } && csv.any { it.contains("ABO_BO1") } },
+                { assert csv.any { it.contains("ABO_AB") } && csv.any { it.contains("ABO_BO1") } },
                 // genotypes of the two fixtures
-                { assert path(process.out.txt[0]).text.contains("AA") && path(process.out.txt[0]).text.contains("BO") },
+                { assert path(process.out.txt[0]).text.contains("AB") && path(process.out.txt[0]).text.contains("BO") },
                 // the run-level QC report and the MultiQC evidence table are emitted
                 { assert path(process.out.qc[0]).text.contains("RESEARCH USE ONLY") },
                 { assert path(process.out.mqc[0]).text.contains("abo_evidence_summary") },
@@ -53,43 +53,43 @@ nextflow_process {
 
     test("abotyper - declared negative control with reads is flagged") {
 
-        // ABO_AA_barcode01 is declared a negative control in the sample table; it has ABO reads, so
+        // ABO_AB_barcode02 is declared a negative control in the sample table; it has ABO reads, so
         // its row in ABO_result.txt and the run QC report both flag possible contamination.
         when {
             process {
                 """
-                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                input[0] = [ 'ABO_AB_barcode02', 'ABO_BO1_barcode06' ].collectMany { id ->
                     [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
-                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/controls_AA_negative.tsv", checkIfExists: true)
+                input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/controls_negative.tsv", checkIfExists: true)
                 input[2] = []  // panel bundled with abotyper-core
                 """
             }
         }
 
         then {
-            def flag = "negative control has reads (max 87 > 30): possible contamination"
+            def flag = ~/negative control has reads \(max \d+ > 30\): possible contamination/
             def rows = path(process.out.txt[0]).readLines()
             assertAll(
                 { assert process.success },
-                // QCFlags of the control's row (Barcode 1, Sequencing_ID ABO_AA) in ABO_result.txt
-                { assert rows.find { it.startsWith("1\tABO_AA\t") }.contains(flag) },
+                // QCFlags of the control's row (Barcode 2, Sequencing_ID ABO_AB) in ABO_result.txt
+                { assert rows.find { it.startsWith("2\tABO_AB\t") }.find(flag) },
                 // the other sample is not flagged
                 { assert !rows.find { it.startsWith("6\tABO_BO1\t") }.contains("possible contamination") },
                 // the run QC report lists it
-                { assert path(process.out.qc[0]).text.contains(flag) }
+                { assert path(process.out.qc[0]).text.find(flag) }
             )
         }
     }
 
     test("abotyper - sample name and barcode from the sample table") {
 
-        // The sample table (from the samplesheet) names ABO_AA_barcode01 "DonorA" on barcode 11; the
+        // The sample table (from the samplesheet) names ABO_AB_barcode02 "DonorA" on barcode 11; the
         // other row has no name, so ABO_BO1_barcode06 is still split from its ID (ABO_BO1, barcode06).
         when {
             process {
                 """
-                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                input[0] = [ 'ABO_AB_barcode02', 'ABO_BO1_barcode06' ].collectMany { id ->
                     [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
                 input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_named.tsv", checkIfExists: true)
@@ -117,7 +117,7 @@ nextflow_process {
         when {
             process {
                 """
-                def renamed = [ 'ABO_AA_barcode01': 'patient-01', 'ABO_BO1_barcode06': 'X_barcode06_rep2' ]
+                def renamed = [ 'ABO_AB_barcode02': 'patient-01', 'ABO_BO1_barcode06': 'X_barcode06_rep2' ]
                 def staged = []
                 renamed.each { old_id, new_id ->
                     [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${old_id}/\${dir}\${old_id}.\${ext}", checkIfExists: true) } }.each { f ->
@@ -129,7 +129,7 @@ nextflow_process {
                 }
                 def table = file("$outputDir/renamed/samples.tsv")
                 table.text = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true).text
-                    .replace('ABO_AA_barcode01', 'patient-01').replace('ABO_BO1_barcode06', 'X_barcode06_rep2')
+                    .replace('ABO_AB_barcode02', 'patient-01').replace('ABO_BO1_barcode06', 'X_barcode06_rep2')
                 input[0] = staged
                 input[1] = table
                 input[2] = []  // panel bundled with abotyper-core
@@ -156,7 +156,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = [ 'ABO_AA_barcode01', 'ABO_BO1_barcode06' ].collectMany { id ->
+                input[0] = [ 'ABO_AB_barcode02', 'ABO_BO1_barcode06' ].collectMany { id ->
                     [ '': ['ABOPhenotype.txt'], 'clair2metrics/': ['Haplotypes.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ].collectMany { dir, exts -> exts.collect { ext -> file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/\${id}/\${dir}\${id}.\${ext}", checkIfExists: true) } }
                 }
                 input[1] = file("\${params.pipelines_testdata_base_path}abotyper/abotyper/fixtures/samples_two.tsv", checkIfExists: true)

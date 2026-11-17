@@ -9,15 +9,15 @@ nextflow_process {
     tag "abotypercore/pileup2metrics"
     tag "abotyper"
 
-    test("abotyper - ABO_AA_barcode01 - Clair3 + BAM pileup agree") {
+    test("abotyper - ABO_AB_barcode02 - Clair3 + BAM pileup agree") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/mpileup/ABO_AB_barcode02.mpileup.gz", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.clair3.AlignmentStatistics.tsv", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
@@ -30,16 +30,15 @@ nextflow_process {
             assertAll(
                 { assert process.success },
                 // the merged table keeps its name; the Clair3 input is staged in clair3/ so they do not collide
-                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AB_barcode02.AlignmentStatistics.tsv" },
                 // header + one row per calibrated panel position (135 in panel v2.3.0)
                 { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
                 { assert row.positions == '135' },
                 { assert row.evidence_source == 'CLAIR3+BAM' },
-                // the fixture was made before the rare positions were added: the 51 original positions are covered by both
-                // lines, the others have no Clair3 row; the pileup covers a few of them through the padded indel windows
-                { assert row.both == '51' },
+                // the simulated exon 2-7 reads cover every panel position, in both lines of evidence
+                { assert row.both == '135' },
                 { assert row.clair3_only == '0' },
-                // at most one non-primary position may disagree (the synthetic reads carry indel noise in the c.804 7-G run)
+                // at most one non-primary position may disagree (simulated reads carry indel noise in homopolymer runs)
                 { assert row.discordant.toInteger() <= 1 },
                 { assert row.discordant_primary == '0' },
                 { assert snapshot(
@@ -52,14 +51,14 @@ nextflow_process {
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - Clair3 produced nothing (BAM pileup only)") {
+    test("abotyper - ABO_AB_barcode02 - Clair3 produced nothing (BAM pileup only)") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/mpileup/ABO_AB_barcode02.mpileup.gz", checkIfExists: true),
                     []
                 ]
                 input[1] = []  // panel bundled with abotyper-core
@@ -73,8 +72,8 @@ nextflow_process {
             assertAll(
                 { assert process.success },
                 { assert row.evidence_source == 'BAM_ONLY' },
-                // the pileup covers the 51 original positions and 10 more inside the padded indel windows
-                { assert row.bam_only == '61' },
+                // the pileup alone covers every panel position
+                { assert row.bam_only == '135' },
                 { assert row.clair3_only == '0' },
                 { assert path(process.out.tsv[0][1]).readLines().size() == 136 },
                 { assert snapshot(process.out.tsv, process.out.status).match() }
@@ -82,7 +81,7 @@ nextflow_process {
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - stub") {
+    test("abotyper - ABO_AB_barcode02 - stub") {
 
         options "-stub"
 
@@ -90,9 +89,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/mpileup/ABO_AA_barcode01.pileup.txt", checkIfExists: true),
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.clair2metrics.tsv", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/mpileup/ABO_AB_barcode02.mpileup.gz", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.clair3.AlignmentStatistics.tsv", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """

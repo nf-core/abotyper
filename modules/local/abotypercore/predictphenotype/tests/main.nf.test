@@ -12,15 +12,15 @@ nextflow_process {
     // Single combined-reference layout: one metrics table per sample covers every exon,
     // so there is no per-exon meta or input any more.
 
-    test("abotyper - ABO_AA_barcode01 - metrics + coverage -> ABOPhenotype report") {
+    test("abotyper - ABO_AB_barcode02 - metrics + coverage -> ABOPhenotype report") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/alignment/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.AlignmentStatistics.tsv", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/alignment/ABO_AB_barcode02.coverage.txt", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
@@ -31,8 +31,8 @@ nextflow_process {
             def report = path(process.out.phenotype[0][1]).text
             assertAll(
                 { assert process.success },
-                { assert process.out.phenotype[0][1] ==~ ".*/ABO_AA_barcode01.ABOPhenotype.txt" },
-                { assert process.out.log[0][1] ==~ ".*/ABO_AA_barcode01.log.txt" },
+                { assert process.out.phenotype[0][1] ==~ ".*/ABO_AB_barcode02.ABOPhenotype.txt" },
+                { assert process.out.log[0][1] ==~ ".*/ABO_AB_barcode02.log.txt" },
                 // one report covers every exon section of the combined reference
                 { assert report.contains("Exon 6:") && report.contains("Exon 7:") },
                 // c.261delG (position 22694) is a primary position and must be reported
@@ -46,7 +46,7 @@ nextflow_process {
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - stub") {
+    test("abotyper - ABO_AB_barcode02 - stub") {
 
         options "-stub"
 
@@ -54,9 +54,9 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/clair2metrics/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true),
-                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AA_barcode01/alignment/ABO_AA_barcode01.coverage.txt", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair2metrics/ABO_AB_barcode02.AlignmentStatistics.tsv", checkIfExists: true),
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/alignment/ABO_AB_barcode02.coverage.txt", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
