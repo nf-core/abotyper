@@ -32,6 +32,7 @@ OUTDIR/
 │       │   └── SAMPLE1_barcode01_clair3.phased_merge_output.vcf.gz
 │       ├── clair2metrics
 │       │   ├── SAMPLE1_barcode01.AlignmentStatistics.tsv
+│       │   ├── SAMPLE1_barcode01.clair3.AlignmentStatistics.tsv
 │       │   ├── SAMPLE1_barcode01.Haplotypes.tsv
 │       │   ├── SAMPLE1_barcode01.concordance.tsv
 │       │   ├── SAMPLE1_barcode01.evidence_status.tsv
@@ -117,6 +118,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - Each `.vcf.gz` has a `.tbi` index.
 - `per_sample_processing/<sample>/clair2metrics/`
   - `<sample>.AlignmentStatistics.tsv`: per-position nucleotide frequencies and depth, from Clair3, with positions Clair3 had no evidence for filled from the BAM pileup.
+  - `<sample>.clair3.AlignmentStatistics.tsv`: the same per-position table from the Clair3 gVCF alone.
   - `<sample>.Haplotypes.tsv`: haplotype table built from Clair3's phased calls (phase-set allele depths, not per-read observations).
   - `<sample>.pileup_metrics.tsv`: the same per-position table from the BAM pileup alone.
   - `<sample>.concordance.tsv`: Clair3 and the BAM pileup compared at every panel position.
