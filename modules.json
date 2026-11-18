@@ -27,7 +27,7 @@
                     },
                     "clair3": {
                         "branch": "master",
-                        "git_sha": "bb85a103d95d7dfe4bd97998eb6a3f39f243a8fc",
+                        "git_sha": "ab771f1da1b7c3b4fde356f82ed20d01c95fd1c5",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/clair3/clair3.diff"
                     },
