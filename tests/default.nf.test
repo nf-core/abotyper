@@ -27,11 +27,8 @@ nextflow_pipeline {
             def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
             // ABO_run_qc.txt without the abotyper-core version line, so a package release does not change the snapshot
             def run_qc = path("$outputDir/ABO_run_qc.txt").readLines().findAll { line -> !line.startsWith('abotyper-core:') }
-            // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple
-            // Nextflow versions. CLAIR3_DOWNLOADMODEL is left out: it runs only where the Clair3 container's packaged model is
-            // not available (conda), so whether it is listed depends on the profile, not on the pipeline.
+            // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
             def versions = removeNextflowVersion("$outputDir/pipeline_info/abotyper_software_mqc_versions.yml")
-                .findAll { process, tools -> process != 'CLAIR3_DOWNLOADMODEL' }
             assert workflow.success
             assertAll(
                 { assert snapshot(
@@ -49,22 +46,16 @@ nextflow_pipeline {
         }
     }
 
-    test("-profile test - zero-read negative control and numeric barcode") {
+    test("-profile test - zero-read negative control, numeric barcode and multi-row sample") {
 
         // A clean negative control (an empty FASTQ) must not stop the run (NanoPlot exits 1 on it) and must
-        // pass QC; a numeric barcode (7) must pass samplesheet validation and be reported as barcode07.
+        // pass QC; a numeric barcode (7) must pass samplesheet validation and be reported as barcode07; a sample
+        // with several rows whose files share a name is merged by CAT_FASTQ and typed once.
         when {
             params {
-                def base = 'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/abotyper/abotyper'
-                def sheet = new File("$outputDir/samplesheet_controls.csv")
-                sheet.parentFile.mkdirs()
-                sheet.text = [
-                    'sample,fastq_1,control,barcode',
-                    "ABO_BB,${base}/ABO_BB_barcode05.fastq.gz,,7",
-                    "ABO_AO1_barcode03,${base}/ABO_AO1_barcode03.fastq.gz,,",
-                    "NTC,${projectDir}/tests/fixtures/empty.fastq.gz,negative,95",
-                ].join('\n') + '\n'
-                input  = sheet.toString()
+                // nf-core/test-datasets, branch abotyper (the same base as pipelines_testdata_base_path):
+                // ABO_BB (barcode 7), ABO_AO1_barcode03, an empty FASTQ as negative control NTC, and three rows of ABO_AA
+                input  = 'https://raw.githubusercontent.com/nf-core/test-datasets/abotyper/abotyper/fixtures/samplesheet_controls_multirow.csv'
                 outdir = "$outputDir"
             }
         }
@@ -77,6 +68,9 @@ nextflow_pipeline {
             def row    = { name -> export_rows.find { r -> r[0] == name } }
             def qc     = header.indexOf('QC Status')
             def result = path("$outputDir/ABO_result.txt").readLines().collect { line -> line.split('\t', -1) as List }
+            // typing calls of every sample, without #Reads (mean read depth, which differs by a few reads between runs)
+            def keep_cols    = (0..<header.size()).findAll { i -> header[i] != '#Reads' }
+            def typing_calls = export_rows.collect { r -> keep_cols.collect { i -> r[i] }.join(',') }
             assertAll(
                 { assert workflow.success },
                 // the negative control is reported and passes QC
@@ -86,7 +80,11 @@ nextflow_pipeline {
                 { assert result.find { r -> r[1] == 'ABO_BB' }[0] == '7' },
                 { assert row('ABO_BB')[header.indexOf('ABO Pheno Type')] == 'B' },
                 // the sample without a barcode column value takes it from its name
-                { assert result.find { r -> r[1] == 'ABO_AO1' }[0] == '3' }
+                { assert result.find { r -> r[1] == 'ABO_AO1' }[0] == '3' },
+                // the three same-named rows of ABO_AA are merged into one sample, reported once
+                { assert export_rows.count { r -> r[0] == 'ABO_AA' } == 1 },
+                { assert row('ABO_AA')[header.indexOf('ABO Pheno Type')] ==~ /A1?/ },
+                { assert snapshot(typing_calls).match() }
             )
         }
     }

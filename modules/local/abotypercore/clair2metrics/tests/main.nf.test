@@ -9,14 +9,14 @@ nextflow_process {
     tag "abotypercore/clair2metrics"
     tag "abotyper"
 
-    test("abotyper - ABO_AA_barcode01 - Clair3 gVCF -> metrics") {
+    test("abotyper - ABO_AB_barcode02 - Clair3 gVCF -> metrics") {
 
         when {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01_clair3.merge_output.gvcf.gz", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair3/ABO_AB_barcode02_clair3.merge_output.gvcf.gz", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """
@@ -27,7 +27,7 @@ nextflow_process {
             def lines = path(process.out.tsv[0][1]).readLines()
             assertAll(
                 { assert process.success },
-                { assert process.out.tsv[0][1] ==~ ".*/ABO_AA_barcode01.AlignmentStatistics.tsv" },
+                { assert process.out.tsv[0][1] ==~ ".*/ABO_AB_barcode02.clair3.AlignmentStatistics.tsv" },
                 { assert lines[0].startsWith("Ref_Position_1based\tRef_Base\tMatch_Percent") },
                 // header + one row per calibrated panel position (135 in panel v2.3.0)
                 { assert lines.size() == 136 },
@@ -41,7 +41,7 @@ nextflow_process {
         }
     }
 
-    test("abotyper - ABO_AA_barcode01 - stub") {
+    test("abotyper - ABO_AB_barcode02 - stub") {
 
         options "-stub"
 
@@ -49,8 +49,8 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'ABO_AA_barcode01' ],
-                    file("$projectDir/tests/fixtures/ABO_AA_barcode01/ABO_AA_barcode01_clair3.merge_output.gvcf.gz", checkIfExists: true)
+                    [ id:'ABO_AB_barcode02' ],
+                    file("\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02/clair3/ABO_AB_barcode02_clair3.merge_output.gvcf.gz", checkIfExists: true)
                 ]
                 input[1] = []  // panel bundled with abotyper-core
                 """

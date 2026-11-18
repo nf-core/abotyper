@@ -2,7 +2,7 @@
     "abotyper - two samples compiled into the final tables": {
         "content": [
             [
-                "final_export.csv:md5,dc556698e756671bcc4ddfc6cc25893e"
+                "final_export.csv:md5,7e540333627a8755077534ac615b2043"
             ],
             {
                 "versions_abotyper_core": [
@@ -14,7 +14,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:37:49.247135211",
+        "timestamp": "2026-11-17T21:00:27.101269996",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

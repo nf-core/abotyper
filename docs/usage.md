@@ -101,12 +101,12 @@ Clair3 needs a model that matches the flow cell and basecaller. The pipeline pic
 
 1. `--clair3_model_url <url>`: download the model folder (`pileup.pt`, `full_alignment.pt`) from this URL.
 2. `--clair3_model_path <folder>`: use your own model folder.
-3. Otherwise the model packaged in the Clair3 container, named by `--clair3_model` (default `r1041_e82_400bps_sup_v500`, for R10.4.1 flow cells basecalled with a super-accuracy model).
+3. Otherwise the model bundled with Clair3, named by `--clair3_model` (default `r1041_e82_400bps_sup_v500`, for R10.4.1 flow cells basecalled with a super-accuracy model).
 
-Give a URL or a folder, not both. The packaged models are only in the Docker, Singularity and Podman containers; with other profiles (conda, apptainer) the `--clair3_model` model is downloaded by name instead, and the log says so.
+Give a URL or a folder, not both. The bundled models are available under every profile (Docker, Singularity, Apptainer, Podman, conda and Wave).
 
 ```bash
-# packaged model (default)
+# bundled model (default)
 nextflow run nf-core/abotyper -profile docker --input samplesheet.csv --outdir results
 # your own model folder
 nextflow run nf-core/abotyper -profile docker --input samplesheet.csv --outdir results --clair3_model_path /path/to/r1041_e82_400bps_sup_v500
@@ -184,7 +184,7 @@ With `-profile conda` (or `mamba`), each tool's environment is built from its mo
 nextflow run nf-core/abotyper -profile conda,conda_lock --input samplesheet.csv --outdir <OUTDIR>
 ```
 
-`conda_lock` covers the nf-core modules that ship lock files (bcftools, samtools and MultiQC) on linux-64 and linux-aarch64, chosen from the machine Nextflow runs on. The other tools still come from their `environment.yml`.
+`conda_lock` pins every module that ships lock files (NanoPlot, Clair3, samtools, bcftools, MultiQC, abotyper-core and the Clair3 model download) on linux-64 and linux-aarch64, chosen from the machine Nextflow runs on. The remaining modules (minimap2 and cat/fastq) still come from their `environment.yml`.
 
 > [!WARNING]
 > Do not use `conf/containers_conda_lock_files_amd64.config` or `conf/containers_conda_lock_files_arm64.config`. nf-core tools generates them, but they point at lock files that conda cannot read, so environment creation fails. `conda_lock` uses converted copies of the same lock files.

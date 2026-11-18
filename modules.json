@@ -7,22 +7,27 @@
                 "nf-core": {
                     "bcftools/norm": {
                         "branch": "master",
-                        "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
+                        "git_sha": "6c0344510a1f5ca831e5806134d839c1c3380d48",
                         "installed_by": ["modules"]
                     },
                     "bcftools/query": {
                         "branch": "master",
-                        "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
+                        "git_sha": "b489eb2587cb508cc9eef65c53f04f7419b5f6d9",
                         "installed_by": ["modules"]
                     },
                     "bcftools/view": {
                         "branch": "master",
-                        "git_sha": "ed7a2286df416088793e62fa6a740d07974d0ff8",
+                        "git_sha": "b489eb2587cb508cc9eef65c53f04f7419b5f6d9",
+                        "installed_by": ["modules"]
+                    },
+                    "cat/fastq": {
+                        "branch": "master",
+                        "git_sha": "3ed7dbab112fa8802f0affff345b8fa2ac935e5c",
                         "installed_by": ["modules"]
                     },
                     "clair3": {
                         "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "git_sha": "ab771f1da1b7c3b4fde356f82ed20d01c95fd1c5",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/clair3/clair3.diff"
                     },
@@ -33,23 +38,23 @@
                     },
                     "multiqc": {
                         "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "git_sha": "868791e991feaaeff234b79f7910b6b442627529",
                         "installed_by": ["modules"]
                     },
                     "nanoplot": {
                         "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "git_sha": "574ad1868a466e73d0f5ef8c139a260fbf2d8b9c",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/nanoplot/nanoplot.diff"
                     },
                     "samtools/coverage": {
                         "branch": "master",
-                        "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
+                        "git_sha": "80eb474060aa4aa6d7b4b00e0dc785174f156a28",
                         "installed_by": ["modules"]
                     },
                     "samtools/flagstat": {
                         "branch": "master",
-                        "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
+                        "git_sha": "80eb474060aa4aa6d7b4b00e0dc785174f156a28",
                         "installed_by": ["modules"]
                     },
                     "samtools/mpileup": {
@@ -59,7 +64,7 @@
                     },
                     "samtools/stats": {
                         "branch": "master",
-                        "git_sha": "a582d5633f7df32396681ef4458068e2b509ca91",
+                        "git_sha": "80eb474060aa4aa6d7b4b00e0dc785174f156a28",
                         "installed_by": ["modules"]
                     }
                 }

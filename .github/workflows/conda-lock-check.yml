@@ -1,0 +1,33 @@
+name: conda_lock check
+# The conda_lock profile uses conda @EXPLICIT copies of the module lock files
+# (assets/conda-lock/, conf/conda_lock_explicit_*.config), made by
+# assets/conda-lock/make_explicit_locks.py. This regenerates them and fails if
+# they no longer match the module locks, e.g. after a module update.
+on:
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  explicit-locks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Regenerate the explicit conda locks
+        run: python assets/conda-lock/make_explicit_locks.py
+
+      - name: Check they are up to date
+        run: |
+          git add -A assets/conda-lock conf/conda_lock_explicit_amd64.config conf/conda_lock_explicit_arm64.config
+          if ! git diff --cached --exit-code --stat; then
+            echo "::error::The explicit conda locks are out of date. Run 'python assets/conda-lock/make_explicit_locks.py' and commit the result."
+            exit 1
+          fi

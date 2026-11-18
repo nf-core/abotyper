@@ -1,53 +1,12 @@
 {
-    "abotyper - ABO_AA_barcode01 - stub": {
-        "content": [
-            {
-                "0": [
-                    [
-                        {
-                            "id": "ABO_AA_barcode01"
-                        },
-                        "ABO_AA_barcode01.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
-                    ]
-                ],
-                "1": [
-                    [
-                        "ABOTYPERCORE_CLAIR2HAPLOTYPES",
-                        "abotyper-core",
-                        "0.4.1"
-                    ]
-                ],
-                "tsv": [
-                    [
-                        {
-                            "id": "ABO_AA_barcode01"
-                        },
-                        "ABO_AA_barcode01.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
-                    ]
-                ],
-                "versions_abotyper_core": [
-                    [
-                        "ABOTYPERCORE_CLAIR2HAPLOTYPES",
-                        "abotyper-core",
-                        "0.4.1"
-                    ]
-                ]
-            }
-        ],
-        "timestamp": "2026-11-13T23:40:46.257569434",
-        "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.10.6"
-        }
-    },
-    "abotyper - ABO_AA_barcode01 - phased VCF -> haplotypes": {
+    "abotyper - ABO_AB_barcode02 - phased VCF -> haplotypes": {
         "content": [
             [
                 [
                     {
-                        "id": "ABO_AA_barcode01"
+                        "id": "ABO_AB_barcode02"
                     },
-                    "ABO_AA_barcode01.Haplotypes.tsv:md5,b2a0e49b8374e7b557fac23d85c93e39"
+                    "ABO_AB_barcode02.Haplotypes.tsv:md5,a7e4ef5434ea010345c1dabebdbf979a"
                 ]
             ],
             {
@@ -60,7 +19,48 @@
                 ]
             }
         ],
-        "timestamp": "2026-11-13T23:40:20.023266393",
+        "timestamp": "2026-11-17T21:03:02.987092508",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    },
+    "abotyper - ABO_AB_barcode02 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "ABOTYPERCORE_CLAIR2HAPLOTYPES",
+                        "abotyper-core",
+                        "0.4.1"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.Haplotypes.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_abotyper_core": [
+                    [
+                        "ABOTYPERCORE_CLAIR2HAPLOTYPES",
+                        "abotyper-core",
+                        "0.4.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T21:03:26.098516176",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.6"

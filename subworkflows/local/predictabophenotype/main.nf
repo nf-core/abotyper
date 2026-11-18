@@ -72,6 +72,7 @@ workflow PREDICTABOPHENOTYPE {
     )
 
     emit:
+    samples          = ch_samples                          // samples.tsv given to abotyper-aggregate
     abo_results      = ABOTYPERCORE_AGGREGATE.out.txt
     evidence_summary = ABOTYPERCORE_AGGREGATE.out.mqc
 }

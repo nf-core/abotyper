@@ -12,38 +12,59 @@ nextflow_workflow {
     tag "abotypercore/aggregate"
     tag "abotyper"
 
-    // Inputs for ONE sample (ABO_AA_barcode01) in the single combined-reference layout:
+    // Inputs for ONE sample (ABO_AB_barcode02) in the single combined-reference layout:
     // metrics (ABOTYPERCORE_PILEUP2METRICS), coverage, haplotypes (ABOTYPERCORE_CLAIR2HAPLOTYPES), the two evidence
     // files written by ABOTYPERCORE_PILEUP2METRICS and the flagstat file (the fixture has no samtools stats file).
 
-    test("abo_phenotype_prediction - one sample - combined reference") {
+    // Two samples: ABO_AB_barcode02, and a second sample without Clair3 haplotypes (copies of the same files under
+    // the ID ABO_NOHAP), so the join(remainder: true) chain and the samples.tsv rows are both exercised.
+    test("abo_phenotype_prediction - two samples, one without haplotypes - combined reference") {
 
         when {
             workflow {
                 """
-                def meta = [ id:'ABO_AA_barcode01' ]
-                def d    = "$projectDir/tests/fixtures/ABO_AA_barcode01"
-                def p    = "$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01/combined"
-                input[0] = channel.of([ meta, file("\$d/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true) ])
-                input[1] = channel.of([ meta, file("\$d/ABO_AA_barcode01.coverage.txt", checkIfExists: true) ])
-                input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
-                input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
-                input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
+                def meta  = [ id:'ABO_AB_barcode02' ]
+                def meta2 = [ id:'ABO_NOHAP' ]
+                def d     = "\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02"
+                def p     = "\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02"
+                // the second sample's files: copies of ABO_AB_barcode02's under the ID ABO_NOHAP
+                def s     = file("\${workDir}/second_sample").tap { dir -> dir.mkdirs() }
+                [ 'clair2metrics/': ['AlignmentStatistics.tsv', 'evidence_status.tsv', 'concordance.tsv'], 'alignment/': ['coverage.txt', 'flagstat'] ]
+                    .each { dir, exts -> exts.each { ext -> file("\$d/\${dir}ABO_AB_barcode02.\$ext", checkIfExists: true).copyTo(s.resolve("ABO_NOHAP.\$ext")) } }
+                input[0] = channel.of(
+                    [ meta,  file("\$d/clair2metrics/ABO_AB_barcode02.AlignmentStatistics.tsv", checkIfExists: true) ],
+                    [ meta2, file("\$s/ABO_NOHAP.AlignmentStatistics.tsv", checkIfExists: true) ])
+                input[1] = channel.of(
+                    [ meta,  file("\$d/alignment/ABO_AB_barcode02.coverage.txt", checkIfExists: true) ],
+                    [ meta2, file("\$s/ABO_NOHAP.coverage.txt", checkIfExists: true) ])
+                input[2] = channel.of([ meta, file("\$d/clair2metrics/ABO_AB_barcode02.Haplotypes.tsv", checkIfExists: true) ])  // none for ABO_NOHAP
+                input[3] = channel.of(
+                    [ meta,  file("\$p/clair2metrics/ABO_AB_barcode02.evidence_status.tsv", checkIfExists: true) ],
+                    [ meta2, file("\$s/ABO_NOHAP.evidence_status.tsv", checkIfExists: true) ])
+                input[4] = channel.of(
+                    [ meta,  file("\$p/clair2metrics/ABO_AB_barcode02.concordance.tsv", checkIfExists: true) ],
+                    [ meta2, file("\$s/ABO_NOHAP.concordance.tsv", checkIfExists: true) ])
                 input[5] = channel.empty()
-                input[6] = channel.of([ meta, file("\$p/ABO_AA_barcode01.flagstat", checkIfExists: true) ])
+                input[6] = channel.of(
+                    [ meta,  file("\$p/alignment/ABO_AB_barcode02.flagstat", checkIfExists: true) ],
+                    [ meta2, file("\$s/ABO_NOHAP.flagstat", checkIfExists: true) ])
                 input[7] = []  // panel bundled with abotyper-core
                 """
             }
         }
 
         then {
+            def samples = path(workflow.out.samples[0]).readLines()
+            def typing  = path(workflow.out.abo_results[0]).readLines()
             assertAll(
                 { assert workflow.success },
-                // one final results table, one MultiQC evidence table
-                { assert workflow.out.abo_results.size() == 1 },
-                { assert path(workflow.out.abo_results[0]).exists() },
-                { assert workflow.out.evidence_summary.size() == 1 },
-                { assert path(workflow.out.evidence_summary[0]).text.contains("ABO_AA") }
+                // one row per sample; ABO_NOHAP has an empty haplotypes cell
+                { assert samples.size() == 3 },
+                { assert samples.find { line -> line.startsWith('ABO_NOHAP\t') }.split('\t', -1)[5] == '' },
+                // both samples are typed
+                { assert typing.any { line -> line.contains('ABO_AB') } },
+                { assert typing.any { line -> line.contains('ABO_NOHAP') } },
+                { assert snapshot(samples, typing).match() }
             )
         }
     }
@@ -55,16 +76,16 @@ nextflow_workflow {
         when {
             workflow {
                 """
-                def meta = [ id:'ABO_AA_barcode01' ]
-                def d    = "$projectDir/tests/fixtures/ABO_AA_barcode01"
-                def p    = "$projectDir/tests/fixtures/per_sample_processing/ABO_AA_barcode01/combined"
-                input[0] = channel.of([ meta, file("\$d/ABO_AA_barcode01.merged.AlignmentStatistics.tsv", checkIfExists: true) ])
-                input[1] = channel.of([ meta, file("\$d/ABO_AA_barcode01.coverage.txt", checkIfExists: true) ])
-                input[2] = channel.of([ meta, file("\$d/ABO_AA_barcode01.Haplotypes.tsv", checkIfExists: true) ])
-                input[3] = channel.of([ meta, file("\$p/ABO_AA_barcode01.evidence_status.tsv", checkIfExists: true) ])
-                input[4] = channel.of([ meta, file("\$p/ABO_AA_barcode01.concordance.tsv", checkIfExists: true) ])
+                def meta = [ id:'ABO_AB_barcode02' ]
+                def d    = "\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02"
+                def p    = "\${params.pipelines_testdata_base_path}abotyper/abotyper/per_sample_processing/ABO_AB_barcode02"
+                input[0] = channel.of([ meta, file("\$d/clair2metrics/ABO_AB_barcode02.AlignmentStatistics.tsv", checkIfExists: true) ])
+                input[1] = channel.of([ meta, file("\$d/alignment/ABO_AB_barcode02.coverage.txt", checkIfExists: true) ])
+                input[2] = channel.of([ meta, file("\$d/clair2metrics/ABO_AB_barcode02.Haplotypes.tsv", checkIfExists: true) ])
+                input[3] = channel.of([ meta, file("\$p/clair2metrics/ABO_AB_barcode02.evidence_status.tsv", checkIfExists: true) ])
+                input[4] = channel.of([ meta, file("\$p/clair2metrics/ABO_AB_barcode02.concordance.tsv", checkIfExists: true) ])
                 input[5] = channel.empty()
-                input[6] = channel.of([ meta, file("\$p/ABO_AA_barcode01.flagstat", checkIfExists: true) ])
+                input[6] = channel.of([ meta, file("\$p/alignment/ABO_AB_barcode02.flagstat", checkIfExists: true) ])
                 input[7] = []  // panel bundled with abotyper-core
                 """
             }

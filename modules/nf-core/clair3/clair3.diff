@@ -1,4 +1,5 @@
 Changes in component 'nf-core/clair3'
+'modules/nf-core/clair3/environment.yml' is unchanged
 Changes in 'clair3/main.nf':
 --- modules/nf-core/clair3/main.nf
 +++ modules/nf-core/clair3/main.nf
@@ -10,15 +11,15 @@ Changes in 'clair3/main.nf':
  
      output:
      tuple val(meta), path("${prefix}merge_output.vcf.gz"),            emit: vcf
-@@ -44,6 +45,7 @@
-         error("Two models specified ${user_model} and ${packaged_model}, specify one of them.")
-     }
+@@ -35,6 +36,7 @@
+     // bioconda clair3 bundles its models next to run_clair3.sh, wherever the environment is installed
+     def model = user_model ? "${user_model}" : "\$(dirname \$(command -v run_clair3.sh))/models/${packaged_model}"
      def args = task.ext.args ?: ''
 +    def bed_arg = bed ? "--bed_fn=\${PWD}/${bed}" : ''
      prefix = task.ext.prefix ?: "${meta.id}"
      """
      run_clair3.sh \\
-@@ -53,6 +55,7 @@
+@@ -44,6 +46,7 @@
          --output=. \\
          --platform=${platform} \\
          --model_path=${model} \\
@@ -27,7 +28,6 @@ Changes in 'clair3/main.nf':
  
      # Rename to add prefix
 
-'modules/nf-core/clair3/environment.yml' is unchanged
 Changes in 'clair3/meta.yml':
 --- modules/nf-core/clair3/meta.yml
 +++ modules/nf-core/clair3/meta.yml
@@ -45,11 +45,10 @@ Changes in 'clair3/meta.yml':
      - - meta:
 
 'modules/nf-core/clair3/tests/nextflow.config' is unchanged
-'modules/nf-core/clair3/tests/main.nf.test.snap' is unchanged
 Changes in 'clair3/tests/main.nf.test':
 --- modules/nf-core/clair3/tests/main.nf.test
 +++ modules/nf-core/clair3/tests/main.nf.test
-@@ -49,6 +49,7 @@
+@@ -41,6 +41,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
@@ -57,7 +56,7 @@ Changes in 'clair3/tests/main.nf.test':
                  """
              }
          }
-@@ -100,6 +101,7 @@
+@@ -99,6 +100,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
@@ -65,7 +64,7 @@ Changes in 'clair3/tests/main.nf.test':
                  """
              }
          }
-@@ -151,6 +153,7 @@
+@@ -157,6 +159,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
@@ -73,15 +72,7 @@ Changes in 'clair3/tests/main.nf.test':
                  """
              }
          }
-@@ -188,6 +191,7 @@
-                     [ id: 'test'],
-                     file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
-                 ]
-+                input[3] = []
-                 """
-             }
-         }
-@@ -239,6 +243,7 @@
+@@ -253,6 +256,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
@@ -90,4 +81,7 @@ Changes in 'clair3/tests/main.nf.test':
              }
          }
 
+'modules/nf-core/clair3/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/clair3/.conda-lock/linux_amd64-bd-af64dfa2c8f0b388_1.txt' is unchanged
+'modules/nf-core/clair3/.conda-lock/linux_arm64-bd-d716697d8603446d_1.txt' is unchanged
 ************************************************************
