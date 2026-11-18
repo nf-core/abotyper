@@ -163,13 +163,6 @@ nextflow_process {
                 """
             }
         }
-                    [ id: 'test'],
-                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
-                ]
-                input[3] = []
-                """
-            }
-        }
 
         then {
             assertAll(

@@ -64,22 +64,15 @@ Changes in 'clair3/tests/main.nf.test':
                  """
              }
          }
-@@ -157,6 +159,14 @@
+@@ -157,6 +159,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
 +                input[3] = []
-+                """
-+            }
-+        }
-+                    [ id: 'test'],
-+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
-+                ]
-+                input[3] = []
                  """
              }
          }
-@@ -253,6 +263,7 @@
+@@ -253,6 +256,7 @@
                      [ id: 'test'],
                      file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
                  ]
