@@ -1,0 +1,91 @@
+nextflow_pipeline {
+
+    name "Test pipeline"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("-profile test") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            // stable_content: All files in ${params.outdir}/ with stable content
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            // typing_calls: every column of final_export.csv except #Reads (mean read depth), which differs by a
+            // read or two between the conda and container builds of Clair3 (see tests/.nftignore)
+            def export_rows = path("$outputDir/final_export.csv").text.readLines().collect { line ->
+                line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/, -1) as List
+            }
+            def keep_cols = (0..<export_rows[0].size()).findAll { i -> export_rows[0][i] != '#Reads' }
+            // One joined line per row: nf-test reads a bare empty string as a path and would md5 the working directory
+            def typing_calls = export_rows.collect { row -> keep_cols.collect { i -> row[i] }.join(',') }
+            // ABO_run_qc.txt without the abotyper-core version line, so a package release does not change the snapshot
+            def run_qc = path("$outputDir/ABO_run_qc.txt").readLines().findAll { line -> !line.startsWith('abotyper-core:') }
+            // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+            def versions = removeNextflowVersion("$outputDir/pipeline_info/abotyper_software_mqc_versions.yml")
+            assert workflow.success
+            assertAll(
+                { assert snapshot(
+                    versions,
+                    // All stable path name, with a relative path
+                    stable_path,
+                    // All files with stable contents
+                    stable_content,
+                    // Genotype, phenotype and QC calls for every sample
+                    typing_calls,
+                    // Run QC report, version line removed
+                    run_qc
+                ).match() }
+            )
+        }
+    }
+
+    test("-profile test - zero-read negative control, numeric barcode and multi-row sample") {
+
+        // A clean negative control (an empty FASTQ) must not stop the run (NanoPlot exits 1 on it) and must
+        // pass QC; a numeric barcode (7) must pass samplesheet validation and be reported as barcode07; a sample
+        // with several rows whose files share a name is merged by CAT_FASTQ and typed once.
+        when {
+            params {
+                // nf-core/test-datasets, branch abotyper (the same base as pipelines_testdata_base_path):
+                // ABO_BB (barcode 7), ABO_AO1_barcode03, an empty FASTQ as negative control NTC, and three rows of ABO_AA
+                input  = 'https://raw.githubusercontent.com/nf-core/test-datasets/abotyper/abotyper/fixtures/samplesheet_controls_multirow.csv'
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def export_rows = path("$outputDir/final_export.csv").text.readLines().collect { line ->
+                line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/, -1) as List
+            }
+            def header = export_rows[0]
+            def row    = { name -> export_rows.find { r -> r[0] == name } }
+            def qc     = header.indexOf('QC Status')
+            def result = path("$outputDir/ABO_result.txt").readLines().collect { line -> line.split('\t', -1) as List }
+            // typing calls of every sample, without #Reads (mean read depth, which differs by a few reads between runs)
+            def keep_cols    = (0..<header.size()).findAll { i -> header[i] != '#Reads' }
+            def typing_calls = export_rows.collect { r -> keep_cols.collect { i -> r[i] }.join(',') }
+            assertAll(
+                { assert workflow.success },
+                // the negative control is reported and passes QC
+                { assert row('NTC') != null },
+                { assert row('NTC')[qc] == 'PASS' },
+                // the numeric barcode is accepted and reported as barcode 07 (Barcode column of ABO_result.txt)
+                { assert result.find { r -> r[1] == 'ABO_BB' }[0] == '7' },
+                { assert row('ABO_BB')[header.indexOf('ABO Pheno Type')] == 'B' },
+                // the sample without a barcode column value takes it from its name
+                { assert result.find { r -> r[1] == 'ABO_AO1' }[0] == '3' },
+                // the three same-named rows of ABO_AA are merged into one sample, reported once
+                { assert export_rows.count { r -> r[0] == 'ABO_AA' } == 1 },
+                { assert row('ABO_AA')[header.indexOf('ABO Pheno Type')] ==~ /A1?/ },
+                { assert snapshot(typing_calls).match() }
+            )
+        }
+    }
+}

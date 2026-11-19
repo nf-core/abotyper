@@ -1,0 +1,133 @@
+nextflow_function {
+
+    name "Test samplesheet name and barcode parsing"
+    script "../main.nf"
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/utils_nfcore_abotyper_pipeline"
+    tag "abotyper"
+
+    test("normaliseBarcode - number, zero-padded number and barcode<number>") {
+
+        function "normaliseBarcode"
+
+        when {
+            function {
+                """
+                input[0] = '7'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == 'barcode07' }
+            )
+        }
+    }
+
+    test("normaliseBarcode - barcode prefix and three digits") {
+
+        function "normaliseBarcode"
+
+        when {
+            function {
+                """
+                input[0] = 'Barcode123'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == 'barcode123' }
+            )
+        }
+    }
+
+    test("sampleNameAndBarcode - numeric barcode column (nf-schema reads 7 as an integer)") {
+
+        function "sampleNameAndBarcode"
+
+        when {
+            function {
+                """
+                input[0] = 'ABO_BB'
+                input[1] = 7
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == [ sample_name: 'ABO_BB', barcode: 'barcode07' ] }
+            )
+        }
+    }
+
+    test("sampleNameAndBarcode - barcode column wins over the name") {
+
+        function "sampleNameAndBarcode"
+
+        when {
+            function {
+                """
+                input[0] = 'S1_barcode03'
+                input[1] = 'barcode11'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == [ sample_name: 'S1_barcode03', barcode: 'barcode11' ] }
+            )
+        }
+    }
+
+    test("sampleNameAndBarcode - barcode taken from a _barcode<digits> name") {
+
+        function "sampleNameAndBarcode"
+
+        when {
+            function {
+                """
+                input[0] = 'S1_barcode7'
+                input[1] = ''
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == [ sample_name: 'S1', barcode: 'barcode07' ] }
+            )
+        }
+    }
+
+    test("sampleNameAndBarcode - any other name is reported whole, without a barcode") {
+
+        function "sampleNameAndBarcode"
+
+        when {
+            function {
+                """
+                input[0] = 'patient-01'
+                input[1] = null
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert function.result == [ sample_name: 'patient-01', barcode: '' ] }
+            )
+        }
+    }
+}

@@ -1,0 +1,158 @@
+{
+    "abotyper - ABO_AB_barcode02 - Clair3 + BAM pileup agree": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AB_barcode02"
+                    },
+                    "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,79b4721e4e375791ff710d058803d903"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AB_barcode02"
+                    },
+                    "ABO_AB_barcode02.evidence_status.tsv:md5,968192dda682955ed0d9677f7a63c0db"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AB_barcode02"
+                    },
+                    "ABO_AB_barcode02.concordance.tsv:md5,9a0a23bcce3ffb75aa5308a11f3017e2"
+                ]
+            ],
+            {
+                "versions_abotyper_core": [
+                    [
+                        "ABOTYPERCORE_PILEUP2METRICS",
+                        "abotyper-core",
+                        "0.4.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T21:05:28.371587768",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    },
+    "abotyper - ABO_AB_barcode02 - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.evidence_status.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.concordance.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.pileup_metrics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    [
+                        "ABOTYPERCORE_PILEUP2METRICS",
+                        "abotyper-core",
+                        "0.4.1"
+                    ]
+                ],
+                "concordance": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.concordance.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "pileup_tsv": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.pileup_metrics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "status": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.evidence_status.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "ABO_AB_barcode02"
+                        },
+                        "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_abotyper_core": [
+                    [
+                        "ABOTYPERCORE_PILEUP2METRICS",
+                        "abotyper-core",
+                        "0.4.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-17T21:06:16.942930737",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    },
+    "abotyper - ABO_AB_barcode02 - Clair3 produced nothing (BAM pileup only)": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "ABO_AB_barcode02"
+                    },
+                    "ABO_AB_barcode02.AlignmentStatistics.tsv:md5,544427ba4e5ff0551b712f5cfb319c22"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "ABO_AB_barcode02"
+                    },
+                    "ABO_AB_barcode02.evidence_status.tsv:md5,fd67d4de0d122a7855b4f1feb99b4f2e"
+                ]
+            ]
+        ],
+        "timestamp": "2026-11-17T21:05:53.96971208",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.10.6"
+        }
+    }
+}

@@ -1,0 +1,281 @@
+nextflow_process {
+
+    name "Test Process CLAIR3"
+    script "../main.nf"
+    process "CLAIR3"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "clair3"
+
+    config "./nextflow.config"
+
+    test("sarscov2 - bam - user_model") {
+        def model
+        setup {
+            // params.modules_testdata_base_path is null outside the process string, so use the same env var and default as tests/config/nf-test.config
+            def modules_testdata_base_path = System.getenv('NXF_MODULES_TESTDATA_BASE') ?: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/'
+            model = extract(modules_testdata_base_path + 'generic/models/clair3_v2.hifi.tar.gz').resolve('hifi_revio')
+        }
+
+
+        when {
+            params {
+                args = "--include_all_ctgs"
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true),
+                    [],
+                    file('${model}'),
+                ])
+                .combine(channel.of(['hifi']))
+                input[1] = [
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                ]
+                input[2] = [
+                    [ id: 'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
+                ]
+                input[3] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    process.out.vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.tbi.collect { file(it[1]).name },
+                    process.out.phased_vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.phased_tbi.collect { file(it[1]).name },
+                    process.out.gvcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.gtbi.collect { file(it[1]).name },
+                    process.out.findAll { key, val -> key.startsWith('versions') })
+                    .match()}
+            )
+        }
+
+    }
+
+    test("sarscov2 - bam - packaged_model") {
+        def model
+        setup {
+            // params.modules_testdata_base_path is null outside the process string, so use the same env var and default as tests/config/nf-test.config
+            def modules_testdata_base_path = System.getenv('NXF_MODULES_TESTDATA_BASE') ?: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/'
+            model = extract(modules_testdata_base_path + 'generic/models/clair3_v2.hifi.tar.gz').resolve('hifi_revio')
+        }
+
+
+        when {
+            params {
+                args = "--include_all_ctgs"
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true),
+                    'hifi_revio',
+                    [],
+                    'hifi',
+                ])
+                input[1] = [
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                ]
+                input[2] = [
+                    [ id: 'test'],
+                    file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
+                ]
+                input[3] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    process.out.vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.tbi.collect { file(it[1]).name },
+                    process.out.phased_vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.phased_tbi.collect { file(it[1]).name },
+                    process.out.gvcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.gtbi.collect { file(it[1]).name },
+                    process.out.findAll { key, val -> key.startsWith('versions') })
+                    .match()}
+            )
+        }
+
+    }
+
+    test("sarscov2 - bam - both") {
+        def model
+        setup {
+            // params.modules_testdata_base_path is null outside the process string, so use the same env var and default as tests/config/nf-test.config
+            def modules_testdata_base_path = System.getenv('NXF_MODULES_TESTDATA_BASE') ?: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/'
+            model = extract(modules_testdata_base_path + 'generic/models/clair3_v2.hifi.tar.gz').resolve('hifi_revio')
+        }
+
+
+        when {
+            params {
+                args = "--include_all_ctgs"
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true),
+                    ['hifi_revio'],
+                    file('${model}'),
+                ])
+                .combine(channel.of(['hifi']))
+                input[1] = [
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                ]
+                input[2] = [
+                    [ id: 'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
+                ]
+                input[3] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.failed }
+            )
+        }
+
+    }
+
+    test("sarscov2 - bam - user_model - gvcf") {
+        def model
+        setup {
+            // params.modules_testdata_base_path is null outside the process string, so use the same env var and default as tests/config/nf-test.config
+            def modules_testdata_base_path = System.getenv('NXF_MODULES_TESTDATA_BASE') ?: 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/'
+            model = extract(modules_testdata_base_path + 'generic/models/clair3_v2.hifi.tar.gz').resolve('hifi_revio')
+        }
+
+
+        when {
+            params {
+                args = "--gvcf --include_all_ctgs"
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true),
+                    [],
+                    file('${model}'),
+                ])
+                .combine(channel.of(['hifi']))
+                input[1] = [
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                ]
+                input[2] = [
+                    [ id: 'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    process.out.vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.tbi.collect { file(it[1]).name },
+                    process.out.phased_vcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.phased_tbi.collect { file(it[1]).name },
+                    process.out.gvcf.collect {
+                        [file(it[1]).name, path(it[1]).vcf.summary]
+                    },
+                    process.out.gtbi.collect { file(it[1]).name },
+                    process.out.findAll { key, val -> key.startsWith('versions') })
+                    .match()}
+            )
+        }
+
+    }
+
+    test("sarscov2 - bam - stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                args = ""
+            }
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam.bai', checkIfExists: true),
+                    [],
+                    [],
+                ])
+                .combine(channel.of(['hifi']))
+                input[1] = [
+                    [ id:'test'],
+                    file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                ]
+                input[2] = [
+                    [ id: 'test'],
+                    file(params.modules_testdata_base_path + '/genomics/sarscov2/genome/genome.fasta.fai', checkIfExists: true),
+                ]
+                input[3] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                        process.out.vcf,
+                        process.out.tbi,
+                        process.out.phased_vcf,
+                        process.out.phased_tbi,
+                        process.out.gvcf,
+                        process.out.gtbi,
+                        process.out.findAll { key, val -> key.startsWith('versions') })
+                        .match()}
+            )
+        }
+
+    }
+
+}

@@ -9,23 +9,28 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "errorMessage": "Sample name must be provided and may contain only letters, digits, '.', '_' and '-'",
                 "meta": ["id"]
             },
             "fastq_1": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q(\\.gz)?$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extensions '.fq', '.fastq', '.fq.gz' or '.fastq.gz'"
+                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
+                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz', or '.fastq.gz'"
             },
-            "fastq_2": {
+            "control": {
                 "type": "string",
-                "format": "file-path",
-                "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q(\\.gz)?$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extensions '.fq', '.fastq', '.fq.gz' or '.fastq.gz'"
+                "enum": ["negative", "positive"],
+                "errorMessage": "control must be empty, 'negative' (no-template control) or 'positive' (positive control)",
+                "meta": ["control"]
+            },
+            "barcode": {
+                "type": ["string", "integer"],
+                "pattern": "^([Bb]arcode)?\\d+$",
+                "errorMessage": "barcode must be empty, a number (07) or barcode<number> (barcode07)",
+                "meta": ["barcode"]
             }
         },
         "required": ["sample", "fastq_1"]
