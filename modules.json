@@ -43,9 +43,8 @@
                     },
                     "nanoplot": {
                         "branch": "master",
-                        "git_sha": "574ad1868a466e73d0f5ef8c139a260fbf2d8b9c",
-                        "installed_by": ["modules"],
-                        "patch": "modules/nf-core/nanoplot/nanoplot.diff"
+                        "git_sha": "9ab17d6c0c6cda0bb4ed8a1ee15173209eb4f881",
+                        "installed_by": ["modules"]
                     },
                     "samtools/coverage": {
                         "branch": "master",
