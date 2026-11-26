@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: CLAIR3_DOWNLOADMODEL
+description: Download the Clair3 PyTorch model files (pileup.pt, full_alignment.pt) from a model URL into one directory for CLAIR3
+keywords:
+  - clair3
+  - model
+  - download
+  - variant calling
+tools:
+  - wget:
+      description: GNU Wget, a non-interactive network downloader
+      homepage: https://www.gnu.org/software/wget/
+      documentation: https://www.gnu.org/software/wget/manual/
+      tool_dev_url: https://git.savannah.gnu.org/cgit/wget.git
+      licence:
+        - "GPL-3.0-or-later"
+      identifier: ""
+input:
+  - url:
+      type: string
+      description: Base URL of a Clair3 PyTorch model folder holding pileup.pt and full_alignment.pt
+
+output:
+  model_dir:
+    - clair3_model_dir:
+        type: directory
+        description: Directory with pileup.pt and full_alignment.pt, passed to CLAIR3 as user_model
+        pattern: "clair3_model_dir"
+  versions_wget:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - wget:
+          type: string
+          description: Name of the tool
+      - wget --version | sed '1!d; s/^GNU Wget //; s/ .*//':
+          type: eval
+          description: The expression to obtain the version of wget
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - wget:
+          type: string
+          description: Name of the tool
+      - wget --version | sed '1!d; s/^GNU Wget //; s/ .*//':
+          type: eval
+          description: The expression to obtain the version of wget
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/wget:1.25.0--96b3e82d8ef28f51
+      build_id: bd-96b3e82d8ef28f51_1
+      scan_id: sc-e0dd5e0d3b672525_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/wget:1.25.0--5aec898b4eacb870
+      build_id: bd-5aec898b4eacb870_1
+      scan_id: sc-4bd2b98037254032_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/wget:1.25.0--1983c5d4cb0a775e
+      build_id: bd-1983c5d4cb0a775e_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/5b/5b6b1dde4da5027f1615c955b28320cf94f117873403a109f26d905fdaa14bb7/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/wget:1.25.0--bfeedfaf4ea6103a
+      build_id: bd-bfeedfaf4ea6103a_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/a1/a16db78e0a9f742ece8c129ab8ee925e416d02df054fe023c44c32fbaede944c/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/clair3/downloadmodel/.conda-lock/linux_amd64-bd-5aec898b4eacb870_1.txt
+    linux/arm64:
+      lock_file: modules/local/clair3/downloadmodel/.conda-lock/linux_arm64-bd-96b3e82d8ef28f51_1.txt

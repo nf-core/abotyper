@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ABOTYPERCORE_CLAIR2HAPLOTYPES
+description: Convert a Clair3 phased VCF into HAPLOSCAN-format Haplotypes.tsv for PhaseConfidence scoring
+keywords:
+  - abo
+  - blood typing
+  - variant calling
+  - genotyping
+  - clair3
+  - phasing
+tools:
+  - abotyper-core:
+      description: ABO blood group typing logic of nf-core/abotyper, as a Python package and command-line tools
+      homepage: https://github.com/fmobegi/abotyper-core
+      documentation: https://github.com/fmobegi/abotyper-core#readme
+      tool_dev_url: https://github.com/fmobegi/abotyper-core
+      licence:
+        - "MIT"
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'sample1' ]
+        required: true
+    - phased_vcf:
+        type: file
+        description: Clair3 phased_merge_output.vcf.gz (run with --enable_phasing)
+        pattern: "*.vcf.gz"
+        required: true
+        ontologies:
+          - edam: http://edamontology.org/format_3989 # GZIP format
+  - panel_file:
+      type: file
+      description: ABO variant panel file (.yaml / .json / .csv / .tsv); pass [] for the panel bundled with abotyper-core
+      pattern: "*.{yaml,yml,json,csv,tsv}"
+      required: true
+
+      ontologies:
+        - edam: http://edamontology.org/format_3750 # YAML
+        - edam: http://edamontology.org/format_3464 # JSON
+        - edam: http://edamontology.org/format_3752 # CSV
+        - edam: http://edamontology.org/format_3475 # TSV
+output:
+  tsv:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'sample1' ]
+      - "*.Haplotypes.tsv":
+          type: file
+          description: |
+            Synthesized haplotype table (2 patterns per Clair3 phase set,
+            row counts proportional to that phase set's own allele depths)
+          pattern: "*.Haplotypes.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_abotyper_core:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abotyper-core:
+          type: string
+          description: Name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of abotyper-core
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: Name of the process
+      - abotyper-core:
+          type: string
+          description: Name of the tool
+      - python3 -c "import abotyper_core; print(abotyper_core.__version__)":
+          type: eval
+          description: The expression to obtain the version of abotyper-core
+
+authors:
+  - "@fmobegi"
+maintainers:
+  - "@fmobegi"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/abotyper-core:0.4.1--b514d32455c1eab3
+      build_id: bd-b514d32455c1eab3_1
+      scan_id: sc-03a1cb72abebc618_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/abotyper-core:0.4.1--93cff04d00942925
+      build_id: bd-93cff04d00942925_1
+      scan_id: sc-946131cb23f9d5d8_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/abotyper-core:0.4.1--bbcea16a754b1daa
+      build_id: bd-bbcea16a754b1daa_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/29/2940cf2c699856e950dec959665c37d18e9db61d9a8189c3266298571999fe24/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/abotyper-core:0.4.1--9cc2e246a88842e9
+      build_id: bd-9cc2e246a88842e9_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2f/2f9c4551a5eb0195d7a16cf72699ac2f7f5efcdaf136261164ead7c206925ac9/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/abotypercore/clair2haplotypes/.conda-lock/linux_amd64-bd-b514d32455c1eab3_1.txt
+    linux/arm64:
+      lock_file: modules/local/abotypercore/clair2haplotypes/.conda-lock/linux_arm64-bd-93cff04d00942925_1.txt

@@ -1,3 +1,5 @@
-sample,fastq_1,fastq_2
-SAMPLE_PAIRED_END,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A1_S1_L002_R2_001.fastq.gz
-SAMPLE_SINGLE_END,/path/to/fastq/files/AEG588A4_S4_L003_R1_001.fastq.gz,
+sample,fastq_1,control,barcode
+SAMPLE1_barcode01,/path/to/fastq/files/SAMPLE1_barcode01.fastq.gz,,
+SAMPLE2,/path/to/fastq/files/SAMPLE2.fastq.gz,,02
+NTC,/path/to/fastq/files/NTC.fastq.gz,negative,95
+POSCTRL,/path/to/fastq/files/POSCTRL.fastq.gz,positive,96
